@@ -1,26 +1,92 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import { productsApi, brandsApi } from '@/services/api'
-import type { Product, Brand } from '@/types'
+import { productsApi, brandsApi, categoriesApi } from '@/services/api'
+import type { Product, Brand, Category } from '@/types'
 import { getCategoryName } from '@/utils'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import ProductCard from '@/components/ProductCard.vue'
+import Breadcrumb from '@/components/Breadcrumb.vue'
 
 const route = useRoute()
 const categorySlug = computed(() => route.params.category as string)
 
 const products = ref<Product[]>([])
 const allBrands = ref<Brand[]>([])
+const category = ref<Category | null>(null)
 const loading = ref(false)
+const categoryLoading = ref(false)
+const productsLoading = ref(false)
 
-const fetchProducts = async (slug: string) => {
+// SEO and Meta tags
+const updateMetaTags = () => {
+  if (typeof document !== 'undefined') {
+    // Update page title
+    document.title = `${categoryTitle.value} - BaloZone | Balo, Vali Chính Hãng`
+    
+    // Update meta description
+    const metaDescription = document.querySelector('meta[name="description"]')
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 
+        `${categoryDescription.value} Mua ngay với giá tốt nhất tại BaloZone!`
+      )
+    }
+  }
+}
+
+const fetchCategoryAndProducts = async (slug: string) => {
   loading.value = true
+  
   try {
-    const response = await productsApi.getProductsByCategory(slug)
-    products.value = response.data
+    // Fetch category info and products in parallel
+    const [categoryResponse, productsResponse] = await Promise.all([
+      fetchCategoryInfo(slug),
+      fetchCategoryProducts(slug)
+    ])
   } catch (error) {
-    console.error('Failed to load category products:', error)
+    console.error('Failed to load category and products:', error)
   } finally {
     loading.value = false
+  }
+}
+
+const fetchCategoryInfo = async (slug: string) => {
+  categoryLoading.value = true
+  try {
+    console.log(`Fetching category info for slug: ${slug}`)
+    const response = await categoriesApi.getCategoryBySlug(slug)
+    console.log('Category API Response:', response)
+    category.value = response.data
+  } catch (error) {
+    console.error('Failed to load category info:', error)
+    // Fallback to default category data
+    category.value = {
+      id: 0,
+      name: getCategoryName(slug),
+      slug: slug,
+      description: `Khám phá bộ sưu tập ${getCategoryName(slug).toLowerCase()} chính hãng với giá tốt nhất`,
+      image: '',
+      products_count: 0,
+      created_at: '',
+      updated_at: ''
+    }
+  } finally {
+    categoryLoading.value = false
+  }
+}
+
+const fetchCategoryProducts = async (slug: string) => {
+  productsLoading.value = true
+  try {
+    console.log(`Fetching products for category slug: ${slug}`)
+    const response = await productsApi.getProductsByCategory(slug)
+    console.log('Products API Response:', response)
+    products.value = response.data || []
+  } catch (error) {
+    console.error('Failed to load category products:', error)
+    products.value = []
+  } finally {
+    productsLoading.value = false
   }
 }
 
@@ -35,22 +101,104 @@ const fetchBrands = async () => {
 
 onMounted(() => {
   if (categorySlug.value) {
-    fetchProducts(categorySlug.value)
+    fetchCategoryAndProducts(categorySlug.value)
   }
   fetchBrands()
 })
 
 watch(categorySlug, (newSlug) => {
   if (newSlug) {
-    fetchProducts(newSlug)
+    fetchCategoryAndProducts(newSlug)
   }
 })
+
+// Watch for category changes to update meta tags
+watch([categoryTitle, categoryDescription], () => {
+  updateMetaTags()
+}, { immediate: true })
 
 // Filter and sort functionality
 const selectedSort = ref('popular')
 const selectedPriceRange = ref('all')
 const selectedBrand = ref('all')
 
+// Pagination
+const currentPage = ref(1)
+const itemsPerPage = ref(12)
+const totalPages = computed(() => 
+  Math.ceil(categoryProducts.value.length / itemsPerPage.value)
+)
+
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return categoryProducts.value.slice(start, end)
+})
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    // Smooth scroll to top of products section
+    nextTick(() => {
+      const productsSection = document.querySelector('.products-section')
+      if (productsSection) {
+        productsSection.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        })
+      }
+    })
+  }
+}
+
+// Add scroll to top when category changes
+watch(categorySlug, () => {
+  nextTick(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
+})
+
+const getPaginationPages = computed(() => {
+  const pages = []
+  const total = totalPages.value
+  const current = currentPage.value
+  
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    if (current <= 4) {
+      for (let i = 1; i <= 5; i++) pages.push(i)
+      pages.push('...')
+      pages.push(total)
+    } else if (current >= total - 3) {
+      pages.push(1)
+      pages.push('...')
+      for (let i = total - 4; i <= total; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      pages.push('...')
+      for (let i = current - 1; i <= current + 1; i++) pages.push(i)
+      pages.push('...')
+      pages.push(total)
+    }
+  }
+  
+  return pages
+})
+
+// Reset pagination when filters change (with debounce)
+watch([selectedSort, selectedPriceRange, selectedBrand], () => {
+  debouncedApplyFilters()
+})
+
+// Reset pagination when items per page changes
+watch(itemsPerPage, () => {
+  currentPage.value = 1
+})
+
+// Computed properties for filtered and sorted products
 const categoryProducts = computed(() => {
   let filtered = [...products.value]
 
@@ -92,56 +240,89 @@ const brands = computed(() => {
 })
 
 const categoryTitle = computed(() => {
-  return getCategoryName(categorySlug.value)
+  return category.value?.name || getCategoryName(categorySlug.value)
+})
+
+const categoryDescription = computed(() => {
+  if (category.value?.description) {
+    return category.value.description
+  }
+  return `Khám phá bộ sưu tập ${categoryTitle.value.toLowerCase()} chính hãng với giá tốt nhất tại BaloZone`
+})
+
+const categoryImage = computed(() => {
+  return category.value?.image || ''
+})
+
+const totalProducts = computed(() => {
+  return category.value?.products_count || categoryProducts.value.length
 })
 
 const breadcrumbs = computed(() => [
   { name: 'Trang chủ', path: '/' },
   { name: categoryTitle.value, path: `/category/${categorySlug.value}` }
 ])
+
+// Performance optimization: debounce filter changes
+let filterTimeout: NodeJS.Timeout | null = null
+const debouncedApplyFilters = () => {
+  if (filterTimeout) clearTimeout(filterTimeout)
+  filterTimeout = setTimeout(() => {
+    currentPage.value = 1
+  }, 300)
+}
+
+// Watch for filter changes and apply debounce
+watch([selectedSort, selectedPriceRange, selectedBrand], () => {
+  debouncedApplyFilters()
+})
 </script>
 
 <template>
   <div class="category-page">
     <!-- Breadcrumbs -->
-    <section class="breadcrumb-section">
-      <div class="container-fluid px-4">
-        <nav class="breadcrumb-nav">
-          <a 
-            v-for="(item, index) in breadcrumbs" 
-            :key="index"
-            :href="item.path"
-            class="breadcrumb-item"
-            :class="{ active: index === breadcrumbs.length - 1 }"
-          >
-            {{ item.name }}
-            <i v-if="index < breadcrumbs.length - 1" class="bi bi-chevron-right"></i>
-          </a>
-        </nav>
-      </div>
-    </section>
+    <Breadcrumb :items="breadcrumbs" />
 
     <!-- Category Header -->
     <section class="category-header">
       <div class="container-fluid px-4">
-        <div class="header-content">
-          <h1 class="category-title">{{ categoryTitle }}</h1>
-          <p class="category-description">
-            Khám phá bộ sưu tập {{ categoryTitle.toLowerCase() }} chính hãng với giá tốt nhất
-          </p>
-          <div class="category-stats">
-            <span class="stat-item">
-              <i class="bi bi-box-seam"></i>
-              {{ categoryProducts.length }} sản phẩm
-            </span>
-            <span class="stat-item">
-              <i class="bi bi-star-fill"></i>
-              Đánh giá 4.8/5
-            </span>
-            <span class="stat-item">
-              <i class="bi bi-truck"></i>
-              Miễn phí vận chuyển
-            </span>
+        <div class="row align-items-center">
+          <!-- Category Info -->
+          <div class="col-lg-8">
+            <div class="header-content">
+              <div class="category-meta">
+                <LoadingSpinner v-if="categoryLoading" size="sm" text="" />
+                <span v-else class="category-badge">
+                  <i class="bi bi-tag-fill"></i>
+                  Danh mục
+                </span>
+              </div>
+              <h1 class="category-title">{{ categoryTitle }}</h1>
+              <p class="category-description">
+                {{ categoryDescription }}
+              </p>
+              <div class="category-stats">
+                <span class="stat-item">
+                  <i class="bi bi-box-seam"></i>
+                  {{ totalProducts }} sản phẩm
+                </span>
+                <span class="stat-item">
+                  <i class="bi bi-star-fill"></i>
+                  Đánh giá 4.8/5
+                </span>
+                <span class="stat-item">
+                  <i class="bi bi-truck"></i>
+                  Miễn phí vận chuyển
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Category Image -->
+          <div class="col-lg-4" v-if="categoryImage">
+            <div class="category-image">
+              <img :src="categoryImage" :alt="categoryTitle" class="img-fluid rounded">
+            </div>
           </div>
         </div>
       </div>
@@ -221,12 +402,12 @@ const breadcrumbs = computed(() => [
                   </label>
                   <label 
                     v-for="brand in brands" 
-                    :key="brand"
+                    :key="brand.id"
                     class="filter-option"
                   >
-                    <input type="radio" v-model="selectedBrand" :value="brand">
+                    <input type="radio" v-model="selectedBrand" :value="brand.slug">
                     <span class="checkmark"></span>
-                    {{ brand }}
+                    {{ brand.name }}
                   </label>
                 </div>
               </div>
@@ -237,74 +418,55 @@ const breadcrumbs = computed(() => [
           <div class="col-lg-9 col-md-8">
             <div class="products-header">
               <div class="results-info">
-                Hiển thị {{ categoryProducts.length }} sản phẩm
+                <LoadingSpinner v-if="productsLoading" size="sm" text="" />
+                <span v-else>
+                  Hiển thị {{ paginatedProducts.length }} / {{ totalProducts }} sản phẩm
+                </span>
               </div>
-              <div class="view-options">
-                <button class="view-btn active">
-                  <i class="bi bi-grid"></i>
-                </button>
-                <button class="view-btn">
-                  <i class="bi bi-list"></i>
-                </button>
+              <div class="header-controls">
+                <div class="items-per-page">
+                  <label for="itemsPerPage">Hiển thị:</label>
+                  <select 
+                    id="itemsPerPage" 
+                    v-model="itemsPerPage" 
+                    class="form-select"
+                  >
+                    <option :value="12">12</option>
+                    <option :value="24">24</option>
+                    <option :value="48">48</option>
+                  </select>
+                </div>
+                <div class="view-options">
+                  <button class="view-btn active">
+                    <i class="bi bi-grid"></i>
+                  </button>
+                  <button class="view-btn">
+                    <i class="bi bi-list"></i>
+                  </button>
+                </div>
               </div>
             </div>
 
             <div class="products-grid">
-              <div class="row g-3">
+              <LoadingSpinner 
+                v-if="loading || productsLoading" 
+                text="Đang tải sản phẩm..." 
+                size="lg" 
+              />
+              <div v-else-if="paginatedProducts.length === 0" class="empty-state">
+                <div class="text-center py-5">
+                  <i class="bi bi-box-seam" style="font-size: 4rem; color: #ddd;"></i>
+                  <h4 class="mt-3 text-muted">Chưa có sản phẩm</h4>
+                  <p class="text-muted">Danh mục này hiện chưa có sản phẩm nào.</p>
+                </div>
+              </div>
+              <div v-else class="row g-3">
                 <div 
-                  v-for="product in categoryProducts" 
+                  v-for="product in paginatedProducts" 
                   :key="product.id"
                   class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4"
                 >
-                  <div class="product-card">
-                    <div class="product-image-container">
-                      <router-link :to="`/product/${product.id}`" class="product-image-link">
-                        <img :src="product.image" :alt="product.name" class="product-image" />
-                      </router-link>
-                      <div class="discount-badge">-{{ product.discount }}%</div>
-                      <div class="product-actions">
-                        <button class="action-btn" title="Yêu thích">
-                          <i class="bi bi-heart"></i>
-                        </button>
-                        <button class="action-btn" title="Xem nhanh" @click="$router.push(`/product/${product.id}`)">
-                          <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="action-btn" title="So sánh">
-                          <i class="bi bi-arrow-left-right"></i>
-                        </button>
-                      </div>
-                      <div class="quick-add">
-                        <button class="quick-add-btn">Thêm vào giỏ</button>
-                      </div>
-                    </div>
-                    <div class="product-info">
-                      <div class="product-brand">{{ product.brand }}</div>
-                      <router-link :to="`/product/${product.id}`" class="product-name-link">
-                        <h6 class="product-name">{{ product.name }}</h6>
-                      </router-link>
-                      <div class="product-rating">
-                        <div class="stars">
-                          <i v-for="i in 5" :key="i" class="bi bi-star-fill" :class="{ active: i <= Math.floor(product.rating) }"></i>
-                        </div>
-                        <span class="rating-text">({{ product.reviews }})</span>
-                      </div>
-                      <div class="product-colors">
-                        <span 
-                          v-for="color in product.colors" 
-                          :key="color"
-                          class="color-dot"
-                          :style="{ backgroundColor: color }"
-                        ></span>
-                      </div>
-                      <div class="product-pricing">
-                        <span class="current-price">{{ product.price.toLocaleString() }}đ</span>
-                        <span class="original-price">{{ product.originalPrice.toLocaleString() }}đ</span>
-                      </div>
-                      <div class="product-meta">
-                        <span class="sold-count">Đã bán {{ product.sold }}</span>
-                      </div>
-                    </div>
-                  </div>
+                  <ProductCard :product="product" />
                 </div>
               </div>
             </div>
@@ -312,18 +474,31 @@ const breadcrumbs = computed(() => [
             <!-- Pagination -->
             <div class="pagination-section">
               <nav class="pagination-nav">
-                <button class="page-btn" disabled>
+                <button class="page-btn" 
+                  @click="goToPage(currentPage - 1)" 
+                  :disabled="currentPage === 1"
+                >
                   <i class="bi bi-chevron-left"></i>
                 </button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <span class="page-dots">...</span>
-                <button class="page-btn">10</button>
-                <button class="page-btn">
+                <button 
+                  v-for="page in getPaginationPages" 
+                  :key="page" 
+                  class="page-btn" 
+                  @click="typeof page === 'number' && goToPage(page)"
+                  :class="{ active: page === currentPage }"
+                >
+                  {{ page }}
+                </button>
+                <button class="page-btn" 
+                  @click="goToPage(currentPage + 1)" 
+                  :disabled="currentPage === totalPages"
+                >
                   <i class="bi bi-chevron-right"></i>
                 </button>
               </nav>
+              <div class="pagination-info">
+                Trang {{ currentPage }} / {{ totalPages }}
+              </div>
             </div>
           </div>
         </div>
@@ -332,4 +507,314 @@ const breadcrumbs = computed(() => [
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.category-page {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+/* Category Header */
+.category-header {
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  color: white;
+  padding: 60px 0;
+  margin-bottom: 40px;
+}
+
+.category-meta {
+  margin-bottom: 15px;
+}
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.category-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.category-description {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.category-stats {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+  border-radius: 25px;
+  backdrop-filter: blur(10px);
+}
+
+.stat-item i {
+  font-size: 1.1rem;
+}
+
+.category-image {
+  text-align: center;
+}
+
+.category-image img {
+  max-height: 300px;
+  width: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Products Section */
+.products-section {
+  margin-bottom: 60px;
+}
+
+.filters-sidebar {
+  position: sticky;
+  top: 100px;
+}
+
+.filter-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.filter-title {
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+}
+
+.filter-option:hover {
+  color: #3498db;
+}
+
+.filter-option input[type="radio"] {
+  margin-right: 12px;
+  accent-color: #3498db;
+}
+
+.products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.results-info {
+  font-weight: 500;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.items-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.items-per-page label {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.items-per-page .form-select {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+}
+
+.view-options {
+  display: flex;
+  gap: 8px;
+}
+
+.view-btn {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-btn:hover {
+  background: #e9ecef;
+}
+
+.view-btn.active {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.empty-state {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Pagination */
+.pagination-section {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.pagination-nav {
+  display: inline-flex;
+  gap: 8px;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.page-btn {
+  background: transparent;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+}
+
+.page-btn.active {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-dots {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  color: #6c757d;
+}
+
+.pagination-info {
+  margin-top: 15px;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .category-title {
+    font-size: 2rem;
+  }
+  
+  .category-description {
+    font-size: 1rem;
+  }
+  
+  .category-stats {
+    gap: 15px;
+  }
+  
+  .stat-item {
+    font-size: 0.9rem;
+    padding: 8px 15px;
+  }
+  
+  .products-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .header-controls {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .filters-sidebar {
+    position: static;
+  }
+  
+  .filter-card {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .category-header {
+    padding: 40px 0;
+  }
+  
+  .category-title {
+    font-size: 1.75rem;
+  }
+  
+  .category-stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .stat-item {
+    justify-content: center;
+  }
+}
+</style>

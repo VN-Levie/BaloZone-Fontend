@@ -108,3 +108,114 @@ export const generateSlug = (text: string): string => {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
 }
+
+// Storage utilities
+export const storage = {
+  set: (key: string, value: any): void => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value))
+    } catch (error) {
+      console.error('Error saving to localStorage:', error)
+    }
+  },
+  
+  get: <T>(key: string, defaultValue: T = null as T): T => {
+    try {
+      const item = localStorage.getItem(key)
+      return item ? JSON.parse(item) : defaultValue
+    } catch (error) {
+      console.error('Error reading from localStorage:', error)
+      return defaultValue
+    }
+  },
+  
+  remove: (key: string): void => {
+    try {
+      localStorage.removeItem(key)
+    } catch (error) {
+      console.error('Error removing from localStorage:', error)
+    }
+  },
+  
+  clear: (): void => {
+    try {
+      localStorage.clear()
+    } catch (error) {
+      console.error('Error clearing localStorage:', error)
+    }
+  }
+}
+
+// Validation utilities
+export const validation = {
+  email: (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  },
+  
+  phone: (phone: string): boolean => {
+    const phoneRegex = /^[0-9]{10,11}$/
+    return phoneRegex.test(phone.replace(/[^\d]/g, ''))
+  },
+  
+  required: (value: any): boolean => {
+    return value !== null && value !== undefined && value !== ''
+  },
+  
+  minLength: (value: string, length: number): boolean => {
+    return value && value.length >= length
+  },
+  
+  maxLength: (value: string, length: number): boolean => {
+    return !value || value.length <= length
+  }
+}
+
+// Date utilities
+export const dateHelpers = {
+  isToday: (date: string | Date): boolean => {
+    const today = new Date()
+    const checkDate = typeof date === 'string' ? new Date(date) : date
+    return checkDate.toDateString() === today.toDateString()
+  },
+  
+  isThisWeek: (date: string | Date): boolean => {
+    const today = new Date()
+    const checkDate = typeof date === 'string' ? new Date(date) : date
+    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+    return checkDate >= weekAgo && checkDate <= today
+  },
+  
+  timeAgo: (date: string | Date): string => {
+    const now = new Date()
+    const checkDate = typeof date === 'string' ? new Date(date) : date
+    const diffInSeconds = Math.floor((now.getTime() - checkDate.getTime()) / 1000)
+    
+    if (diffInSeconds < 60) return 'Vừa xong'
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} ngày trước`
+    if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} tháng trước`
+    return `${Math.floor(diffInSeconds / 31536000)} năm trước`
+  }
+}
+
+// URL utilities
+export const urlHelpers = {
+  getQueryParam: (param: string): string | null => {
+    const urlParams = new URLSearchParams(window.location.search)
+    return urlParams.get(param)
+  },
+  
+  setQueryParam: (param: string, value: string): void => {
+    const url = new URL(window.location.href)
+    url.searchParams.set(param, value)
+    window.history.replaceState({}, '', url.toString())
+  },
+  
+  removeQueryParam: (param: string): void => {
+    const url = new URL(window.location.href)
+    url.searchParams.delete(param)
+    window.history.replaceState({}, '', url.toString())
+  }
+}

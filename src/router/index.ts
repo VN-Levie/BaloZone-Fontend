@@ -20,14 +20,79 @@ const router = createRouter({
       component: () => import('../views/ProductDetailView.vue'),
     },
     {
+      path: '/search',
+      name: 'search',
+      component: () => import('../views/SearchView.vue'),
+    },
+    {
+      path: '/cart',
+      name: 'cart',
+      component: () => import('../views/CartView.vue'),
+    },
+    {
+      path: '/wishlist',
+      name: 'wishlist',
+      component: () => import('../views/WishlistView.vue'),
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue'),
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('../views/RegisterView.vue'),
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../views/ProfileView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/orders',
+      name: 'orders',
+      component: () => import('../views/OrdersView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/news',
+      name: 'news',
+      component: () => import('../views/NewsView.vue'),
+    },
+    {
+      path: '/news/:id',
+      name: 'news-detail',
+      component: () => import('../views/NewsDetailView.vue'),
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: () => import('../views/ContactView.vue'),
+    },
+    {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('../views/NotFoundView.vue'),
+    },
   ],
+})
+
+// Navigation guard for protected routes
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('auth_token')
+  
+  if (to.meta.requiresAuth && !token) {
+    next({ name: 'login', query: { redirect: to.fullPath } })
+  } else {
+    next()
+  }
 })
 
 export default router

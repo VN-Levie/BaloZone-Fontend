@@ -1,11 +1,7 @@
 <template>
   <div class="product-detail">
     <!-- Loading spinner -->
-    <div v-if="loading" class="container text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
+    <LoadingSpinner v-if="loading" text="Đang tải thông tin sản phẩm..." size="lg" />
 
     <!-- Product not found -->
     <div v-else-if="!product" class="container text-center py-5">
@@ -262,8 +258,13 @@ import { useRoute } from 'vue-router'
 import { productsApi } from '@/services/api'
 import type { Product, Comment } from '@/types'
 import { formatPrice, formatDate, getColorCode, getImageUrl } from '@/utils'
+import { useCart } from '@/composables/useCart'
+import { useWishlist } from '@/composables/useWishlist'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const route = useRoute()
+const { addToCart: addToCartComposable, isInCart } = useCart()
+const { toggleWishlist, isInWishlist } = useWishlist()
 
 // Reactive data
 const product = ref<Product | null>(null)
@@ -310,11 +311,24 @@ const decreaseQuantity = () => {
 }
 
 const addToCart = async () => {
+  if (!product.value) return
+  
   isAddingToCart.value = true
-  console.log(`Adding ${quantity.value} of ${product.value?.name} to cart`)
-  // Mock API call for now
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  isAddingToCart.value = false
+  try {
+    // Add to cart using composable
+    addToCartComposable(product.value, quantity.value)
+    console.log(`Added ${quantity.value} of ${product.value.name} to cart`)
+  } catch (error) {
+    console.error('Failed to add to cart:', error)
+  } finally {
+    isAddingToCart.value = false
+  }
+}
+
+const toggleWishlistHandler = () => {
+  if (product.value) {
+    toggleWishlist(product.value)
+  }
 }
 
 const initializeProduct = () => {

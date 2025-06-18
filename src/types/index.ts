@@ -7,23 +7,31 @@ export interface Product {
   name: string
   description?: string
   price: number
+  originalPrice: number
   quantity: number
   image?: string
   slug: string
-  color?: string
+  colors?: string[]
   created_at: string
   updated_at: string
   category?: Category
   brand?: Brand
   comments?: Comment[]
+  discount?: number
+  rating?: number
+  reviews?: number
+  sold?: number
 }
 
 export interface Category {
   id: number
   name: string
   slug: string
-  image?: string
-  products_count?: number
+  description: string
+  image: string
+  products_count: number
+  created_at: string
+  updated_at: string
   products?: Product[]
 }
 
@@ -60,9 +68,17 @@ export interface User {
 export interface News {
   id: number
   title: string
-  content: string
-  image?: string
-  slug: string
+  description: string
+  thumbnail: string
+  content?: string
+  slug?: string
+  category?: string
+  author?: string
+  read_time?: number
+  views?: number
+  tags?: string[]
+  excerpt?: string
+  image_url?: string
   created_at: string
   updated_at: string
 }
@@ -77,6 +93,58 @@ export interface Voucher {
   end_date: string
   usage_limit?: number
   used_count: number
+}
+
+export interface Order {
+  id: number
+  user_id: number
+  total_price: number
+  status: 'pending' | 'processing' | 'completed' | 'cancelled'
+  created_at: string
+  updated_at: string
+  user?: User
+  items?: OrderItem[]
+}
+
+export interface OrderItem {
+  id: number
+  order_id: number
+  product_id: number
+  quantity: number
+  price: number
+  product?: Product
+}
+
+export interface AddressBook {
+  id: number
+  user_id: number
+  address: string
+  city: string
+  postal_code: string
+  is_default: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SaleCampaign {
+  id: number
+  name: string
+  description: string
+  start_date: string
+  end_date: string
+  discount_percentage: number
+  status: 'active' | 'inactive'
+  created_at: string
+  updated_at: string
+}
+
+export interface Contact {
+  id: number
+  name: string
+  email: string
+  message: string
+  created_at: string
+  updated_at: string
 }
 
 // API Response types
@@ -100,40 +168,34 @@ export interface PaginatedResponse<T> {
   next_page_url: string | null
   path: string
   per_page: number
-  prev_page_url: string | null
   to: number
   total: number
 }
 
-// Auth types
+export interface ProductFilters {
+  page?: number
+  limit?: number
+  sort?: string
+  order?: 'asc' | 'desc'
+  brand?: string
+  category?: string
+  price_min?: number
+  price_max?: number
+  search?: string
+}
+
+export interface AuthResponse {
+  access_token: string
+  token_type: string
+  expires_in: number
+  user: User
+}
+
 export interface LoginCredentials {
   email: string
   password: string
 }
 
-export interface RegisterData {
+export interface RegisterData extends LoginCredentials {
   name: string
-  email: string
-  password: string
-  password_confirmation: string
-  phone?: string
-}
-
-export interface AuthResponse {
-  message: string
-  user: User
-  access_token: string
-  token_type: string
-}
-
-// Filter types
-export interface ProductFilters {
-  search?: string
-  category_id?: number
-  brand_id?: number
-  min_price?: number
-  max_price?: number
-  sort_by?: 'name' | 'price' | 'created_at'
-  sort_order?: 'asc' | 'desc'
-  per_page?: number
 }
