@@ -3,6 +3,21 @@ import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    // Nếu người dùng dùng nút back/forward thì khôi phục vị trí cũ
+    if (savedPosition) {
+      return savedPosition
+    }
+    // Nếu có hash thì cuộn đến element đó
+    if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth'
+      }
+    }
+    // Mặc định cuộn lên đầu trang
+    return { top: 0, behavior: 'smooth' }
+  },
   routes: [
     {
       path: '/',

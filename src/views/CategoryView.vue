@@ -23,11 +23,11 @@ const updateMetaTags = () => {
   if (typeof document !== 'undefined') {
     // Update page title
     document.title = `${categoryTitle.value} - BaloZone | Balo, Vali Chính Hãng`
-    
+
     // Update meta description
     const metaDescription = document.querySelector('meta[name="description"]')
     if (metaDescription) {
-      metaDescription.setAttribute('content', 
+      metaDescription.setAttribute('content',
         `${categoryDescription.value} Mua ngay với giá tốt nhất tại BaloZone!`
       )
     }
@@ -36,7 +36,7 @@ const updateMetaTags = () => {
 
 const fetchCategoryAndProducts = async (slug: string) => {
   loading.value = true
-  
+
   try {
     // Fetch category info and products in parallel
     const [categoryResponse, productsResponse] = await Promise.all([
@@ -104,7 +104,7 @@ onMounted(() => {
     fetchCategoryAndProducts(categorySlug.value)
   }
   fetchBrands()
-  
+
   // Restore view mode preference
   if (typeof localStorage !== 'undefined') {
     const savedViewMode = localStorage.getItem('categoryViewMode')
@@ -135,7 +135,7 @@ const toggleViewMode = (mode: 'grid' | 'list') => {
 // Pagination
 const currentPage = ref(1)
 const itemsPerPage = ref(12)
-const totalPages = computed(() => 
+const totalPages = computed(() =>
   Math.ceil(categoryProducts.value.length / itemsPerPage.value)
 )
 
@@ -152,7 +152,7 @@ const goToPage = (page: number) => {
     nextTick(() => {
       const productsSection = document.querySelector('.products-section')
       if (productsSection) {
-        productsSection.scrollIntoView({ 
+        productsSection.scrollIntoView({
           behavior: 'smooth',
           block: 'start'
         })
@@ -163,16 +163,17 @@ const goToPage = (page: number) => {
 
 // Add scroll to top when category changes
 watch(categorySlug, () => {
-  nextTick(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  })
+  // Router scrollBehavior sẽ tự động xử lý việc cuộn lên đầu trang
+  // nextTick(() => {
+  //   window.scrollTo({ top: 0, behavior: 'smooth' })
+  // })
 })
 
 const getPaginationPages = computed(() => {
   const pages = []
   const total = totalPages.value
   const current = currentPage.value
-  
+
   if (total <= 7) {
     for (let i = 1; i <= total; i++) {
       pages.push(i)
@@ -194,7 +195,7 @@ const getPaginationPages = computed(() => {
       pages.push(total)
     }
   }
-  
+
   return pages
 })
 
@@ -312,7 +313,7 @@ onMounted(() => {
     fetchCategoryAndProducts(categorySlug.value)
   }
   fetchBrands()
-  
+
   // Restore view mode preference
   if (typeof localStorage !== 'undefined') {
     const savedViewMode = localStorage.getItem('categoryViewMode')
@@ -361,7 +362,7 @@ onMounted(() => {
               </div>
             </div>
           </div>
-          
+
           <!-- Category Image -->
           <div class="col-lg-4" v-if="categoryImage">
             <div class="category-image">
@@ -444,11 +445,7 @@ onMounted(() => {
                     <span class="checkmark"></span>
                     Tất cả
                   </label>
-                  <label 
-                    v-for="brand in brands" 
-                    :key="brand.id"
-                    class="filter-option"
-                  >
+                  <label v-for="brand in brands" :key="brand.id" class="filter-option">
                     <input type="radio" v-model="selectedBrand" :value="brand.slug">
                     <span class="checkmark"></span>
                     {{ brand.name }}
@@ -470,31 +467,17 @@ onMounted(() => {
               <div class="header-controls">
                 <div class="items-per-page">
                   <label for="itemsPerPage">Hiển thị:</label>
-                  <select 
-                    id="itemsPerPage" 
-                    v-model="itemsPerPage" 
-                    class="form-select"
-                  >
+                  <select id="itemsPerPage" v-model="itemsPerPage" class="form-select">
                     <option :value="12">12</option>
                     <option :value="24">24</option>
                     <option :value="48">48</option>
                   </select>
                 </div>
                 <div class="view-options">
-                  <button 
-                    class="view-btn" 
-                    :class="{ active: viewMode === 'grid' }"
-                    @click="toggleViewMode('grid')"
-                    title="Xem dạng lưới"
-                  >
+                  <button class="view-btn" :class="{ active: viewMode === 'grid' }" @click="toggleViewMode('grid')" title="Xem dạng lưới">
                     <i class="bi bi-grid"></i>
                   </button>
-                  <button 
-                    class="view-btn"
-                    :class="{ active: viewMode === 'list' }"
-                    @click="toggleViewMode('list')"
-                    title="Xem dạng danh sách"
-                  >
+                  <button class="view-btn" :class="{ active: viewMode === 'list' }" @click="toggleViewMode('list')" title="Xem dạng danh sách">
                     <i class="bi bi-list"></i>
                   </button>
                 </div>
@@ -502,11 +485,7 @@ onMounted(() => {
             </div>
 
             <div class="products-grid">
-              <LoadingSpinner 
-                v-if="loading || productsLoading" 
-                text="Đang tải sản phẩm..." 
-                size="lg" 
-              />
+              <LoadingSpinner v-if="loading || productsLoading" text="Đang tải sản phẩm..." size="lg" />
               <div v-else-if="paginatedProducts.length === 0" class="empty-state">
                 <div class="text-center py-5">
                   <i class="bi bi-box-seam" style="font-size: 4rem; color: #ddd;"></i>
@@ -514,25 +493,17 @@ onMounted(() => {
                   <p class="text-muted">Danh mục này hiện chưa có sản phẩm nào.</p>
                 </div>
               </div>
-              
+
               <!-- Grid View -->
               <div v-else-if="viewMode === 'grid'" class="row g-3">
-                <div 
-                  v-for="product in paginatedProducts" 
-                  :key="product.id"
-                  class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4"
-                >
+                <div v-for="product in paginatedProducts" :key="product.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
                   <ProductCard :product="product" />
                 </div>
               </div>
-              
+
               <!-- List View -->
               <div v-else class="products-list">
-                <div 
-                  v-for="product in paginatedProducts" 
-                  :key="product.id"
-                  class="product-list-item mb-3"
-                >
+                <div v-for="product in paginatedProducts" :key="product.id" class="product-list-item mb-3">
                   <ProductCard :product="product" :listView="true" />
                 </div>
               </div>
@@ -541,28 +512,17 @@ onMounted(() => {
             <!-- Pagination -->
             <div class="pagination-section">
               <nav class="pagination-nav">
-                <button class="page-btn" 
-                  @click="goToPage(currentPage - 1)" 
-                  :disabled="currentPage === 1"
-                >
+                <button class="page-btn" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
                   <i class="bi bi-chevron-left"></i>
                 </button>
-                <button 
-                  v-for="page in getPaginationPages" 
-                  :key="page" 
-                  class="page-btn" 
-                  @click="typeof page === 'number' && goToPage(page)"
-                  :class="{ active: page === currentPage }"
-                >
+                <button v-for="page in getPaginationPages" :key="page" class="page-btn" @click="typeof page === 'number' && goToPage(page)" :class="{ active: page === currentPage }">
                   {{ page }}
                 </button>
-                <button class="page-btn" 
-                  @click="goToPage(currentPage + 1)" 
-                  :disabled="currentPage === totalPages"
-                >
+                <button class="page-btn" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">
                   <i class="bi bi-chevron-right"></i>
                 </button>
               </nav>
+
               <div class="pagination-info">
                 Trang {{ currentPage }} / {{ totalPages }}
               </div>
@@ -685,7 +645,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 8px 0;
+  /* padding: 12px 0; */
   transition: all 0.3s ease;
 }
 
@@ -798,6 +758,7 @@ onMounted(() => {
 .pagination-section {
   margin-top: 50px;
   text-align: center;
+  display: block;
 }
 
 .pagination-nav {
@@ -842,6 +803,7 @@ onMounted(() => {
 }
 
 .pagination-info {
+  display: block;
   margin-top: 15px;
   color: #6c757d;
   font-size: 0.9rem;
@@ -852,35 +814,35 @@ onMounted(() => {
   .category-title {
     font-size: 2rem;
   }
-  
+
   .category-description {
     font-size: 1rem;
   }
-  
+
   .category-stats {
     gap: 15px;
   }
-  
+
   .stat-item {
     font-size: 0.9rem;
     padding: 8px 15px;
   }
-  
+
   .products-header {
     flex-direction: column;
     gap: 15px;
     text-align: center;
   }
-  
+
   .header-controls {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .filters-sidebar {
     position: static;
   }
-  
+
   .filter-card {
     margin-bottom: 20px;
   }
@@ -890,24 +852,24 @@ onMounted(() => {
   .category-header {
     padding: 40px 0;
   }
-  
+
   .category-title {
     font-size: 1.75rem;
   }
-  
+
   .category-stats {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .stat-item {
     justify-content: center;
   }
-  
+
   .products-list {
     gap: 0.5rem;
   }
-  
+
   .product-list-item {
     margin-bottom: 0.5rem;
   }
