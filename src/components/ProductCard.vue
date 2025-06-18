@@ -38,14 +38,6 @@
         </div>
         <span class="rating-text">({{ product.reviews || 0 }})</span>
       </div>
-      <div v-if="product.colors && product.colors.length" class="product-colors">
-        <span 
-          v-for="color in product.colors" 
-          :key="color"
-          class="color-dot"
-          :style="{ backgroundColor: color }"
-        ></span>
-      </div>
       <div class="product-pricing">
         <span class="current-price">{{ formatPrice(product.price) }}</span>
         <span v-if="product.originalPrice && product.originalPrice > product.price" class="original-price">
@@ -304,19 +296,6 @@ const addToCartHandler = () => {
 .rating-text {
   font-size: 0.75rem;
   color: #6c757d;
-}
-
-.product-colors {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.color-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid #e9ecef;
 }
 
 .product-pricing {

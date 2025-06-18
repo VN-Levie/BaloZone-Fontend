@@ -66,18 +66,6 @@
 
             <!-- Product options -->
             <div class="product-options mb-4">
-              <!-- Color selection -->
-              <div class="option-group mb-3" v-if="product.color">
-                <label class="option-label fw-semibold mb-2">Màu sắc:</label>
-                <div class="color-options">
-                  <button
-                    class="color-option active"
-                    :style="{ backgroundColor: getColorCode(product.color) }"
-                    :title="product.color"
-                  ></button>
-                </div>
-              </div>
-
               <!-- Quantity -->
               <div class="option-group mb-3">
                 <label class="option-label fw-semibold mb-2">Số lượng:</label>
@@ -257,7 +245,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { productsApi } from '@/services/api'
 import type { Product, Comment } from '@/types'
-import { formatPrice, formatDate, getColorCode, getImageUrl } from '@/utils'
+import { formatPrice, formatDate, getImageUrl } from '@/utils'
 import { useCart } from '@/composables/useCart'
 import { useWishlist } from '@/composables/useWishlist'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
@@ -354,5 +342,43 @@ watch(
 </script>
 
 <style scoped>
+/* Override conflicting CSS from main.css for product detail page */
+.product-actions {
+  position: static !important;
+  opacity: 1 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  gap: 0 !important;
+  top: auto !important;
+  right: auto !important;
+  z-index: auto !important;
+}
+
+.product-actions .btn {
+  width: auto !important;
+  margin-bottom: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+/* For mobile, keep the sticky behavior but override other conflicting styles */
+@media (max-width: 768px) {
+  .product-actions {
+    position: sticky !important;
+    bottom: 0 !important;
+    background: white !important;
+    padding: 15px !important;
+    border-top: 1px solid #dee2e6 !important;
+    margin: 0 -15px !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+  
+  .product-actions .btn {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 10px !important;
+  }
+}
 </style>
 

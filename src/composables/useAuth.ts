@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/stores/auth'
+import { computed } from 'vue'
 import type { LoginCredentials, RegisterData } from '@/types'
 
 export const useAuth = () => {
@@ -13,12 +14,12 @@ export const useAuth = () => {
   }
 
   return {
-    // State from store
-    user: authStore.user,
-    isAuthenticated: authStore.isAuthenticated,
-    isLoggedIn: authStore.isLoggedIn,
-    isLoading: authStore.isLoading,
-    token: authStore.token,
+    // State from store - wrapped in computed to ensure reactivity
+    user: computed(() => authStore.user),
+    isAuthenticated: computed(() => authStore.isAuthenticated),
+    isLoggedIn: computed(() => authStore.isLoggedIn),
+    isLoading: computed(() => authStore.isLoading),
+    token: computed(() => authStore.token),
     
     // Actions from store
     login,

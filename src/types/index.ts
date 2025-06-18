@@ -11,7 +11,6 @@ export interface Product {
   quantity: number
   image?: string
   slug: string
-  colors?: string[]
   created_at: string
   updated_at: string
   category?: Category
@@ -151,6 +150,12 @@ export interface Contact {
 export interface ApiResponse<T> {
   data: T
   message?: string
+}
+
+// Special response type for category with products endpoint
+export interface CategoryWithProductsResponse {
+  category: Category
+  products: PaginatedResponse<Product>
 }
 
 export interface PaginatedResponse<T> {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAppData } from '@/composables/useAppData'
-import { formatPrice, getImageUrl, calculateDiscount, getColorCode } from '@/utils'
+import { formatPrice, getImageUrl, calculateDiscount } from '@/utils'
 import type { Category, Product } from '@/types'
 
 // Use the app data composable
@@ -64,10 +64,6 @@ const getProductDiscount = (product: Product) => {
   // API does not seem to provide originalPrice, so discount cannot be calculated.
   // Returning a mock value.
   return product.discount || 25
-}
-
-const getProductColors = (product: Product) => {
-  return product.colors || []
 }
 
 const getRating = (product: Product) => {
@@ -225,16 +221,7 @@ onMounted(() => {
                   <div class="product-rating">
                     <span class="stars">⭐⭐⭐⭐⭐</span>
                     <span class="rating-score">({{ getRating(product) }})</span>
-                  </div>
-                  <div class="product-colors">
-                    <span 
-                      v-for="color in getProductColors(product)" 
-                      :key="color"
-                      class="color-dot"
-                      :style="{ backgroundColor: getColorCode(color) }"
-                      :title="color"
-                    ></span>
-                  </div>
+                  </div>                  
                   <div class="product-pricing">
                     <span class="current-price">{{ formatPrice(product.price) }}</span>
                     <span v-if="product.originalPrice" class="original-price">

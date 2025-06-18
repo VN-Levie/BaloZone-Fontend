@@ -115,7 +115,7 @@ import type { LoginCredentials } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
-const { login } = useAuth()
+const { login, refreshUser } = useAuth()
 const { showLoginSuccess } = useToast()
 
 const loading = ref(false)
@@ -163,6 +163,9 @@ const handleLogin = async () => {
   
   try {
     const response = await login(form.email, form.password)
+    
+    // Đảm bảo user state luôn mới nhất
+    await refreshUser()
     
     // Show success toast
     showLoginSuccess(response.user.name || 'User')

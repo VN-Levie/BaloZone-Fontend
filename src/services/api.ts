@@ -12,7 +12,8 @@ import type {
   RegisterData,
   User,
   Order,
-  Comment
+  Comment,
+  CategoryWithProductsResponse
 } from '@/types'
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api'
@@ -120,7 +121,7 @@ export const categoriesApi = {
     makeRequest(`/categories/${id}`),
 
   // Get single category by slug
-  getCategoryBySlug: (slug: string): Promise<ApiResponse<Category>> =>
+  getCategoryBySlug: (slug: string): Promise<CategoryWithProductsResponse> =>
     makeRequest(`/categories/slug/${slug}`),
 }
 

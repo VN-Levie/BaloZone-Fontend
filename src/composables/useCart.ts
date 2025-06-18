@@ -1,27 +1,28 @@
 import { useCartStore } from '@/stores/cart'
+import { computed } from 'vue'
 import type { Product } from '@/types'
 
 export const useCart = () => {
   const cartStore = useCartStore()
 
-  const addToCart = (product: Product, quantity: number = 1, options?: { size?: string, color?: string }) => {
+  const addToCart = (product: Product, quantity: number = 1, options?: { size?: string }) => {
     cartStore.addToCart(product, quantity, options)
   }
 
-  const removeFromCart = (productId: number, size?: string, color?: string) => {
-    cartStore.removeFromCart(productId, size, color)
+  const removeFromCart = (productId: number, size?: string) => {
+    cartStore.removeFromCart(productId, size)
   }
 
-  const updateQuantity = (productId: number, quantity: number, size?: string, color?: string) => {
-    cartStore.updateQuantity(productId, quantity, size, color)
+  const updateQuantity = (productId: number, quantity: number, size?: string) => {
+    cartStore.updateQuantity(productId, quantity, size)
   }
 
   return {
-    // State from store
-    cartItems: cartStore.items,
-    cartItemsCount: cartStore.cartItemsCount,
-    totalAmount: cartStore.totalAmount,
-    isEmpty: cartStore.isEmpty,
+    // State from store - wrapped in computed to ensure reactivity
+    cartItems: computed(() => cartStore.items),
+    cartItemsCount: computed(() => cartStore.cartItemsCount),
+    totalAmount: computed(() => cartStore.totalAmount),
+    isEmpty: computed(() => cartStore.isEmpty),
     
     // Actions
     addToCart,

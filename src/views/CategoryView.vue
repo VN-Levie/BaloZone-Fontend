@@ -38,28 +38,45 @@ const fetchCategoryAndProducts = async (slug: string) => {
   loading.value = true
 
   try {
-    // Fetch category info and products in parallel
-    const [categoryResponse, productsResponse] = await Promise.all([
-      fetchCategoryInfo(slug),
-      fetchCategoryProducts(slug)
-    ])
+    // Fetch category info and products together from single endpoint
+    console.log(`Fetching category and products for slug: ${slug}`)
+    const response = await categoriesApi.getCategoryBySlug(slug)
+    console.log('!Category and Products API Response:', response)
+    
+    // Set category data
+    if (response.category) {
+      category.value = {
+        ...response.category,
+        products_count: response.products?.total || 0
+      }
+      console.log('Category set successfully:', category.value)
+    } else {
+      console.warn('No category data received from API')
+      // Fallback to default category data
+      category.value = {
+        id: 0,
+        name: getCategoryName(slug),
+        slug: slug,
+        description: `Khám phá bộ sưu tập ${getCategoryName(slug).toLowerCase()} chính hãng với giá tốt nhất`,
+        image: '',
+        products_count: 0,
+        created_at: '',
+        updated_at: ''
+      }
+    }
+    
+    // Set products data
+    if (response.products?.data) {
+      products.value = response.products.data
+      console.log('Products set successfully:', products.value.length, 'products')
+    } else {
+      console.warn('No products data received from API')
+      products.value = []
+    }
+    
   } catch (error) {
     console.error('Failed to load category and products:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const fetchCategoryInfo = async (slug: string) => {
-  categoryLoading.value = true
-  try {
-    console.log(`Fetching category info for slug: ${slug}`)
-    const response = await categoriesApi.getCategoryBySlug(slug)
-    console.log('Category API Response:', response)
-    category.value = response.data
-  } catch (error) {
-    console.error('Failed to load category info:', error)
-    // Fallback to default category data
+    // Fallback data
     category.value = {
       id: 0,
       name: getCategoryName(slug),
@@ -70,26 +87,11 @@ const fetchCategoryInfo = async (slug: string) => {
       created_at: '',
       updated_at: ''
     }
-  } finally {
-    categoryLoading.value = false
-  }
-}
-
-const fetchCategoryProducts = async (slug: string) => {
-  productsLoading.value = true
-  try {
-    console.log(`Fetching products for category slug: ${slug}`)
-    const response = await productsApi.getProductsByCategory(slug)
-    console.log('Products API Response:', response)
-    products.value = response.data || []
-  } catch (error) {
-    console.error('Failed to load category products:', error)
     products.value = []
   } finally {
-    productsLoading.value = false
+    loading.value = false
   }
 }
-
 const fetchBrands = async () => {
   try {
     const response = await brandsApi.getActiveBrands()
@@ -255,9 +257,18 @@ const categoryTitle = computed(() => {
 })
 
 const categoryDescription = computed(() => {
+  console.log('Computing categoryDescription:', {
+    categoryValue: category.value,
+    hasDescription: !!category.value?.description,
+    description: category.value?.description,
+    slug: categorySlug.value
+  })
+  
   if (category.value?.description) {
     return category.value.description
   }
+  
+  console.log(`Using default description for category: ${categorySlug.value}`)
   return `Khám phá bộ sưu tập ${categoryTitle.value.toLowerCase()} chính hãng với giá tốt nhất tại BaloZone`
 })
 
@@ -279,8 +290,17 @@ watch([categoryTitle, categoryDescription], () => {
   updateMetaTags()
 }, { immediate: true })
 
+// Debug watcher for category changes
+watch(category, (newCategory) => {
+  console.log('Category watcher triggered:', {
+    newCategory,
+    hasDescription: !!newCategory?.description,
+    description: newCategory?.description
+  })
+}, { deep: true, immediate: true })
+
 // Performance optimization: debounce filter changes
-let filterTimeout: NodeJS.Timeout | null = null
+let filterTimeout: number | null = null
 const debouncedApplyFilters = () => {
   if (filterTimeout) clearTimeout(filterTimeout)
   filterTimeout = setTimeout(() => {
@@ -297,29 +317,6 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
 watch(viewMode, (newMode) => {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('categoryViewMode', newMode)
-  }
-})
-
-// Watch for view mode changes to persist user preference
-watch(viewMode, (newMode) => {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('categoryViewMode', newMode)
-  }
-})
-
-// Initialize view mode from localStorage on mount
-onMounted(() => {
-  if (categorySlug.value) {
-    fetchCategoryAndProducts(categorySlug.value)
-  }
-  fetchBrands()
-
-  // Restore view mode preference
-  if (typeof localStorage !== 'undefined') {
-    const savedViewMode = localStorage.getItem('categoryViewMode')
-    if (savedViewMode === 'list' || savedViewMode === 'grid') {
-      viewMode.value = savedViewMode
-    }
   }
 })
 </script>

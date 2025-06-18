@@ -17,7 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
   const initializeAuth = () => {
     const storedToken = localStorage.getItem('auth_token')
     const userData = localStorage.getItem('user')
-    
+    // Chỉ lấy token, không lấy type
     if (storedToken && userData) {
       try {
         token.value = storedToken
@@ -33,19 +33,13 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await authApi.login(credentials)
-      
-      // Extract token and user from the response structure
-      const authToken = response.authorization?.token || response.access_token
+      // Lấy token từ response.authorization.token
+      const authToken = response.authorization?.token
       const userData = response.user
-      
-      // Update store state
       token.value = authToken ?? null
       user.value = userData
-      
-      // Persist to localStorage
       localStorage.setItem('auth_token', authToken || '')
       localStorage.setItem('user', JSON.stringify(userData))
-      
       return response
     } catch (error) {
       throw error
@@ -58,19 +52,13 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await authApi.register(data)
-      
-      // Extract token and user from the response structure
-      const authToken = response.authorization?.token || response.access_token
+      // Lấy token từ response.authorization.token
+      const authToken = response.authorization?.token
       const userData = response.user
-      
-      // Update store state
       token.value = authToken ?? null
       user.value = userData
-      
-      // Persist to localStorage
       localStorage.setItem('auth_token', authToken || '')
       localStorage.setItem('user', JSON.stringify(userData))
-      
       return response
     } catch (error) {
       throw error
@@ -100,11 +88,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   const refreshUser = async () => {
     if (!token.value) return
-    
     try {
-      const response = await authApi.getMe()
-      user.value = response.data
-      localStorage.setItem('user', JSON.stringify(response.data))
+      const response: any = await authApi.getMe()
+      // response trả về user ở cả response.user và response.data
+      const userObj = response.user || response.data
+      user.value = userObj
+      localStorage.setItem('user', JSON.stringify(userObj))
     } catch (error) {
       console.error('Failed to refresh user:', error)
       clearAuth()
@@ -122,11 +111,9 @@ export const useAuthStore = defineStore('auth', () => {
     user: computed(() => user.value),
     token: computed(() => token.value),
     isLoading: computed(() => isLoading.value),
-    
     // Getters
     isAuthenticated,
     isLoggedIn,
-    
     // Actions
     login,
     register,

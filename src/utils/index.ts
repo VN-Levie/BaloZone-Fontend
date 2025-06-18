@@ -73,7 +73,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout | null = null
+  let timeout: number | null = null
   
   return (...args: Parameters<T>) => {
     if (timeout) {
@@ -163,7 +163,7 @@ export const validation = {
   },
   
   minLength: (value: string, length: number): boolean => {
-    return value && value.length >= length
+    return (value && value.length >= length) || value === ''
   },
   
   maxLength: (value: string, length: number): boolean => {

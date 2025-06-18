@@ -1,6 +1,6 @@
 <template>
   <header class="app-header">
-    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
       <div class="container-fluid px-4">
         <router-link to="/" class="navbar-brand brand-logo">
           <img src="/favicon.ico" alt="BaloZone" class="logo-img" />
@@ -151,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, toRefs } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useCart } from '@/composables/useCart'
@@ -161,7 +161,8 @@ import { categoriesApi } from '@/services/api'
 import type { Category } from '@/types'
 
 const router = useRouter()
-const { user, isLoggedIn, logout } = useAuth()
+const auth = useAuth()
+const { user, isLoggedIn, logout } = toRefs(auth)
 const { cartItemsCount } = useCart()
 const { wishlistCount } = useWishlist()
 const { showLogoutSuccess } = useToast()
@@ -186,7 +187,7 @@ const popularSearches = [
   'vali samsonite'
 ]
 
-let searchTimeout: NodeJS.Timeout | null = null
+let searchTimeout: number | null = null
 
 // Search functions
 const updateSearchSuggestions = () => {
@@ -233,7 +234,7 @@ const performSearch = () => {
 }
 
 const handleLogout = async () => {
-  await logout()
+  await logout.value()
   showLogoutSuccess()
   router.push('/')
 }
@@ -250,36 +251,7 @@ const fetchCategories = async () => {
     console.error('❌ Failed to load categories:', error)
     // Fallback to default categories if API fails
     categories.value = [
-      { 
-        id: 1, 
-        name: 'Balo Học Sinh', 
-        slug: 'balo-hoc-sinh', 
-        products_count: 0,
-        description: 'Balo dành cho học sinh, sinh viên',
-        image: 'categories/balo-hoc-sinh.jpg',
-        created_at: '',
-        updated_at: ''
-      },
-      { 
-        id: 2, 
-        name: 'Balo Du Lịch', 
-        slug: 'balo-du-lich', 
-        products_count: 0,
-        description: 'Balo cho các chuyến du lịch',
-        image: 'categories/balo-du-lich.jpg',
-        created_at: '',
-        updated_at: ''
-      },
-      { 
-        id: 3, 
-        name: 'Túi Xách', 
-        slug: 'tui-xach', 
-        products_count: 0,
-        description: 'Các loại túi xách thời trang',
-        image: 'categories/tui-xach.jpg',
-        created_at: '',
-        updated_at: ''
-      },
+      
     ] as Category[]
     console.log('⚠️ Using fallback categories')
   } finally {

@@ -22,7 +22,7 @@
             <div class="cart-items">
               <div 
                 v-for="item in cartItems" 
-                :key="`${item.product.id}-${item.selectedSize}-${item.selectedColor}`"
+                :key="`${item.product.id}-${item.selectedSize}`"
                 class="cart-item"
               >
                 <div class="item-image">
@@ -31,9 +31,8 @@
                 <div class="item-info">
                   <h5 class="item-name">{{ item.product.name }}</h5>
                   <p class="item-brand" v-if="item.product.brand">{{ item.product.brand.name }}</p>
-                  <div v-if="item.selectedSize || item.selectedColor" class="item-options">
+                  <div v-if="item.selectedSize" class="item-options">
                     <span v-if="item.selectedSize" class="badge bg-light text-dark me-1">Size: {{ item.selectedSize }}</span>
-                    <span v-if="item.selectedColor" class="badge bg-light text-dark">Màu: {{ item.selectedColor }}</span>
                   </div>
                   <p class="item-price">{{ formatPrice(item.product.originalPrice || item.product.price) }}</p>
                 </div>
@@ -41,14 +40,14 @@
                   <div class="quantity-controls">
                     <button 
                       class="btn btn-sm btn-outline-secondary"
-                      @click="decreaseQuantity(item.product.id, item.selectedSize, item.selectedColor)"
+                      @click="decreaseQuantity(item.product.id, item.selectedSize)"
                     >
                       -
                     </button>
                     <span class="quantity">{{ item.quantity }}</span>
                     <button 
                       class="btn btn-sm btn-outline-secondary"
-                      @click="increaseQuantity(item.product.id, item.selectedSize, item.selectedColor)"
+                      @click="increaseQuantity(item.product.id, item.selectedSize)"
                     >
                       +
                     </button>
@@ -56,7 +55,7 @@
                   <p class="item-total">{{ formatPrice((item.product.originalPrice || item.product.price) * item.quantity) }}</p>
                   <button 
                     class="btn btn-sm btn-outline-danger"
-                    @click="removeItem(item.product.id, item.selectedSize, item.selectedColor)"
+                    @click="removeItem(item.product.id, item.selectedSize)"
                   >
                     <i class="bi bi-trash"></i>
                   </button>
@@ -110,27 +109,27 @@ const {
   getCartItem
 } = useCart()
 
-const increaseQuantity = (productId: number, size?: string, color?: string) => {
-  const item = getCartItem(productId, size, color)
+const cartTotal = totalAmount
+
+const increaseQuantity = (productId: number, size?: string) => {
+  const item = getCartItem(productId, size)
   if (item) {
-    updateQuantity(productId, item.quantity + 1, size, color)
+    updateQuantity(productId, item.quantity + 1, size)
   }
 }
 
-const decreaseQuantity = (productId: number, size?: string, color?: string) => {
-  const item = getCartItem(productId, size, color)
+const decreaseQuantity = (productId: number, size?: string) => {
+  const item = getCartItem(productId, size)
   if (item && item.quantity > 1) {
-    updateQuantity(productId, item.quantity - 1, size, color)
+    updateQuantity(productId, item.quantity - 1, size)
   }
 }
 
-const removeItem = (productId: number, size?: string, color?: string) => {
-  removeFromCart(productId, size, color)
+const removeItem = (productId: number, size?: string) => {
+  removeFromCart(productId, size)
 }
 
-const removeItem = (itemId: number) => {
-  removeFromCart(itemId)
-}
+
 </script>
 
 <style scoped>
