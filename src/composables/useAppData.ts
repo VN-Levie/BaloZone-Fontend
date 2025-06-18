@@ -29,11 +29,11 @@ export const useAppData = () => {
     }
   }
 
-  // Load categories with products
+  // Load categories
   const loadCategories = async () => {
     try {
       loading.value.categories = true
-      const response = await categoriesApi.getCategoriesWithProducts()
+      const response = await categoriesApi.getCategories()
       categories.value = response.data
     } catch (error) {
       console.error('Failed to load categories:', error)

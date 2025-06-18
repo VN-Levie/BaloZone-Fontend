@@ -1396,6 +1396,32 @@
           }
         }
       },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "Dữ liệu không hợp lệ"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "example": {
+              "name": ["Tên chiến dịch là bắt buộc"],
+              "start_date": ["Ngày bắt đầu phải là một ngày hợp lệ"]
+            }
+          }
+        }
+      },
       "SuccessResponse": {
         "type": "object",
         "properties": {
@@ -1477,6 +1503,252 @@
           }
         },
         "required": ["id", "order_id", "product_id", "price", "quantity"]
+      },
+      "SaleCampaign": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Black Friday 2025"
+          },
+          "slug": {
+            "type": "string",
+            "example": "black-friday-2025"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Siêu sale Black Friday - Giảm giá khủng lên đến 70% tất cả sản phẩm balo"
+          },
+          "banner_image": {
+            "type": "string",
+            "nullable": true,
+            "example": "campaigns/black-friday-2025.jpg"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-11-24T00:00:00Z"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-11-30T23:59:59Z"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "active", "expired", "cancelled"],
+            "example": "active"
+          },
+          "is_featured": {
+            "type": "boolean",
+            "example": true
+          },
+          "priority": {
+            "type": "integer",
+            "example": 100
+          },
+          "metadata": {
+            "type": "object",
+            "nullable": true,
+            "example": {
+              "color": "#000000",
+              "tags": ["black-friday", "mega-sale"],
+              "description_short": "Giảm giá lên đến 70%"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sale_products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaleProduct"
+            }
+          }
+        },
+        "required": ["id", "name", "slug", "start_date", "end_date", "status"]
+      },
+      "SaleProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "sale_campaign_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "product_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "original_price": {
+            "type": "number",
+            "format": "decimal",
+            "example": 1000000.00
+          },
+          "sale_price": {
+            "type": "number",
+            "format": "decimal",
+            "example": 700000.00
+          },
+          "discount_percentage": {
+            "type": "number",
+            "format": "decimal",
+            "example": 30.00
+          },
+          "discount_amount": {
+            "type": "number",
+            "format": "decimal",
+            "example": 300000.00
+          },
+          "discount_type": {
+            "type": "string",
+            "enum": ["percentage", "fixed_amount"],
+            "example": "percentage"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-11-24T00:00:00Z"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2025-11-30T23:59:59Z"
+          },
+          "max_quantity": {
+            "type": "integer",
+            "nullable": true,
+            "example": 50
+          },
+          "sold_quantity": {
+            "type": "integer",
+            "example": 0
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "sale_campaign": {
+            "$ref": "#/components/schemas/SaleCampaign"
+          }
+        },
+        "required": ["id", "sale_campaign_id", "product_id", "original_price", "sale_price"]
+      },
+      "SaleCampaignRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Black Friday 2025"
+          },
+          "slug": {
+            "type": "string",
+            "example": "black-friday-2025"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Siêu sale Black Friday - Giảm giá khủng lên đến 70%"
+          },
+          "banner_image": {
+            "type": "string",
+            "nullable": true,
+            "example": "campaigns/black-friday-2025.jpg"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-11-24T00:00:00Z"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-11-30T23:59:59Z"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "active", "expired", "cancelled"],
+            "example": "active"
+          },
+          "is_featured": {
+            "type": "boolean",
+            "example": true
+          },
+          "priority": {
+            "type": "integer",
+            "example": 100
+          },
+          "metadata": {
+            "type": "object",
+            "nullable": true,
+            "example": {
+              "color": "#000000",
+              "tags": ["black-friday", "mega-sale"],
+              "description_short": "Giảm giá lên đến 70%"
+            }
+          }
+        },
+        "required": ["name", "slug", "start_date", "end_date", "status"]
+      },
+      "AddProductsToSaleRequest": {
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "product_id": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "sale_price": {
+                  "type": "number",
+                  "format": "decimal",
+                  "example": 700000.00
+                },
+                "discount_type": {
+                  "type": "string",
+                  "enum": ["percentage", "fixed_amount"],
+                  "example": "percentage"
+                },
+                "max_quantity": {
+                  "type": "integer",
+                  "nullable": true,
+                  "example": 50
+                }
+              },
+              "required": ["product_id", "sale_price"]
+            }
+          }
+        },
+        "required": ["products"]
       }
     }
   },
@@ -1940,6 +2212,1114 @@
                       "example": "Search query is required"
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sale-campaigns": {
+      "get": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Get list of sale campaigns",
+        "description": "Retrieve a paginated list of sale campaigns with optional filtering",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Number of campaigns per page (default: 15, max: 100)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 15
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by campaign status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["draft", "active", "expired", "cancelled"]
+            }
+          },
+          {
+            "name": "featured",
+            "in": "query",
+            "description": "Filter by featured campaigns",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sale campaigns retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SaleCampaign"
+                          }
+                        },
+                        "current_page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "last_page": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "example": 15
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 45
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Create a new sale campaign",
+        "description": "Create a new sale campaign (Admin only)",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaleCampaignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sale campaign created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Chiến dịch sale đã được tạo thành công"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SaleCampaign"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sale-campaigns/{id}": {
+      "get": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Get sale campaign details",
+        "description": "Retrieve details of a specific sale campaign",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Sale campaign ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sale campaign details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SaleCampaign"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sale campaign not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Update sale campaign",
+        "description": "Update an existing sale campaign (Admin only)",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Sale campaign ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaleCampaignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sale campaign updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Chiến dịch sale đã được cập nhật thành công"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SaleCampaign"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sale campaign not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Delete sale campaign",
+        "description": "Delete an existing sale campaign (Admin only)",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Sale campaign ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sale campaign deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Chiến dịch sale đã được xóa thành công"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sale campaign not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sale-campaigns-active": {
+      "get": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Get active sale campaigns",
+        "description": "Retrieve list of currently active sale campaigns (Public endpoint)",
+        "parameters": [
+          {
+            "name": "featured",
+            "in": "query",
+            "description": "Filter by featured campaigns only",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Active sale campaigns retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SaleCampaign"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sale-campaigns/{id}/products": {
+      "get": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Get products in sale campaign",
+        "description": "Retrieve paginated list of products in a specific sale campaign",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Sale campaign ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Number of products per page (default: 15, max: 100)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 15
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaign products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Product"
+                          }
+                        },
+                        "current_page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "last_page": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "example": 15
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 45
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sale campaign not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Add products to sale campaign",
+        "description": "Add products to an existing sale campaign (Admin only)",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Sale campaign ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductsToSaleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Products added to sale campaign successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Đã thêm 5 sản phẩm vào chiến dịch sale thành công"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "added_count": {
+                          "type": "integer",
+                          "example": 5
+                        },
+                        "updated_count": {
+                          "type": "integer",
+                          "example": 2
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sale campaign not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sale-campaigns/{id}/products/{productId}": {
+      "delete": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Remove product from sale campaign",
+        "description": "Remove a specific product from sale campaign (Admin only)",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Sale campaign ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "Product ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product removed from sale campaign successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Đã xóa sản phẩm khỏi chiến dịch sale thành công"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sale campaign or product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products-on-sale": {
+      "get": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Get products currently on sale",
+        "description": "Retrieve paginated list of products that are currently on sale (Public endpoint)",
+        "parameters": [
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Number of products per page (default: 15, max: 100)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 15
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "description": "Filter by category ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "brand_id",
+            "in": "query",
+            "description": "Filter by brand ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "min_price",
+            "in": "query",
+            "description": "Minimum sale price filter",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "decimal"
+            }
+          },
+          {
+            "name": "max_price",
+            "in": "query",
+            "description": "Maximum sale price filter",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "decimal"
+            }
+          },
+          {
+            "name": "min_discount",
+            "in": "query",
+            "description": "Minimum discount percentage filter",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "max_discount",
+            "in": "query",
+            "description": "Maximum discount percentage filter",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Sort products by field",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["name", "price", "sale_price", "discount", "created_at"]
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "Sort order",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "asc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Products on sale retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Product"
+                          }
+                        },
+                        "current_page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "last_page": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "example": 15
+                        },
+                        "total": {
+                          "type": "integer",
+                          "example": 45
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}/sale-campaigns": {
+      "get": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Get sale campaigns for product",
+        "description": "Retrieve list of sale campaigns that include a specific product",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Product ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product sale campaigns retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SaleCampaign"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/sale-campaigns/{id}/toggle-status": {
+      "patch": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Toggle sale campaign status",
+        "description": "Toggle sale campaign status between active/inactive (Admin only)",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Sale campaign ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sale campaign status toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Trạng thái chiến dịch đã được cập nhật"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SaleCampaign"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sale campaign not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/sale-campaigns/{id}/toggle-featured": {
+      "patch": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Toggle sale campaign featured status",
+        "description": "Toggle sale campaign featured status (Admin only)",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Sale campaign ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sale campaign featured status toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Trạng thái nổi bật đã được cập nhật"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SaleCampaign"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sale campaign not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/sale-campaigns/{id}/duplicate": {
+      "post": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Duplicate sale campaign",
+        "description": "Create a copy of an existing sale campaign (Admin only)",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Sale campaign ID to duplicate",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Sale campaign duplicated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Chiến dịch đã được sao chép thành công"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SaleCampaign"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sale campaign not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/sale-campaigns/stats": {
+      "get": {
+        "tags": ["Sale Campaigns"],
+        "summary": "Get sale campaigns statistics",
+        "description": "Retrieve statistics about sale campaigns (Admin only)",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Sale campaigns statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total_campaigns": {
+                          "type": "integer",
+                          "example": 25
+                        },
+                        "active_campaigns": {
+                          "type": "integer",
+                          "example": 5
+                        },
+                        "draft_campaigns": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "expired_campaigns": {
+                          "type": "integer",
+                          "example": 15
+                        },
+                        "featured_campaigns": {
+                          "type": "integer",
+                          "example": 2
+                        },
+                        "total_products_on_sale": {
+                          "type": "integer",
+                          "example": 150
+                        },
+                        "average_discount": {
+                          "type": "number",
+                          "format": "decimal",
+                          "example": 35.5
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4921,6 +6301,10 @@
     {
       "name": "Comments",
       "description": "Product comment and review management operations"
+    },
+    {
+      "name": "Sale Campaigns",
+      "description": "Sale campaign and promotion management operations"
     }
   ]
 }

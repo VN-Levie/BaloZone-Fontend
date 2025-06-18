@@ -31,9 +31,11 @@ export interface Brand {
   id: number
   name: string
   slug: string
-  image?: string
+  logo?: string
   description?: string
   status: 'active' | 'inactive'
+  created_at: string
+  updated_at: string
 }
 
 export interface Comment {
@@ -84,19 +86,23 @@ export interface ApiResponse<T> {
 }
 
 export interface PaginatedResponse<T> {
+  current_page: number
   data: T[]
-  meta: {
-    current_page: number
-    last_page: number
-    per_page: number
-    total: number
-  }
+  first_page_url: string
+  from: number
+  last_page: number
+  last_page_url: string
   links: {
-    first: string
-    last: string
-    prev?: string
-    next?: string
-  }
+    url: string | null
+    label: string
+    active: boolean
+  }[]
+  next_page_url: string | null
+  path: string
+  per_page: number
+  prev_page_url: string | null
+  to: number
+  total: number
 }
 
 // Auth types

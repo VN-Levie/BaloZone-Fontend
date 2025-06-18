@@ -2,123 +2,44 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAppData } from '@/composables/useAppData'
 import { formatPrice, getImageUrl, calculateDiscount, getColorCode } from '@/utils'
-import type { Category } from '@/types'
+import type { Category, Product } from '@/types'
 
 // Use the app data composable
-const { featuredProducts, categories, brands, loadHomepageData, isLoading } = useAppData()
+const { featuredProducts, categories, brands, latestNews, loadHomepageData, isLoading } = useAppData()
 
 // Local state
 const selectedCategory = ref<string>('all')
 const isAddingToCart = ref<{ [key: number]: boolean }>({})
 
-// Mock fallback data in case API fails
-const mockFeaturedProducts = ref([
-  {
-    id: 1,
-    name: 'Vali Du Lịch Cao Cấp',
-    price: 799000,
-    originalPrice: 1200000,
-    discount: 33,
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop',
-    colors: ['red', 'blue', 'gray'],
-    rating: 4.8
-  },
-  {
-    id: 2,
-    name: 'Balo Laptop Business',
-    price: 1399000,
-    originalPrice: 1800000,
-    discount: 22,
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop',
-    colors: ['black', 'navy', 'gray'],
-    rating: 4.9
-  },
-  {
-    id: 3,
-    name: 'Vali Kéo Size Cabin',
-    price: 899000,
-    originalPrice: 1300000,
-    discount: 31,
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop',
-    colors: ['mint', 'pink', 'white'],
-    rating: 4.7
-  },
-  {
-    id: 4,
-    name: 'Balo Du Lịch Thể Thao',
-    price: 599000,
-    originalPrice: 850000,
-    discount: 29,
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop',
-    colors: ['green', 'orange', 'black'],
-    rating: 4.6
-  },
-  {
-    id: 5,
-    name: 'Vali Cứng Chống Va Đập',
-    price: 1299000,
-    originalPrice: 1700000,
-    discount: 24,
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop',
-    colors: ['silver', 'black', 'blue'],
-    rating: 4.8
-  }
-])
-
-const mockBrands = ref([
-  'Samsonite', 'American Tourister', 'Delsey', 'VIP', 'Kamiliant', 'Polo'
-])
-
 // Computed properties
 const displayProducts = computed(() => {
-  const apiProducts = featuredProducts.value
-  const fallbackProducts = mockFeaturedProducts.value
-  
-  const products = apiProducts.length > 0 ? apiProducts : fallbackProducts
-  
+  const products = featuredProducts.value
+
   if (selectedCategory.value === 'all') {
     return products
   }
-  
+
   // Filter by category if API data is available
-  if (apiProducts.length > 0) {
-    return products.filter(product => 
-      product.category?.slug === selectedCategory.value || 
-      product.category?.name.toLowerCase().includes(selectedCategory.value.toLowerCase())
+  if (products.length > 0) {
+    return products.filter(
+      (product: Product) => product.category && product.category.slug === selectedCategory.value
     )
   }
-  
-  // Simple fallback filtering for mock data
+
   return products
 })
 
 const displayBrands = computed(() => {
-  if (brands.value.length > 0) {
-    return brands.value.map(brand => brand.name)
-  }
-  return mockBrands.value
+  return brands.value.map(brand => brand.name)
 })
 
 const categoryTabs = computed(() => {
-  const tabs = [{ id: 'all', name: 'TẤT CẢ' }]
-  
-  if (categories.value.length > 0) {
-    categories.value.forEach(category => {
-      tabs.push({
-        id: category.slug,
-        name: category.name.toUpperCase()
-      })
-    })
-  } else {
-    // Fallback tabs
-    tabs.push(
-      { id: 'balo', name: 'BALO' },
-      { id: 'vali', name: 'VALI' },
-      { id: 'tui-xach', name: 'TÚI XÁCH' },
-      { id: 'phu-kien', name: 'PHỤ KIỆN' }
-    )
-  }
-  
+  const tabs: { id: string; name: string }[] = [{ id: 'all', name: 'Tất cả' }]
+  categories.value.forEach((category) => {
+    if (category.slug && category.name) {
+      tabs.push({ id: category.slug, name: category.name })
+    }
+  })
   return tabs
 })
 
@@ -129,56 +50,28 @@ const selectCategory = (categoryId: string) => {
 
 const addToCart = async (productId: number) => {
   isAddingToCart.value[productId] = true
-  
-  try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Show success message
-    alert('Đã thêm sản phẩm vào giỏ hàng!')
-  } catch (error) {
-    alert('Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng!')
-  } finally {
-    isAddingToCart.value[productId] = false
-  }
+  // Mock API call
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  console.log(`Added product ${productId} to cart.`)
+  isAddingToCart.value[productId] = false
 }
 
-const getProductImage = (product: any) => {
-  if (product.image) {
-    return getImageUrl(product.image)
-  }
-  return product.image || 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop'
+const getProductImage = (product: Product) => {
+  return getImageUrl(product.image)
 }
 
-const getProductDiscount = (product: any) => {
-  if (product.discount) {
-    return product.discount
-  }
-  if (product.originalPrice && product.price) {
-    return calculateDiscount(product.originalPrice, product.price)
-  }
-  return 0
+const getProductDiscount = (product: Product) => {
+  // API does not seem to provide originalPrice, so discount cannot be calculated.
+  // Returning a mock value.
+  return product.discount || 25
 }
 
-const getProductColors = (product: any) => {
-  if (product.colors) {
-    return product.colors
-  }
-  if (product.color) {
-    return [product.color]
-  }
-  return ['black', 'gray', 'blue']
+const getProductColors = (product: Product) => {
+  return product.colors || []
 }
 
-const getRating = (product: any) => {
-  if (product.rating) {
-    return product.rating
-  }
-  if (product.comments && product.comments.length > 0) {
-    // Calculate average rating from comments if available
-    return 4.5 // Default fallback
-  }
-  return 4.5
+const getRating = (product: Product) => {
+  return product.rating || 4.5
 }
 
 // Load data on component mount
