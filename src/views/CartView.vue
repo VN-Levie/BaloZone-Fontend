@@ -22,7 +22,7 @@
             <div class="cart-items">
               <div 
                 v-for="item in cartItems" 
-                :key="item.id"
+                :key="`${item.product.id}-${item.selectedSize}-${item.selectedColor}`"
                 class="cart-item"
               >
                 <div class="item-image">
@@ -31,28 +31,32 @@
                 <div class="item-info">
                   <h5 class="item-name">{{ item.product.name }}</h5>
                   <p class="item-brand" v-if="item.product.brand">{{ item.product.brand.name }}</p>
-                  <p class="item-price">{{ formatPrice(item.product.price) }}</p>
+                  <div v-if="item.selectedSize || item.selectedColor" class="item-options">
+                    <span v-if="item.selectedSize" class="badge bg-light text-dark me-1">Size: {{ item.selectedSize }}</span>
+                    <span v-if="item.selectedColor" class="badge bg-light text-dark">Màu: {{ item.selectedColor }}</span>
+                  </div>
+                  <p class="item-price">{{ formatPrice(item.product.originalPrice || item.product.price) }}</p>
                 </div>
                 <div class="item-controls">
                   <div class="quantity-controls">
                     <button 
                       class="btn btn-sm btn-outline-secondary"
-                      @click="decreaseQuantity(item.id)"
+                      @click="decreaseQuantity(item.product.id, item.selectedSize, item.selectedColor)"
                     >
                       -
                     </button>
                     <span class="quantity">{{ item.quantity }}</span>
                     <button 
                       class="btn btn-sm btn-outline-secondary"
-                      @click="increaseQuantity(item.id)"
+                      @click="increaseQuantity(item.product.id, item.selectedSize, item.selectedColor)"
                     >
                       +
                     </button>
                   </div>
-                  <p class="item-total">{{ formatPrice(item.product.price * item.quantity) }}</p>
+                  <p class="item-total">{{ formatPrice((item.product.originalPrice || item.product.price) * item.quantity) }}</p>
                   <button 
                     class="btn btn-sm btn-outline-danger"
-                    @click="removeItem(item.id)"
+                    @click="removeItem(item.product.id, item.selectedSize, item.selectedColor)"
                   >
                     <i class="bi bi-trash"></i>
                   </button>
@@ -76,7 +80,7 @@
               <div class="summary-row total">
                 <strong>
                   <span>Tổng cộng:</span>
-                  <span>{{ formatPrice(cartTotal) }}</span>
+                  <span>{{ formatPrice(totalAmount) }}</span>
                 </strong>
               </div>
               <button class="btn btn-primary w-100 mt-3">
@@ -100,23 +104,28 @@ import { formatPrice, getImageUrl } from '@/utils'
 const { 
   cartItems, 
   cartItemsCount, 
-  cartTotal, 
+  totalAmount, 
   updateQuantity, 
-  removeFromCart 
+  removeFromCart,
+  getCartItem
 } = useCart()
 
-const increaseQuantity = (itemId: number) => {
-  const item = cartItems.value.find(item => item.id === itemId)
+const increaseQuantity = (productId: number, size?: string, color?: string) => {
+  const item = getCartItem(productId, size, color)
   if (item) {
-    updateQuantity(itemId, item.quantity + 1)
+    updateQuantity(productId, item.quantity + 1, size, color)
   }
 }
 
-const decreaseQuantity = (itemId: number) => {
-  const item = cartItems.value.find(item => item.id === itemId)
+const decreaseQuantity = (productId: number, size?: string, color?: string) => {
+  const item = getCartItem(productId, size, color)
   if (item && item.quantity > 1) {
-    updateQuantity(itemId, item.quantity - 1)
+    updateQuantity(productId, item.quantity - 1, size, color)
   }
+}
+
+const removeItem = (productId: number, size?: string, color?: string) => {
+  removeFromCart(productId, size, color)
 }
 
 const removeItem = (itemId: number) => {

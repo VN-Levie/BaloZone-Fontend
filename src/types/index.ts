@@ -185,10 +185,18 @@ export interface ProductFilters {
 }
 
 export interface AuthResponse {
-  access_token: string
-  token_type: string
-  expires_in: number
+  success: boolean
+  message: string
   user: User
+  authorization: {
+    token: string
+    type: string
+    expires_in: number
+  }
+  // Legacy support for older API format
+  access_token?: string
+  token_type?: string
+  expires_in?: number
 }
 
 export interface LoginCredentials {

@@ -106,7 +106,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { authApi } from '@/services/api'
+import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 import { parseAuthError } from '@/utils/errorHandler'
 import AlertComponent from '@/components/AlertComponent.vue'
@@ -115,6 +115,7 @@ import type { LoginCredentials } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
+const { login } = useAuth()
 const { showLoginSuccess } = useToast()
 
 const loading = ref(false)
@@ -161,16 +162,7 @@ const handleLogin = async () => {
   generalError.value = ''
   
   try {
-    const response = await authApi.login({
-      email: form.email,
-      password: form.password
-    })
-    
-    // Store token
-    localStorage.setItem('auth_token', response.access_token)
-    
-    // Store user info
-    localStorage.setItem('user', JSON.stringify(response.user))
+    const response = await login(form.email, form.password)
     
     // Show success toast
     showLoginSuccess(response.user.name || 'User')

@@ -100,10 +100,12 @@ const router = createRouter({
 })
 
 // Navigation guard for protected routes
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('auth_token')
+router.beforeEach(async (to, from, next) => {
+  // Import here to avoid circular dependency
+  const { useAuthStore } = await import('@/stores/auth')
+  const authStore = useAuthStore()
   
-  if (to.meta.requiresAuth && !token) {
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else {
     next()

@@ -136,13 +136,14 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { authApi } from '@/services/api'
+import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 import { parseAuthError } from '@/utils/errorHandler'
 import AlertComponent from '@/components/AlertComponent.vue'
 import FormLoading from '@/components/FormLoading.vue'
 
 const router = useRouter()
+const { register } = useAuth()
 const { showSuccess } = useToast()
 
 const loading = ref(false)
@@ -214,17 +215,7 @@ const handleRegister = async () => {
   generalError.value = ''
   
   try {
-    const response = await authApi.register({
-      name: form.name,
-      email: form.email,
-      password: form.password
-    })
-    
-    // Store token
-    localStorage.setItem('auth_token', response.access_token)
-    
-    // Store user info
-    localStorage.setItem('user', JSON.stringify(response.user))
+    const response = await register(form.name, form.email, form.password)
     
     // Show success toast
     showSuccess(

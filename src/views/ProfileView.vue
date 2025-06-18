@@ -1,48 +1,61 @@
 <template>
   <div class="profile-page">
-    <div class="container-fluid px-4 py-4">
+    <div class="container-fluid px-4 py-5">
       <div class="row">
         <!-- Sidebar -->
         <div class="col-lg-3 col-md-4 mb-4">
           <div class="profile-sidebar">
             <div class="user-info">
               <div class="user-avatar">
-                <i class="bi bi-person-circle"></i>
+                <div class="avatar-circle">
+                  <i class="bi bi-person-fill"></i>
+                </div>
               </div>
               <h5 class="user-name">{{ user?.name || 'User' }}</h5>
               <p class="user-email">{{ user?.email }}</p>
+              <div class="user-status">
+                <span class="status-badge status-active">
+                  <i class="bi bi-check-circle-fill"></i>
+                  Đã xác thực
+                </span>
+              </div>
             </div>
-            
+
             <nav class="profile-nav">
               <ul class="nav-list">
                 <li>
-                  <a href="#profile" class="nav-link active" @click.prevent="activeTab = 'profile'">
+                  <a href="#profile" class="nav-link" :class="{ active: activeTab === 'profile' }" @click.prevent="activeTab = 'profile'">
                     <i class="bi bi-person"></i>
-                    Thông tin cá nhân
+                    <span>Thông tin cá nhân</span>
+                    <i class="bi bi-chevron-right ms-auto"></i>
                   </a>
                 </li>
                 <li>
                   <router-link to="/orders" class="nav-link">
-                    <i class="bi bi-box"></i>
-                    Đơn hàng của tôi
+                    <i class="bi bi-box-seam"></i>
+                    <span>Đơn hàng của tôi</span>
+                    <i class="bi bi-chevron-right ms-auto"></i>
                   </router-link>
                 </li>
                 <li>
-                  <a href="#addresses" class="nav-link" @click.prevent="activeTab = 'addresses'">
+                  <a href="#addresses" class="nav-link" :class="{ active: activeTab === 'addresses' }" @click.prevent="activeTab = 'addresses'">
                     <i class="bi bi-geo-alt"></i>
-                    Sổ địa chỉ
+                    <span>Sổ địa chỉ</span>
+                    <i class="bi bi-chevron-right ms-auto"></i>
                   </a>
                 </li>
                 <li>
-                  <a href="#password" class="nav-link" @click.prevent="activeTab = 'password'">
+                  <a href="#password" class="nav-link" :class="{ active: activeTab === 'password' }" @click.prevent="activeTab = 'password'">
                     <i class="bi bi-shield-lock"></i>
-                    Đổi mật khẩu
+                    <span>Đổi mật khẩu</span>
+                    <i class="bi bi-chevron-right ms-auto"></i>
                   </a>
                 </li>
                 <li>
                   <router-link to="/wishlist" class="nav-link">
                     <i class="bi bi-heart"></i>
-                    Danh sách yêu thích
+                    <span>Danh sách yêu thích</span>
+                    <i class="bi bi-chevron-right ms-auto"></i>
                   </router-link>
                 </li>
               </ul>
@@ -54,154 +67,157 @@
         <div class="col-lg-9 col-md-8">
           <!-- Profile Info -->
           <div v-if="activeTab === 'profile'" class="profile-content">
-            <h3 class="content-title">Thông tin cá nhân</h3>
-            
+            <div class="content-header">
+              <h3 class="content-title">
+                <i class="bi bi-person-circle me-2"></i>
+                Thông tin cá nhân
+              </h3>
+              <p class="content-subtitle">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+            </div>
+
             <form @submit.prevent="updateProfile" class="profile-form">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="name" class="form-label">Họ và tên *</label>
-                  <input
-                    id="name"
-                    v-model="profileForm.name"
-                    type="text"
-                    class="form-control"
-                    required
-                  />
+              <div class="form-section">
+                <h5 class="section-title">
+                  <i class="bi bi-info-circle me-2"></i>
+                  Thông tin cơ bản
+                </h5>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label">
+                      <i class="bi bi-person me-1"></i>
+                      Họ và tên *
+                    </label>
+                    <input id="name" v-model="profileForm.name" type="text" class="form-control" placeholder="Nhập họ và tên" required />
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">
+                      <i class="bi bi-envelope me-1"></i>
+                      Email *
+                    </label>
+                    <input id="email" v-model="profileForm.email" type="email" class="form-control" placeholder="Nhập địa chỉ email" required />
+                  </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label for="email" class="form-label">Email *</label>
-                  <input
-                    id="email"
-                    v-model="profileForm.email"
-                    type="email"
-                    class="form-control"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label for="phone" class="form-label">Số điện thoại</label>
-                  <input
-                    id="phone"
-                    v-model="profileForm.phone"
-                    type="tel"
-                    class="form-control"
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="birthdate" class="form-label">Ngày sinh</label>
-                  <input
-                    id="birthdate"
-                    v-model="profileForm.birthdate"
-                    type="date"
-                    class="form-control"
-                  />
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="phone" class="form-label">
+                      <i class="bi bi-telephone me-1"></i>
+                      Số điện thoại
+                    </label>
+                    <input id="phone" v-model="profileForm.phone" type="tel" class="form-control" placeholder="Nhập số điện thoại" />
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="birthdate" class="form-label">
+                      <i class="bi bi-calendar me-1"></i>
+                      Ngày sinh
+                    </label>
+                    <input id="birthdate" v-model="profileForm.birthdate" type="date" class="form-control" />
+                  </div>
                 </div>
               </div>
-              
-              <div class="mb-3">
-                <label for="address" class="form-label">Địa chỉ</label>
-                <textarea
-                  id="address"
-                  v-model="profileForm.address"
-                  class="form-control"
-                  rows="3"
-                ></textarea>
+
+              <div class="form-section">
+                <h5 class="section-title">
+                  <i class="bi bi-geo-alt me-2"></i>
+                  Địa chỉ
+                </h5>
+                <div class="mb-3">
+                  <label for="address" class="form-label">
+                    <i class="bi bi-house me-1"></i>
+                    Địa chỉ
+                  </label>
+                  <textarea id="address" v-model="profileForm.address" class="form-control" rows="3" placeholder="Nhập địa chỉ chi tiết"></textarea>
+                </div>
               </div>
-              
+
               <div class="form-actions">
                 <button type="submit" class="btn btn-primary" :disabled="updating">
-                  <span v-if="updating" class="spinner-border spinner-border-sm me-2"></span>
-                  {{ updating ? 'Đang cập nhật...' : 'Cập nhật thông tin' }}
+                  <i class="bi bi-check-circle me-2"></i>
+                  <span v-if="updating">Đang cập nhật...</span>
+                  <span v-else>Cập nhật thông tin</span>
                 </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Address Book -->
-          <div v-if="activeTab === 'addresses'" class="profile-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h3 class="content-title mb-0">Sổ địa chỉ</h3>
-              <button class="btn btn-primary" @click="showAddAddressModal = true">
-                <i class="bi bi-plus"></i>
-                Thêm địa chỉ mới
-              </button>
-            </div>
-            
-            <div class="addresses-grid">
-              <div 
-                v-for="address in addresses" 
-                :key="address.id"
-                class="address-card"
-              >
-                <div class="address-content">
-                  <div class="address-header">
-                    <span class="address-type">{{ address.type || 'Địa chỉ' }}</span>
-                    <span v-if="address.is_default" class="badge bg-primary">Mặc định</span>
-                  </div>
-                  <p class="address-text">{{ address.address }}</p>
-                  <p class="address-details">{{ address.city }}, {{ address.postal_code }}</p>
-                </div>
-                <div class="address-actions">
-                  <button class="btn btn-sm btn-outline-primary">Sửa</button>
-                  <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Change Password -->
-          <div v-if="activeTab === 'password'" class="profile-content">
-            <h3 class="content-title">Đổi mật khẩu</h3>
-            
-            <form @submit.prevent="changePassword" class="password-form">
-              <div class="mb-3">
-                <label for="currentPassword" class="form-label">Mật khẩu hiện tại *</label>
-                <input
-                  id="currentPassword"
-                  v-model="passwordForm.currentPassword"
-                  type="password"
-                  class="form-control"
-                  required
-                />
-              </div>
-              
-              <div class="mb-3">
-                <label for="newPassword" class="form-label">Mật khẩu mới *</label>
-                <input
-                  id="newPassword"
-                  v-model="passwordForm.newPassword"
-                  type="password"
-                  class="form-control"
-                  required
-                />
-              </div>
-              
-              <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới *</label>
-                <input
-                  id="confirmPassword"
-                  v-model="passwordForm.confirmPassword"
-                  type="password"
-                  class="form-control"
-                  required
-                />
-              </div>
-              
-              <div class="form-actions">
-                <button type="submit" class="btn btn-primary" :disabled="changingPassword">
-                  <span v-if="changingPassword" class="spinner-border spinner-border-sm me-2"></span>
-                  {{ changingPassword ? 'Đang cập nhật...' : 'Đổi mật khẩu' }}
+                <button type="button" class="btn btn-outline-secondary ms-2">
+                  <i class="bi bi-arrow-clockwise me-2"></i>
+                  Làm mới
                 </button>
               </div>
             </form>
           </div>
         </div>
+
+        <div class="mb-3">
+          <label for="address" class="form-label">Địa chỉ</label>
+          <textarea id="address" v-model="profileForm.address" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" :disabled="updating">
+            <span v-if="updating" class="spinner-border spinner-border-sm me-2"></span>
+            {{ updating ? 'Đang cập nhật...' : 'Cập nhật thông tin' }}
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Address Book -->
+      <div v-if="activeTab === 'addresses'" class="profile-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="content-title mb-0">Sổ địa chỉ</h3>
+          <button class="btn btn-primary" @click="showAddAddressModal = true">
+            <i class="bi bi-plus"></i>
+            Thêm địa chỉ mới
+          </button>
+        </div>
+
+        <div class="addresses-grid">
+          <div v-for="address in addresses" :key="address.id" class="address-card">
+            <div class="address-content">
+              <div class="address-header">
+                <span class="address-type">{{ address.type || 'Địa chỉ' }}</span>
+                <span v-if="address.is_default" class="badge bg-primary">Mặc định</span>
+              </div>
+              <p class="address-text">{{ address.address }}</p>
+              <p class="address-details">{{ address.city }}, {{ address.postal_code }}</p>
+            </div>
+            <div class="address-actions">
+              <button class="btn btn-sm btn-outline-primary">Sửa</button>
+              <button class="btn btn-sm btn-outline-danger">Xóa</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div v-if="activeTab === 'password'" class="profile-content">
+        <h3 class="content-title">Đổi mật khẩu</h3>
+
+        <form @submit.prevent="changePassword" class="password-form">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Mật khẩu hiện tại *</label>
+            <input id="currentPassword" v-model="passwordForm.currentPassword" type="password" class="form-control" required />
+          </div>
+
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">Mật khẩu mới *</label>
+            <input id="newPassword" v-model="passwordForm.newPassword" type="password" class="form-control" required />
+          </div>
+
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới *</label>
+            <input id="confirmPassword" v-model="passwordForm.confirmPassword" type="password" class="form-control" required />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" :disabled="changingPassword">
+              <span v-if="changingPassword" class="spinner-border spinner-border-sm me-2"></span>
+              {{ changingPassword ? 'Đang cập nhật...' : 'Đổi mật khẩu' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
+
 </template>
 
 <script setup lang="ts">
@@ -209,7 +225,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { userApi, addressBookApi } from '@/services/api'
 
-const { user } = useAuth()
+const { user, updateUser } = useAuth()
 
 const activeTab = ref('profile')
 const updating = ref(false)
@@ -236,7 +252,7 @@ const loadProfile = async () => {
   try {
     const response = await userApi.getProfile()
     const userData = response.data
-    
+
     profileForm.name = userData.name || ''
     profileForm.email = userData.email || ''
     profileForm.phone = userData.phone || ''
@@ -259,7 +275,11 @@ const loadAddresses = async () => {
 const updateProfile = async () => {
   updating.value = true
   try {
-    await userApi.updateProfile(profileForm)
+    const response = await userApi.updateProfile(profileForm)
+    // Update user data in store
+    if (response.data) {
+      updateUser(response.data)
+    }
     alert('Cập nhật thông tin thành công!')
   } catch (error) {
     console.error('Failed to update profile:', error)
@@ -274,7 +294,7 @@ const changePassword = async () => {
     alert('Mật khẩu xác nhận không khớp!')
     return
   }
-  
+
   changingPassword.value = true
   try {
     await userApi.changePassword({
@@ -439,7 +459,7 @@ onMounted(() => {
     position: static;
     margin-bottom: 2rem;
   }
-  
+
   .addresses-grid {
     grid-template-columns: 1fr;
   }
