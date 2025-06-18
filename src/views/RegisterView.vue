@@ -3,7 +3,9 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-          <div class="register-card">
+          <div class="register-card position-relative">
+            <FormLoading :visible="loading" message="Đang đăng ký..." />
+            
             <div class="text-center mb-4">
               <h2 class="register-title">Đăng ký</h2>
               <p class="text-muted">Tạo tài khoản mới để bắt đầu mua sắm</p>
@@ -101,9 +103,12 @@
                 </div>
               </div>
 
-              <div v-if="generalError" class="alert alert-danger">
-                {{ generalError }}
-              </div>
+              <AlertComponent
+                v-if="generalError"
+                type="error"
+                :message="generalError"
+                @close="generalError = ''"
+              />
 
               <button
                 type="submit"
@@ -132,8 +137,13 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { authApi } from '@/services/api'
+import { useToast } from '@/composables/useToast'
+import { parseAuthError } from '@/utils/errorHandler'
+import AlertComponent from '@/components/AlertComponent.vue'
+import FormLoading from '@/components/FormLoading.vue'
 
 const router = useRouter()
+const { showSuccess } = useToast()
 
 const loading = ref(false)
 const showPassword = ref(false)
@@ -216,12 +226,18 @@ const handleRegister = async () => {
     // Store user info
     localStorage.setItem('user', JSON.stringify(response.user))
     
+    // Show success toast
+    showSuccess(
+      'Đăng ký thành công!',
+      `Chào mừng ${response.user.name} đến với BaloZone!`
+    )
+    
     // Redirect to home
     router.push('/')
     
   } catch (error: any) {
     console.error('Registration failed:', error)
-    generalError.value = error.message || 'Đăng ký thất bại. Vui lòng thử lại.'
+    generalError.value = parseAuthError(error)
   } finally {
     loading.value = false
   }

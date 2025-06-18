@@ -219,3 +219,6 @@ export const urlHelpers = {
     window.history.replaceState({}, '', url.toString())
   }
 }
+
+// Re-export error handler utilities
+export * from './errorHandler'

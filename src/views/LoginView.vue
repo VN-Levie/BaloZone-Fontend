@@ -3,10 +3,20 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-          <div class="login-card">
+          <div class="login-card position-relative">
+            <FormLoading :visible="loading" message="Đang đăng nhập..." />
+            
             <div class="text-center mb-4">
               <h2 class="login-title">Đăng nhập</h2>
               <p class="text-muted">Chào mừng bạn quay trở lại!</p>
+              
+              <!-- Demo account info -->
+              <div class="demo-info">
+                <small class="text-info">
+                  <i class="bi bi-info-circle"></i>
+                  Demo: test@example.com / password
+                </small>
+              </div>
             </div>
 
             <form @submit.prevent="handleLogin">
@@ -63,9 +73,12 @@
                 </label>
               </div>
 
-              <div v-if="generalError" class="alert alert-danger">
-                {{ generalError }}
-              </div>
+              <AlertComponent
+                v-if="generalError"
+                type="error"
+                :message="generalError"
+                @close="generalError = ''"
+              />
 
               <button
                 type="submit"
@@ -94,10 +107,15 @@
 import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { authApi } from '@/services/api'
+import { useToast } from '@/composables/useToast'
+import { parseAuthError } from '@/utils/errorHandler'
+import AlertComponent from '@/components/AlertComponent.vue'
+import FormLoading from '@/components/FormLoading.vue'
 import type { LoginCredentials } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
+const { showLoginSuccess } = useToast()
 
 const loading = ref(false)
 const showPassword = ref(false)
@@ -154,13 +172,16 @@ const handleLogin = async () => {
     // Store user info
     localStorage.setItem('user', JSON.stringify(response.user))
     
+    // Show success toast
+    showLoginSuccess(response.user.name || 'User')
+    
     // Redirect to intended page or home
     const redirectTo = (route.query.redirect as string) || '/'
     router.push(redirectTo)
     
   } catch (error: any) {
     console.error('Login failed:', error)
-    generalError.value = error.message || 'Đăng nhập thất bại. Vui lòng thử lại.'
+    generalError.value = parseAuthError(error)
   } finally {
     loading.value = false
   }
@@ -186,6 +207,22 @@ const handleLogin = async () => {
   font-size: 2rem;
   font-weight: 700;
   color: #333;
+}
+
+.demo-info {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #e3f2fd;
+  border-radius: 8px;
+  border: 1px solid #bbdefb;
+}
+
+.demo-info small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
 }
 
 .form-control {

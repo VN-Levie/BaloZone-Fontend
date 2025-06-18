@@ -104,6 +104,14 @@ onMounted(() => {
     fetchCategoryAndProducts(categorySlug.value)
   }
   fetchBrands()
+  
+  // Restore view mode preference
+  if (typeof localStorage !== 'undefined') {
+    const savedViewMode = localStorage.getItem('categoryViewMode')
+    if (savedViewMode === 'list' || savedViewMode === 'grid') {
+      viewMode.value = savedViewMode
+    }
+  }
 })
 
 watch(categorySlug, (newSlug) => {
@@ -112,15 +120,17 @@ watch(categorySlug, (newSlug) => {
   }
 })
 
-// Watch for category changes to update meta tags
-watch([categoryTitle, categoryDescription], () => {
-  updateMetaTags()
-}, { immediate: true })
-
 // Filter and sort functionality
 const selectedSort = ref('popular')
 const selectedPriceRange = ref('all')
 const selectedBrand = ref('all')
+
+// View mode functionality
+const viewMode = ref<'grid' | 'list'>('grid')
+
+const toggleViewMode = (mode: 'grid' | 'list') => {
+  viewMode.value = mode
+}
 
 // Pagination
 const currentPage = ref(1)
@@ -263,6 +273,11 @@ const breadcrumbs = computed(() => [
   { name: categoryTitle.value, path: `/category/${categorySlug.value}` }
 ])
 
+// Watch for category changes to update meta tags
+watch([categoryTitle, categoryDescription], () => {
+  updateMetaTags()
+}, { immediate: true })
+
 // Performance optimization: debounce filter changes
 let filterTimeout: NodeJS.Timeout | null = null
 const debouncedApplyFilters = () => {
@@ -276,8 +291,37 @@ const debouncedApplyFilters = () => {
 watch([selectedSort, selectedPriceRange, selectedBrand], () => {
   debouncedApplyFilters()
 })
-</script>
 
+// Watch for view mode changes to persist user preference
+watch(viewMode, (newMode) => {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('categoryViewMode', newMode)
+  }
+})
+
+// Watch for view mode changes to persist user preference
+watch(viewMode, (newMode) => {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('categoryViewMode', newMode)
+  }
+})
+
+// Initialize view mode from localStorage on mount
+onMounted(() => {
+  if (categorySlug.value) {
+    fetchCategoryAndProducts(categorySlug.value)
+  }
+  fetchBrands()
+  
+  // Restore view mode preference
+  if (typeof localStorage !== 'undefined') {
+    const savedViewMode = localStorage.getItem('categoryViewMode')
+    if (savedViewMode === 'list' || savedViewMode === 'grid') {
+      viewMode.value = savedViewMode
+    }
+  }
+})
+</script>
 <template>
   <div class="category-page">
     <!-- Breadcrumbs -->
@@ -437,10 +481,20 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
                   </select>
                 </div>
                 <div class="view-options">
-                  <button class="view-btn active">
+                  <button 
+                    class="view-btn" 
+                    :class="{ active: viewMode === 'grid' }"
+                    @click="toggleViewMode('grid')"
+                    title="Xem dạng lưới"
+                  >
                     <i class="bi bi-grid"></i>
                   </button>
-                  <button class="view-btn">
+                  <button 
+                    class="view-btn"
+                    :class="{ active: viewMode === 'list' }"
+                    @click="toggleViewMode('list')"
+                    title="Xem dạng danh sách"
+                  >
                     <i class="bi bi-list"></i>
                   </button>
                 </div>
@@ -460,13 +514,26 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
                   <p class="text-muted">Danh mục này hiện chưa có sản phẩm nào.</p>
                 </div>
               </div>
-              <div v-else class="row g-3">
+              
+              <!-- Grid View -->
+              <div v-else-if="viewMode === 'grid'" class="row g-3">
                 <div 
                   v-for="product in paginatedProducts" 
                   :key="product.id"
                   class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4"
                 >
                   <ProductCard :product="product" />
+                </div>
+              </div>
+              
+              <!-- List View -->
+              <div v-else class="products-list">
+                <div 
+                  v-for="product in paginatedProducts" 
+                  :key="product.id"
+                  class="product-list-item mb-3"
+                >
+                  <ProductCard :product="product" :listView="true" />
                 </div>
               </div>
             </div>
@@ -515,7 +582,7 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
 
 /* Category Header */
 .category-header {
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: white;
   padding: 60px 0;
   margin-bottom: 40px;
@@ -604,7 +671,7 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
   font-weight: 600;
   margin-bottom: 20px;
   color: #2c3e50;
-  border-bottom: 2px solid #3498db;
+  border-bottom: 2px solid #ff6b35;
   padding-bottom: 10px;
 }
 
@@ -623,12 +690,12 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
 }
 
 .filter-option:hover {
-  color: #3498db;
+  color: #ff6b35;
 }
 
 .filter-option input[type="radio"] {
   margin-right: 12px;
-  accent-color: #3498db;
+  accent-color: #ff6b35;
 }
 
 .products-header {
@@ -696,15 +763,35 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
 }
 
 .view-btn.active {
-  background: #3498db;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: white;
-  border-color: #3498db;
+  border-color: #ff6b35;
 }
 
 .empty-state {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Products Grid and List Views */
+.products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.product-list-item {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.product-list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
 }
 
 /* Pagination */
@@ -737,9 +824,9 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
 }
 
 .page-btn.active {
-  background: #3498db;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: white;
-  border-color: #3498db;
+  border-color: #ff6b35;
 }
 
 .page-btn:disabled {
@@ -815,6 +902,14 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
   
   .stat-item {
     justify-content: center;
+  }
+  
+  .products-list {
+    gap: 0.5rem;
+  }
+  
+  .product-list-item {
+    margin-bottom: 0.5rem;
   }
 }
 </style>

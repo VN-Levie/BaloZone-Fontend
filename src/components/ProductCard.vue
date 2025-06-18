@@ -1,5 +1,5 @@
 <template>
-  <div class="product-card">
+  <div class="product-card" :class="{ 'product-card-list': props.listView }">
     <div class="product-image-container">
       <router-link :to="`/product/${product.id}`" class="product-image-link">
         <img :src="product.image" :alt="product.name" class="product-image" />
@@ -16,7 +16,7 @@
           <i class="bi bi-arrow-left-right"></i>
         </button>
       </div>
-      <div class="quick-add">
+      <div class="quick-add" v-if="!props.listView">
         <button class="quick-add-btn" @click="addToCartHandler">
           {{ isInCartComputed ? 'Đã trong giỏ' : 'Thêm vào giỏ' }}
         </button>
@@ -55,6 +55,18 @@
       <div v-if="product.sold" class="product-meta">
         <span class="sold-count">Đã bán {{ product.sold }}</span>
       </div>
+      
+      <!-- List view specific content -->
+      <div v-if="props.listView" class="list-view-actions">
+        <button class="btn btn-outline-primary btn-sm me-2" @click="addToCartHandler">
+          <i class="bi bi-cart-plus"></i>
+          {{ isInCartComputed ? 'Đã trong giỏ' : 'Thêm vào giỏ' }}
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" @click="quickView">
+          <i class="bi bi-eye"></i>
+          Xem chi tiết
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -70,6 +82,7 @@ import { formatPrice } from '@/utils'
 
 interface Props {
   product: Product
+  listView?: boolean
 }
 
 const props = defineProps<Props>()
@@ -330,5 +343,71 @@ const addToCartHandler = () => {
 .sold-count {
   font-size: 0.75rem;
   color: #6c757d;
+}
+
+/* List View Styles */
+.product-card-list {
+  flex-direction: row;
+  height: auto;
+  min-height: 200px;
+}
+
+.product-card-list .product-image-container {
+  width: 200px;
+  min-width: 200px;
+  aspect-ratio: 1;
+  flex-shrink: 0;
+}
+
+.product-card-list .product-info {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.product-card-list .product-name {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.product-card-list .product-pricing {
+  margin-bottom: 15px;
+}
+
+.product-card-list .current-price {
+  font-size: 1.2rem;
+}
+
+.list-view-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.list-view-actions .btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Responsive adjustments for list view */
+@media (max-width: 768px) {
+  .product-card-list {
+    flex-direction: column;
+  }
+  
+  .product-card-list .product-image-container {
+    width: 100%;
+  }
+  
+  .list-view-actions {
+    flex-direction: column;
+  }
+  
+  .list-view-actions .btn {
+    justify-content: center;
+  }
 }
 </style>
