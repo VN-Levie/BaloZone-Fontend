@@ -340,13 +340,15 @@ const breadcrumbs = computed(() => [
                 >
                   <div class="product-card">
                     <div class="product-image-container">
-                      <img :src="product.image" :alt="product.name" class="product-image" />
+                      <router-link :to="`/product/${product.id}`" class="product-image-link">
+                        <img :src="product.image" :alt="product.name" class="product-image" />
+                      </router-link>
                       <div class="discount-badge">-{{ product.discount }}%</div>
                       <div class="product-actions">
                         <button class="action-btn" title="Yêu thích">
                           <i class="bi bi-heart"></i>
                         </button>
-                        <button class="action-btn" title="Xem nhanh">
+                        <button class="action-btn" title="Xem nhanh" @click="$router.push(`/product/${product.id}`)">
                           <i class="bi bi-eye"></i>
                         </button>
                         <button class="action-btn" title="So sánh">
@@ -359,7 +361,9 @@ const breadcrumbs = computed(() => [
                     </div>
                     <div class="product-info">
                       <div class="product-brand">{{ product.brand }}</div>
-                      <h6 class="product-name">{{ product.name }}</h6>
+                      <router-link :to="`/product/${product.id}`" class="product-name-link">
+                        <h6 class="product-name">{{ product.name }}</h6>
+                      </router-link>
                       <div class="product-rating">
                         <div class="stars">
                           <i v-for="i in 5" :key="i" class="bi bi-star-fill" :class="{ active: i <= Math.floor(product.rating) }"></i>
@@ -739,6 +743,16 @@ const breadcrumbs = computed(() => [
 
 .quick-add-btn:hover {
   background: #e55a2e;
+}
+
+.product-image-link,
+.product-name-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-name-link:hover .product-name {
+  color: #ff6b35;
 }
 
 .product-info {

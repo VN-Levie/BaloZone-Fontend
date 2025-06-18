@@ -174,15 +174,19 @@ const brands = ref([
             >
               <div class="product-card">
                 <div class="product-image-container">
-                  <img :src="product.image" :alt="product.name" class="product-image" />
+                  <router-link :to="`/product/${product.id}`" class="product-link">
+                    <img :src="product.image" :alt="product.name" class="product-image" />
+                  </router-link>
                   <div class="discount-badge-product">-{{ product.discount }}%</div>
                   <div class="product-actions">
                     <button class="action-btn">❤️</button>
-                    <button class="action-btn">👁️</button>
+                    <button class="action-btn" @click="$router.push(`/product/${product.id}`)">👁️</button>
                   </div>
                 </div>
                 <div class="product-info">
-                  <h6 class="product-name">{{ product.name }}</h6>
+                  <router-link :to="`/product/${product.id}`" class="product-name-link">
+                    <h6 class="product-name">{{ product.name }}</h6>
+                  </router-link>
                   <div class="product-rating">
                     <span class="stars">⭐⭐⭐⭐⭐</span>
                     <span class="rating-score">({{ product.rating }})</span>
@@ -663,6 +667,16 @@ const brands = ref([
 
 .add-to-cart-btn:hover {
   background: #e55a2e;
+}
+
+.product-link,
+.product-name-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-name-link:hover .product-name {
+  color: #ff6b35;
 }
 
 /* Brand Section */
