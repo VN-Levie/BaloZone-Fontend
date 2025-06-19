@@ -82,7 +82,7 @@
                   <span>{{ formatPrice(totalAmount) }}</span>
                 </strong>
               </div>
-              <button class="btn btn-primary w-100 mt-3">
+              <button class="btn btn-primary w-100 mt-3" @click="proceedToCheckout">
                 Tiến hành thanh toán
               </button>
               <router-link to="/" class="btn btn-outline-primary w-100 mt-2">
@@ -98,8 +98,10 @@
 
 <script setup lang="ts">
 import { useCart } from '@/composables/useCart'
+import { useRouter } from 'vue-router'
 import { formatPrice, getImageUrl } from '@/utils'
 
+const router = useRouter()
 const { 
   cartItems, 
   cartItemsCount, 
@@ -127,6 +129,13 @@ const decreaseQuantity = (productId: number, size?: string) => {
 
 const removeItem = (productId: number, size?: string) => {
   removeFromCart(productId, size)
+}
+
+const proceedToCheckout = () => {
+  if (cartItems.value.length === 0) {
+    return
+  }
+  router.push('/checkout')
 }
 
 

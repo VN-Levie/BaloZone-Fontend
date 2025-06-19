@@ -30,7 +30,7 @@
                   <div class="address-header">
                     <span class="address-type">
                       <i class="bi bi-house-door me-1"></i>
-                      {{ address.type || 'Địa chỉ' }}
+                      {{ address.name }}
                     </span>
                     <span v-if="address.is_default" class="badge bg-success">
                       <i class="bi bi-check-circle me-1"></i>
@@ -40,21 +40,27 @@
                   <p class="address-text">{{ address.address }}</p>
                   <p class="address-details">
                     <i class="bi bi-geo me-1"></i>
-                    {{ address.city }}, {{ address.postal_code }}
+                    {{ address.ward }}, {{ address.district }}, {{ address.province }}
+                  </p>
+                  <p class="address-details">
+                    <i class="bi bi-telephone me-1"></i>
+                    {{ address.phone }}
                   </p>
                 </div>
                 <div class="address-actions">
-                  <button class="btn btn-sm btn-outline-primary">
+                  <button class="btn btn-sm btn-outline-primary" @click="openEditAddress(address)">
                     <i class="bi bi-pencil me-1"></i>
                     Sửa
                   </button>
-                  <button class="btn btn-sm btn-outline-danger">
+                  <button class="btn btn-sm btn-outline-danger" @click="() => handleDeleteAddress(address.id)">
                     <i class="bi bi-trash me-1"></i>
                     Xóa
                   </button>
                 </div>
               </div>
             </div>
+            <AddressFormModal v-if="showAddAddressModal" :isEdit="false" @submit="handleAddAddress" @cancel="() => showAddAddressModal = false" :backendError="addAddressBackendError" />
+            <AddressFormModal v-if="showEditAddressModal" :isEdit="true" :modelValue="editingAddress" @submit="handleEditAddress" @cancel="closeEditAddressModal" :backendError="editAddressBackendError" />
           </div>
           <!-- Change Password -->
           <div v-if="activeTab === 'password'" class="profile-content password-section">
@@ -108,6 +114,7 @@ import { useAuth } from '@/composables/useAuth'
 import { userApi, addressBookApi } from '@/services/api'
 import ProfileSidebar from '@/components/ProfileSidebar.vue'
 import ProfileInfoCard from '@/components/ProfileInfoCard.vue'
+import AddressFormModal from '@/components/AddressFormModal.vue'
 
 const { user, updateUser } = useAuth()
 
@@ -115,6 +122,8 @@ const activeTab = ref('profile')
 const updating = ref(false)
 const changingPassword = ref(false)
 const showAddAddressModal = ref(false)
+const editingAddress = ref<any | null>(null)
+const showEditAddressModal = ref(false)
 
 const profileForm = reactive({
   name: '',
@@ -130,6 +139,8 @@ const passwordForm = reactive({
 })
 
 const addresses = ref<any[]>([])
+const addAddressBackendError = ref<any>(null)
+const editAddressBackendError = ref<any>(null)
 
 const loadProfile = async () => {
   try {
@@ -194,6 +205,55 @@ const changePassword = async () => {
   } finally {
     changingPassword.value = false
   }
+}
+
+function handleAddAddress(address: any) {
+  addAddressBackendError.value = null
+  addressBookApi.createAddress(address)
+    .then(() => {
+      showAddAddressModal.value = false
+      loadAddresses()
+    })
+    .catch(async (err) => {
+      try {
+        const data = err instanceof Error && err.message ? JSON.parse(err.message.replace(/^HTTP \d+: /, '')) : null
+        addAddressBackendError.value = data
+      } catch { addAddressBackendError.value = { message: 'Lỗi không xác định' } }
+    })
+}
+
+function handleEditAddress(address: any) {
+  if (!editingAddress.value) return
+  editAddressBackendError.value = null
+  addressBookApi.updateAddress(editingAddress.value.id, address)
+    .then(() => {
+      showEditAddressModal.value = false
+      editingAddress.value = null
+      loadAddresses()
+    })
+    .catch(async (err) => {
+      try {
+        const data = err instanceof Error && err.message ? JSON.parse(err.message.replace(/^HTTP \d+: /, '')) : null
+        editAddressBackendError.value = data
+      } catch { editAddressBackendError.value = { message: 'Lỗi không xác định' } }
+    })
+}
+
+function handleDeleteAddress(id: number) {
+  if (!confirm('Bạn có chắc muốn xóa địa chỉ này?')) return
+  addressBookApi.deleteAddress(id)
+    .then(() => loadAddresses())
+    .catch(() => alert('Xóa địa chỉ thất bại!'))
+}
+
+// Sửa lại các sự kiện để dùng biến đúng kiểu ref
+function openEditAddress(address: any) {
+  editingAddress.value = address
+  showEditAddressModal.value = true
+}
+function closeEditAddressModal() {
+  showEditAddressModal.value = false
+  editingAddress.value = null
 }
 
 onMounted(() => {

@@ -85,26 +85,77 @@ export interface News {
 export interface Voucher {
   id: number
   code: string
-  discount: number
-  min_order_value?: number
-  max_discount?: number
-  start_date: string
-  end_date: string
-  usage_limit?: number
-  used_count: number
+  price: number
+  end_at: string
+  quantity: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Address {
+  id: number
+  user_id: number
+  name: string
+  phone: string
+  address: string
+  ward: string
+  district: string
+  province: string
+  is_default: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface PaymentMethod {
+  id: number
+  name: string
+  display_name: string
+  status: 'active' | 'inactive'
+  created_at: string
+  updated_at: string
+}
+
+export interface OrderDetail {
+  id: number
+  order_id: number
+  product_id: number
+  price: number
+  quantity: number
+  created_at: string
+  updated_at: string
+  product?: Product
 }
 
 export interface Order {
   id: number
   user_id: number
+  address_id: number
+  payment_method_id: number
+  voucher_id?: number
+  comment?: string
   total_price: number
-  status: 'pending' | 'processing' | 'completed' | 'cancelled'
+  payment_status: 'pending' | 'processing' | 'completed' | 'cancelled'
   created_at: string
   updated_at: string
   user?: User
-  items?: OrderItem[]
+  address?: Address
+  payment_method?: PaymentMethod
+  voucher?: Voucher
+  order_details?: OrderDetail[]
 }
 
+export interface CreateOrderRequest {
+  address_id: number
+  payment_method_id: number
+  voucher_id?: number
+  comment?: string
+  items: {
+    product_id: number
+    quantity: number
+  }[]
+}
+
+// Legacy types - keep for backward compatibility
 export interface OrderItem {
   id: number
   order_id: number

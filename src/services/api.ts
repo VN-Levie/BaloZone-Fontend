@@ -13,7 +13,10 @@ import type {
   User,
   Order,
   Comment,
-  CategoryWithProductsResponse
+  CategoryWithProductsResponse,
+  CreateOrderRequest,
+  Address,
+  PaymentMethod
 } from '@/types'
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api'
@@ -154,42 +157,6 @@ export const authApi = {
 }
 
 // Order API
-export const ordersApi = {
-  // Get all orders for the current user with optional filters
-  getOrders: (params?: {
-    page?: number
-    status?: string
-    days?: number
-  }): Promise<PaginatedResponse<Order>> => {
-    const queryString = params ? '?' + new URLSearchParams(
-      Object.entries(params).reduce((acc, [key, value]) => {
-        if (value !== undefined && value !== null) {
-          acc[key] = String(value)
-        }
-        return acc
-      }, {} as Record<string, string>)
-    ).toString() : ''
-    return makeRequest(`/orders${queryString}`)
-  },
-
-  // Get a single order
-  getOrder: (id: number): Promise<ApiResponse<Order>> => makeRequest(`/orders/${id}`),
-
-  // Create a new order
-  createOrder: (orderData: any): Promise<ApiResponse<Order>> =>
-    makeRequest('/orders', {
-      method: 'POST',
-      body: JSON.stringify(orderData),
-    }),
-
-  // Cancel an order
-  cancelOrder: (id: number): Promise<ApiResponse<any>> =>
-    makeRequest(`/orders/${id}/cancel`, { method: 'POST' }),
-  
-  // Get order stats
-  getOrderStats: (): Promise<ApiResponse<any>> => makeRequest('/orders-stats'),
-}
-
 // User API
 export const userApi = {
   // Get user profile
@@ -283,11 +250,11 @@ export const newsApi = {
 export const vouchersApi = {
   // Get active vouchers
   getActiveVouchers: (): Promise<ApiResponse<Voucher[]>> =>
-    makeRequest('/vouchers-active'),
+    makeRequest('/vouchers'),
 
-  // Validate a voucher code
-  validateVoucher: (code: string): Promise<ApiResponse<any>> =>
-    makeRequest('/vouchers/validate', {
+  // Validate voucher code
+  validateVoucher: (code: string): Promise<ApiResponse<Voucher>> =>
+    makeRequest(`/vouchers/validate`, {
       method: 'POST',
       body: JSON.stringify({ code }),
     }),
@@ -334,4 +301,68 @@ export const saleCampaignsApi = {
   // Get products in a sale campaign
   getSaleCampaignProducts: (id: number): Promise<PaginatedResponse<Product>> =>
     makeRequest(`/sale-campaigns/${id}/products`),
+}
+
+// Orders API
+export const ordersApi = {
+  // Create a new order
+  createOrder: (orderData: CreateOrderRequest): Promise<ApiResponse<Order>> =>
+    makeRequest('/orders', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    }),
+
+  // Get user orders
+  getUserOrders: (page = 1): Promise<PaginatedResponse<Order>> =>
+    makeRequest(`/orders?page=${page}`),
+
+  // Get single order
+  getOrder: (id: number): Promise<ApiResponse<Order>> =>
+    makeRequest(`/orders/${id}`),
+
+  // Cancel order
+  cancelOrder: (id: number): Promise<ApiResponse<Order>> =>
+    makeRequest(`/orders/${id}/cancel`, {
+      method: 'PATCH',
+    }),
+}
+
+// Addresses API
+export const addressesApi = {
+  // Get user addresses
+  getUserAddresses: (): Promise<ApiResponse<Address[]>> =>
+    makeRequest('/user/addresses'),
+
+  // Create new address
+  createAddress: (addressData: Omit<Address, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<ApiResponse<Address>> =>
+    makeRequest('/user/addresses', {
+      method: 'POST',
+      body: JSON.stringify(addressData),
+    }),
+
+  // Update address
+  updateAddress: (id: number, addressData: Partial<Address>): Promise<ApiResponse<Address>> =>
+    makeRequest(`/user/addresses/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(addressData),
+    }),
+
+  // Delete address
+  deleteAddress: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/user/addresses/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Set default address
+  setDefaultAddress: (id: number): Promise<ApiResponse<Address>> =>
+    makeRequest(`/user/addresses/${id}/set-default`, {
+      method: 'PATCH',
+    }),
+}
+
+// Payment Methods API
+export const paymentMethodsApi = {
+  // Get available payment methods
+  getPaymentMethods: (): Promise<ApiResponse<PaymentMethod[]>> =>
+    makeRequest('/payment-methods'),
 }
