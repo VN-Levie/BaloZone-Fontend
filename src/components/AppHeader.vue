@@ -466,6 +466,7 @@ onMounted(async () => {
 }
 
 .categories-nav {
+  margin-top: 100px;
   background: #f8f9fa;
   border-top: 1px solid #e9ecef;
   padding: 0.75rem 0;

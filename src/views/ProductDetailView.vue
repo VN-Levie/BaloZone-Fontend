@@ -34,14 +34,11 @@
         <!-- Product images -->
         <div class="col-lg-6">
           <div class="product-images">
-            <!-- Main image -->
-            <div class="main-image-container mb-3">
-              <img
-                :src="getImageUrl(product.image)"
-                :alt="product.name"
-                class="main-image img-fluid rounded"
-              />
-            </div>
+            <ImageZoom 
+              :images="productImages" 
+              :alt="product.name"
+              :initial-index="0"
+            />
           </div>
         </div>
 
@@ -70,25 +67,11 @@
               <div class="option-group mb-3">
                 <label class="option-label fw-semibold mb-2">Số lượng:</label>
                 <div class="quantity-controls d-flex align-items-center">
-                  <button
-                    class="btn btn-outline-secondary btn-sm"
-                    @click="decreaseQuantity"
-                    :disabled="quantity <= 1"
-                  >
+                  <button class="btn btn-outline-secondary btn-sm" @click="decreaseQuantity" :disabled="quantity <= 1">
                     <i class="bi bi-dash"></i>
                   </button>
-                  <input
-                    type="number"
-                    v-model="quantity"
-                    class="form-control quantity-input mx-2 text-center"
-                    min="1"
-                    :max="product.quantity"
-                  />
-                  <button
-                    class="btn btn-outline-secondary btn-sm"
-                    @click="increaseQuantity"
-                    :disabled="quantity >= product.quantity"
-                  >
+                  <input type="number" v-model="quantity" class="form-control quantity-input mx-2 text-center" min="1" :max="product.quantity" />
+                  <button class="btn btn-outline-secondary btn-sm" @click="increaseQuantity" :disabled="quantity >= product.quantity">
                     <i class="bi bi-plus"></i>
                   </button>
                 </div>
@@ -97,33 +80,35 @@
 
             <!-- Stock status -->
             <div class="stock-status mb-3">
-              <span
-                class="badge"
-                :class="product.quantity > 0 ? 'bg-success' : 'bg-danger'"
-              >
+              <span class="badge" :class="product.quantity > 0 ? 'bg-success' : 'bg-danger'">
                 {{ product.quantity > 0 ? `Còn ${product.quantity} sản phẩm` : 'Hết hàng' }}
               </span>
             </div>
 
             <!-- Action buttons -->
             <div class="product-actions">
-              <button
-                class="btn btn-primary btn-lg me-3 mb-2"
-                @click="addToCart"
+              <button 
+                class="btn btn-primary btn-lg me-3 mb-2" 
+                @click="addToCart" 
                 :disabled="product.quantity === 0 || isAddingToCart"
               >
                 <span v-if="isAddingToCart" class="spinner-border spinner-border-sm me-2" role="status"></span>
                 <i v-else class="bi bi-cart-plus me-2"></i>
                 {{ isAddingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}
               </button>
-              <button
-                class="btn btn-outline-danger btn-lg me-2 mb-2"
+              
+              <button 
+                class="btn btn-lg me-2 mb-2 wishlist-btn" 
+                @click="toggleWishlistHandler"
+                :class="isInWishlistComputed ? 'btn-danger' : 'btn-outline-danger'"
               >
-                <i class="bi bi-heart me-2"></i>
-                Yêu thích
+                <i class="bi me-2" :class="isInWishlistComputed ? 'bi-heart-fill' : 'bi-heart'"></i>
+                {{ isInWishlistComputed ? 'Đã yêu thích' : 'Yêu thích' }}
               </button>
-              <button
+              
+              <button 
                 class="btn btn-outline-success btn-lg mb-2"
+                @click="openShareModal"
               >
                 <i class="bi bi-share me-2"></i>
                 Chia sẻ
@@ -157,24 +142,12 @@
       <div class="product-tabs mt-5">
         <ul class="nav nav-tabs" role="tablist">
           <li class="nav-item" role="presentation">
-            <button
-              class="nav-link active"
-              data-bs-toggle="tab"
-              data-bs-target="#description"
-              type="button"
-              role="tab"
-            >
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">
               Mô tả sản phẩm
             </button>
           </li>
           <li class="nav-item" role="presentation">
-            <button
-              class="nav-link"
-              data-bs-toggle="tab"
-              data-bs-target="#reviews"
-              type="button"
-              role="tab"
-            >
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
               Đánh giá ({{ reviews.length }})
             </button>
           </li>
@@ -217,11 +190,7 @@
       <div class="related-products mt-5">
         <h3 class="mb-4">Sản phẩm liên quan</h3>
         <div class="row">
-          <div
-            v-for="relatedProd in relatedProducts"
-            :key="relatedProd.id"
-            class="col-lg-3 col-md-4 col-sm-6 mb-4"
-          >
+          <div v-for="relatedProd in relatedProducts" :key="relatedProd.id" class="col-lg-3 col-md-4 col-sm-6 mb-4">
             <div class="card product-card h-100">
               <router-link :to="`/product/${relatedProd.id}`" class="text-decoration-none">
                 <img :src="getImageUrl(relatedProd.image)" :alt="relatedProd.name" class="card-img-top" />
@@ -238,6 +207,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Share Modal -->
+  <ShareModal v-if="product" :product="product" modal-id="shareModal" />
 </template>
 
 <script setup lang="ts">
@@ -249,6 +221,8 @@ import { formatPrice, formatDate, getImageUrl } from '@/utils'
 import { useCart } from '@/composables/useCart'
 import { useWishlist } from '@/composables/useWishlist'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import ShareModal from '@/components/ShareModal.vue'
+import ImageZoom from '@/components/ImageZoom.vue'
 
 const route = useRoute()
 const { addToCart: addToCartComposable, isInCart } = useCart()
@@ -285,6 +259,33 @@ const reviews = computed((): Comment[] => {
   return product.value?.comments || []
 })
 
+// Product images array for zoom component
+const productImages = computed(() => {
+  if (!product.value) return []
+  
+  // Main product image
+  const images = [getImageUrl(product.value.image)]
+  
+  // Add some sample gallery images for demo purposes
+  // In a real app, these would come from product.gallery or similar
+  if (product.value.image) {
+    // Generate some additional sample images (placeholder for demo)
+    const baseImage = getImageUrl(product.value.image)
+    images.push(
+      'https://via.placeholder.com/600x600.png/00aa55?text=Gallery+Image+2',
+      'https://via.placeholder.com/600x600.png/aa0055?text=Gallery+Image+3',
+      'https://via.placeholder.com/600x600.png/5500aa?text=Gallery+Image+4'
+    )
+  }
+  
+  return images
+})
+
+// Wishlist computed property
+const isInWishlistComputed = computed(() => {
+  return product.value ? isInWishlist(product.value.id) : false
+})
+
 // Methods
 const increaseQuantity = () => {
   if (product.value && quantity.value < product.value.quantity) {
@@ -300,7 +301,7 @@ const decreaseQuantity = () => {
 
 const addToCart = async () => {
   if (!product.value) return
-  
+
   isAddingToCart.value = true
   try {
     // Add to cart using composable
@@ -315,7 +316,34 @@ const addToCart = async () => {
 
 const toggleWishlistHandler = () => {
   if (product.value) {
+    console.log('Toggling wishlist for product:', product.value.id, product.value.name)
     toggleWishlist(product.value)
+    console.log('Product is now in wishlist:', isInWishlist(product.value.id))
+  }
+}
+
+const openShareModal = () => {
+  // Use Bootstrap's modal API if available
+  if (typeof window !== 'undefined' && (window as any).bootstrap) {
+    const modalElement = document.getElementById('shareModal')
+    if (modalElement) {
+      const modal = new (window as any).bootstrap.Modal(modalElement)
+      modal.show()
+    }
+  } else {
+    // Fallback: manually trigger the modal
+    const modalElement = document.getElementById('shareModal')
+    if (modalElement) {
+      modalElement.classList.add('show')
+      modalElement.style.display = 'block'
+      document.body.classList.add('modal-open')
+      
+      // Add backdrop
+      const backdrop = document.createElement('div')
+      backdrop.className = 'modal-backdrop fade show'
+      backdrop.id = 'shareModalBackdrop'
+      document.body.appendChild(backdrop)
+    }
   }
 }
 
@@ -353,12 +381,46 @@ watch(
   top: auto !important;
   right: auto !important;
   z-index: auto !important;
+  align-items: center;
 }
 
 .product-actions .btn {
   width: auto !important;
   margin-bottom: 0.5rem;
   margin-right: 0.5rem;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+}
+
+/* Wishlist button styling */
+.wishlist-btn {
+  min-width: 140px;
+}
+
+.wishlist-btn.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.wishlist-btn.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-1px);
+}
+
+.wishlist-btn.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.wishlist-btn.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+  transform: translateY(-1px);
 }
 
 /* For mobile, keep the sticky behavior but override other conflicting styles */
@@ -372,13 +434,17 @@ watch(
     margin: 0 -15px !important;
     flex-direction: column !important;
     gap: 0 !important;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
   }
-  
+
   .product-actions .btn {
     width: 100% !important;
     margin-right: 0 !important;
     margin-bottom: 10px !important;
   }
+  
+  .wishlist-btn {
+    min-width: auto;
+  }
 }
 </style>
-

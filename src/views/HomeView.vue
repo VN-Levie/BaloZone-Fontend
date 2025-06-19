@@ -77,7 +77,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="homepage">
+  <div class="homepage mt-5">
     <!-- Hero Banner Section -->
     <section class="hero-section">
       <div class="container-fluid px-4">
