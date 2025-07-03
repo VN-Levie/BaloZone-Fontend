@@ -347,8 +347,8 @@ const handleAddressAdded = async (addressData: any) => {
 const handlePlaceOrder = async () => {
   const order = await placeOrder()
   if (order) {
-    // Navigate to order success page
-    router.push(`/order-success/${order.id}`)
+    // Navigate to orders page after successful order
+    router.push('/orders')
   }
 }
 
