@@ -250,7 +250,7 @@ export const newsApi = {
 export const vouchersApi = {
   // Get active vouchers
   getActiveVouchers: (): Promise<ApiResponse<Voucher[]>> =>
-    makeRequest('/vouchers'),
+    makeRequest('/vouchers-active'),
 
   // Validate voucher code
   validateVoucher: (code: string): Promise<ApiResponse<Voucher>> =>

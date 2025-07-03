@@ -9,8 +9,8 @@
             <div class="footer-section dark-section">
               <h5 class="footer-title">CHÍNH SÁCH</h5>
               <ul class="footer-links">
-                <li><a href="#">Chính sách bảo hành</a></li>                
-                <li><a href="#">Chính sách bảo mật</a></li>
+                <li><router-link to="/warranty-policy">Chính sách bảo hành</router-link></li>
+                <li><router-link to="/privacy-policy">Chính sách bảo mật</router-link></li>
               </ul>
             </div>
           </div>
@@ -20,9 +20,9 @@
             <div class="footer-section orange-section">
               <h5 class="footer-title">HỖ TRỢ KHÁCH HÀNG</h5>
               <ul class="footer-links">
-                <li><a href="#">Hướng dẫn sử dụng khóa Vali</a></li>
-                <li><a href="#">Phương thức thanh toán</a></li>
-                <li><a href="#">Hướng dẫn sử dụng mã voucher</a></li>
+                <li><router-link to="/suitcase-lock-guide">Hướng dẫn sử dụng khóa Vali</router-link></li>
+                <li><router-link to="/payment-methods">Phương thức thanh toán</router-link></li>
+                <li><router-link to="/voucher-guide">Hướng dẫn sử dụng mã voucher</router-link></li>
               </ul>
             </div>
           </div>
@@ -32,8 +32,7 @@
             <div class="footer-section orange-section">
               <h5 class="footer-title">KIẾN THỨC HÀNH LÝ</h5>
               <ul class="footer-links">
-                <li><a href="#">Bí kíp chọn hành lý</a></li>
-                <li><a href="#">BaloZone Go! Ăn gì ở đâu?</a></li>
+                <li><router-link to="/luggage-tips">Bí kíp chọn hành lý</router-link></li>
               </ul>
             </div>
           </div>
@@ -43,9 +42,8 @@
             <div class="footer-section dark-section">
               <h5 class="footer-title">VỀ BALOZONE.vn</h5>
               <ul class="footer-links">
-                <li><a href="#">Câu chuyện về BaloZone.vn</a></li>
+                <li><router-link to="/about-balozone">Câu chuyện về BaloZone.vn</router-link></li>
                 <li><a href="#">Quỹ bảo vệ môi trường "SAVE THE OCEAN"</a></li>
-                <li><a href="#">Tuyển dụng</a></li>
               </ul>
             </div>
           </div>

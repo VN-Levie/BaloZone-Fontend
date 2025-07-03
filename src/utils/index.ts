@@ -171,6 +171,17 @@ export const validation = {
   }
 }
 
+export const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
+export const isValidPhone = (phone: string): boolean => {
+  // Vietnamese phone number regex
+  const phoneRegex = /^(\+84|84|0)?([3|5|7|8|9])+([0-9]{8})$/
+  return phoneRegex.test(phone.replace(/\s/g, ''))
+}
+
 // Date utilities
 export const dateHelpers = {
   isToday: (date: string | Date): boolean => {

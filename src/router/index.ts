@@ -91,6 +91,42 @@ const router = createRouter({
       name: 'about',
       component: () => import('../views/AboutView.vue'),
     },
+    // Static pages
+    {
+      path: '/warranty-policy',
+      name: 'warranty-policy',
+      component: () => import('../views/WarrantyPolicyView.vue'),
+    },
+    {
+      path: '/privacy-policy',
+      name: 'privacy-policy',
+      component: () => import('../views/PrivacyPolicyView.vue'),
+    },
+    {
+      path: '/suitcase-lock-guide',
+      name: 'suitcase-lock-guide',
+      component: () => import('../views/SuitcaseLockGuideView.vue'),
+    },
+    {
+      path: '/payment-methods',
+      name: 'payment-methods',
+      component: () => import('../views/PaymentMethodsView.vue'),
+    },
+    {
+      path: '/about-balozone',
+      name: 'about-balozone',
+      component: () => import('../views/AboutBaloZoneView.vue'),
+    },
+    {
+      path: '/voucher-guide',
+      name: 'voucher-guide',
+      component: () => import('../views/VoucherGuideView.vue'),
+    },
+    {
+      path: '/luggage-tips',
+      name: 'luggage-tips',
+      component: () => import('../views/LuggageTipsView.vue'),
+    },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
