@@ -48,7 +48,7 @@ const getIconClass = (type: string) => {
 <style scoped>
 .toast-container {
   position: fixed;
-  top: 20px;
+  top: 100px;
   right: 20px;
   z-index: 9999;
   display: flex;
@@ -59,7 +59,7 @@ const getIconClass = (type: string) => {
 .toast-notification {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 15px;
   background: white;
   border-radius: 12px;
   padding: 16px;

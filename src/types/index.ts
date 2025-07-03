@@ -85,7 +85,7 @@ export interface News {
 export interface Voucher {
   id: number
   code: string
-  price: number
+  price: number | string
   end_at: string
   quantity: number
   created_at: string
