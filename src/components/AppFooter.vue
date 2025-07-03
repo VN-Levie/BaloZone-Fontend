@@ -1,105 +1,72 @@
 <template>
   <footer class="app-footer">
+    <!-- Main Footer Content -->
     <div class="footer-content">
-      <div class="container-fluid px-4">
-        <div class="row">
-          <!-- Company Info -->
-          <div class="col-lg-3 col-md-6 mb-4">
-            <div class="footer-section">
-              <div class="footer-logo mb-3">
-                <img src="/favicon.ico" alt="BaloZone" class="logo-img" />
-                <span class="brand-text">BaloZone</span>
-              </div>
-              <p class="footer-description">
-                Chuyên cung cấp các sản phẩm balo, vali, túi xách chất lượng cao 
-                với giá cả hợp lý. Uy tín - Chất lượng - Dịch vụ tốt nhất.
-              </p>
+      <div class="container-fluid p-0">
+        <div class="row g-0 footer-sections-row">
+          <!-- Chính sách -->
+          <div class="col-lg-2 col-md-6">
+            <div class="footer-section dark-section">
+              <h5 class="footer-title">CHÍNH SÁCH</h5>
+              <ul class="footer-links">
+                <li><a href="#">Chính sách bảo hành</a></li>                
+                <li><a href="#">Chính sách bảo mật</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Hỗ trợ khách hàng -->
+          <div class="col-lg-3 col-md-6">
+            <div class="footer-section orange-section">
+              <h5 class="footer-title">HỖ TRỢ KHÁCH HÀNG</h5>
+              <ul class="footer-links">
+                <li><a href="#">Hướng dẫn sử dụng khóa Vali</a></li>
+                <li><a href="#">Phương thức thanh toán</a></li>
+                <li><a href="#">Hướng dẫn sử dụng mã voucher</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Kiến thức hành lý -->
+          <div class="col-lg-2 col-md-6">
+            <div class="footer-section orange-section">
+              <h5 class="footer-title">KIẾN THỨC HÀNH LÝ</h5>
+              <ul class="footer-links">
+                <li><a href="#">Bí kíp chọn hành lý</a></li>
+                <li><a href="#">BaloZone Go! Ăn gì ở đâu?</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Về BaloZone -->
+          <div class="col-lg-2 col-md-6">
+            <div class="footer-section dark-section">
+              <h5 class="footer-title">VỀ BALOZONE.vn</h5>
+              <ul class="footer-links">
+                <li><a href="#">Câu chuyện về BaloZone.vn</a></li>
+                <li><a href="#">Quỹ bảo vệ môi trường "SAVE THE OCEAN"</a></li>
+                <li><a href="#">Tuyển dụng</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Kết nối với BaloZone.vn -->
+          <div class="col-lg-3 col-md-12">
+            <div class="footer-section orange-section">
+              <h5 class="footer-title">KẾT NỐI VỚI BALOZONE.VN</h5>
               <div class="social-links">
-                <a href="#" class="social-link">
+                <a href="#" class="social-link facebook">
                   <i class="bi bi-facebook"></i>
                 </a>
-                <a href="#" class="social-link">
-                  <i class="bi bi-instagram"></i>
-                </a>
-                <a href="#" class="social-link">
-                  <i class="bi bi-youtube"></i>
-                </a>
-                <a href="#" class="social-link">
+                <a href="#" class="social-link tiktok">
                   <i class="bi bi-tiktok"></i>
                 </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Links -->
-          <div class="col-lg-2 col-md-6 mb-4">
-            <div class="footer-section">
-              <h5 class="footer-title">Liên kết nhanh</h5>
-              <ul class="footer-links">
-                <li><router-link to="/">Trang chủ</router-link></li>
-                <li><router-link to="/category/balo">Balo</router-link></li>
-                <li><router-link to="/category/vali">Vali</router-link></li>
-                <li><router-link to="/category/tui-xach">Túi Xách</router-link></li>
-                <li><router-link to="/news">Tin tức</router-link></li>
-                <li><router-link to="/contact">Liên hệ</router-link></li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Customer Service -->
-          <div class="col-lg-2 col-md-6 mb-4">
-            <div class="footer-section">
-              <h5 class="footer-title">Hỗ trợ khách hàng</h5>
-              <ul class="footer-links">
-                <li><a href="#">Hướng dẫn mua hàng</a></li>
-                <li><a href="#">Chính sách đổi trả</a></li>
-                <li><a href="#">Chính sách bảo hành</a></li>
-                <li><a href="#">Phương thức thanh toán</a></li>
-                <li><a href="#">Vận chuyển giao hàng</a></li>
-                <li><a href="#">Câu hỏi thường gặp</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Account -->
-          <div class="col-lg-2 col-md-6 mb-4">
-            <div class="footer-section">
-              <h5 class="footer-title">Tài khoản</h5>
-              <ul class="footer-links">
-                <li><router-link to="/login">Đăng nhập</router-link></li>
-                <li><router-link to="/register">Đăng ký</router-link></li>
-                <li><router-link to="/profile">Thông tin tài khoản</router-link></li>
-                <li><router-link to="/orders">Lịch sử đơn hàng</router-link></li>
-                <li><router-link to="/wishlist">Danh sách yêu thích</router-link></li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Contact Info -->
-          <div class="col-lg-3 col-md-6 mb-4">
-            <div class="footer-section">
-              <h5 class="footer-title">Thông tin liên hệ</h5>
-              <div class="contact-info">
-                <div class="contact-item">
-                  <i class="bi bi-geo-alt"></i>
-                  <span>123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</span>
-                </div>
-                <div class="contact-item">
-                  <i class="bi bi-telephone"></i>
-                  <span>
-                    <a href="tel:0123456789">0123 456 789</a>
-                  </span>
-                </div>
-                <div class="contact-item">
-                  <i class="bi bi-envelope"></i>
-                  <span>
-                    <a href="mailto:contact@balozone.com">contact@balozone.com</a>
-                  </span>
-                </div>
-                <div class="contact-item">
-                  <i class="bi bi-clock"></i>
-                  <span>Thứ 2 - Chủ nhật: 8:00 - 22:00</span>
-                </div>
+                <a href="#" class="social-link instagram">
+                  <i class="bi bi-instagram"></i>
+                </a>
+                <a href="#" class="social-link zalo">
+                  <span class="zalo-text">Zalo</span>
+                </a>
               </div>
             </div>
           </div>
@@ -107,25 +74,13 @@
       </div>
     </div>
 
-    <!-- Bottom Footer -->
-    <div class="footer-bottom">
+    <!-- Company Information -->
+    <div class="company-info">
       <div class="container-fluid px-4">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-            <p class="copyright">
-              © {{ currentYear }} BaloZone. Tất cả quyền được bảo lưu.
-            </p>
-          </div>
-          <div class="col-md-6">
-            <div class="payment-methods">
-              <span class="payment-text">Phương thức thanh toán:</span>
-              <div class="payment-icons">
-                <i class="bi bi-credit-card-2-front"></i>
-                <i class="bi bi-paypal"></i>
-                <i class="bi bi-bank"></i>
-              </div>
-            </div>
-          </div>
+        <div class="company-details">
+          <p class="company-name">
+            Copyright &copy; {{ currentYear }} BaloZone.vn. All rights reserved.
+          </p>
         </div>
       </div>
     </div>
@@ -140,67 +95,100 @@ const currentYear = computed(() => new Date().getFullYear())
 
 <style scoped>
 .app-footer {
-  background: #343a40;
+  background: linear-gradient(135deg, #d2491e 0%, #c73e1d 100%);
   color: #fff;
   margin-top: auto;
 }
 
-.footer-content {
-  padding: 3rem 0 2rem;
+.store-info-header {
+  background: #fff;
+  padding: 1rem 0;
+  border-radius: 10px 10px 0 0;
+  margin-bottom: 0;
 }
 
-.footer-logo {
+/* 
+.store-info-header .container-fluid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+} */
+
+.store-badge {
+  background: #d2491e;
+  color: #fff;
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
-.logo-img {
-  width: 32px;
-  height: 32px;
-  margin-right: 0.5rem;
+.store-badge i {
+  font-size: 1.1rem;
 }
 
-.brand-text {
+.hotline-info {
+  display: flex;
+  gap: 3rem;
+}
+
+.hotline-item {
+  text-align: center;
+}
+
+.hotline-label {
+  display: block;
+  color: #666;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+
+.hotline-number {
+  display: block;
+  color: #d2491e;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #007bff;
 }
 
-.footer-description {
-  color: #adb5bd;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
+.footer-content {
+  padding: 0;
+  background: transparent;
 }
 
-.social-links {
+.footer-sections-row {
   display: flex;
-  gap: 0.75rem;
+  align-items: stretch;
 }
 
-.social-link {
+.footer-sections-row>div {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: #495057;
-  color: #fff;
-  border-radius: 50%;
-  text-decoration: none;
-  transition: all 0.2s ease;
 }
 
-.social-link:hover {
-  background: #007bff;
-  color: #fff;
-  transform: translateY(-2px);
+.footer-section {
+  padding: 2.5rem 1.5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-section.dark-section {
+  background: #2d3e50;
+}
+
+.footer-section.orange-section {
+  background: #d2491e;
 }
 
 .footer-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
   color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .footer-links {
@@ -210,97 +198,183 @@ const currentYear = computed(() => new Date().getFullYear())
 }
 
 .footer-links li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
 }
 
 .footer-links a {
-  color: #adb5bd;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
-  transition: color 0.2s ease;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  line-height: 1.4;
 }
 
 .footer-links a:hover {
-  color: #007bff;
+  color: #fff;
+  padding-left: 0.5rem;
 }
 
-.contact-info {
-  space-y: 0.75rem;
-}
-
-.contact-item {
+.social-links {
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.contact-item i {
-  color: #007bff;
-  font-size: 1.1rem;
-  margin-top: 0.1rem;
-  flex-shrink: 0;
-}
-
-.contact-item span {
-  color: #adb5bd;
-}
-
-.contact-item a {
-  color: #adb5bd;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.contact-item a:hover {
-  color: #007bff;
-}
-
-.footer-bottom {
-  background: #212529;
-  padding: 1.5rem 0;
-  border-top: 1px solid #495057;
-}
-
-.copyright {
-  margin: 0;
-  color: #adb5bd;
-  font-size: 0.9rem;
-}
-
-.payment-methods {
+.social-link {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-.payment-text {
-  color: #adb5bd;
-  font-size: 0.9rem;
+.social-link.facebook {
+  background: #1877f2;
+  color: #fff;
 }
 
-.payment-icons {
+.social-link.tiktok {
+  background: #000;
+  color: #fff;
+}
+
+.social-link.instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: #fff;
+}
+
+.social-link.zalo {
+  background: #0068ff;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.social-link:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.social-link i {
+  font-size: 1.2rem;
+}
+
+.zalo-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.company-info {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* .company-info .container-fluid {
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+} */
+
+.company-details {
+  flex: 1;
 }
 
-.payment-icons i {
-  font-size: 1.25rem;
-  color: #adb5bd;
+.company-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.company-registration {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.certifications {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.cert-badge {
+  height: 40px;
+  border-radius: 5px;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.cert-badge:hover {
+  opacity: 1;
+}
+
+@media (max-width: 992px) {
+  .hotline-info {
+    gap: 1.5rem;
+  }
+
+  .hotline-number {
+    font-size: 1.2rem;
+  }
+
+  .footer-sections-row {
+    flex-direction: column;
+  }
+
+  .footer-section {
+    padding: 2rem 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
-  .footer-content {
-    padding: 2rem 0 1rem;
+  .store-info-header .container-fluid {
+    flex-direction: column;
+    gap: 1rem;
   }
-  
-  .payment-methods {
-    justify-content: flex-start;
-    margin-top: 1rem;
+
+  .hotline-info {
+    justify-content: center;
   }
-  
+
+  .footer-sections-row {
+    flex-direction: column;
+  }
+
+  .footer-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .company-info .container-fluid {
+    flex-direction: column;
+    text-align: center;
+  }
+
   .social-links {
     justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .hotline-info {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .footer-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .social-links {
+    justify-content: flex-start;
   }
 }
 </style>
