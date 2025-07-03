@@ -89,6 +89,21 @@
                 <span class="user-name">{{ user?.name || 'User' }}</span>
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
+                <li class="dropdown-header">
+                  <div class="user-info-dropdown">
+                    <strong>{{ user?.name || 'User' }}</strong>
+                    <small class="text-muted d-block">{{ user?.email }}</small>
+                    <div class="user-roles-dropdown" v-if="user?.roles && user.roles.length > 0">
+                      <RoleBadge 
+                        v-for="role in user.roles" 
+                        :key="role.id" 
+                        :role="role" 
+                        size="small"
+                      />
+                    </div>
+                  </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
                 <li>
                   <router-link to="/profile" class="dropdown-item">
                     <i class="bi bi-person"></i>
@@ -100,6 +115,15 @@
                     <i class="bi bi-box"></i>
                     Đơn hàng
                   </router-link>
+                </li>
+                <li v-if="isAdmin || isContributor">
+                  <hr class="dropdown-divider">
+                </li>
+                <li v-if="isAdmin || isContributor">
+                  <a href="#" class="dropdown-item" @click.prevent="goToAdmin">
+                    <i class="bi bi-gear"></i>
+                    Quản trị
+                  </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
@@ -158,11 +182,12 @@ import { useCart } from '@/composables/useCart'
 import { useWishlist } from '@/composables/useWishlist'
 import { useToast } from '@/composables/useToast'
 import { categoriesApi } from '@/services/api'
+import RoleBadge from './RoleBadge.vue'
 import type { Category } from '@/types'
 
 const router = useRouter()
 const auth = useAuth()
-const { user, isLoggedIn, logout } = toRefs(auth)
+const { user, isLoggedIn, isAdmin, isContributor, logout } = toRefs(auth)
 const { cartItemsCount } = useCart()
 const { wishlistCount } = useWishlist()
 const { showLogoutSuccess } = useToast()
@@ -237,6 +262,10 @@ const handleLogout = async () => {
   await logout.value()
   showLogoutSuccess()
   router.push('/')
+}
+
+const goToAdmin = () => {
+  router.push('/admin')
 }
 
 const fetchCategories = async () => {
@@ -539,6 +568,29 @@ onMounted(async () => {
   100% {
     background-position: -200% 0;
   }
+}
+
+.user-info-dropdown {
+  padding: 0.5rem 0;
+  text-align: center;
+}
+
+.user-info-dropdown strong {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.user-info-dropdown small {
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.user-roles-dropdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: center;
+  margin-top: 0.5rem;
 }
 
 @keyframes pulse {

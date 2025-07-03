@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { authApi } from '@/services/api'
-import type { User, LoginCredentials, RegisterData } from '@/types'
+import type { User, LoginCredentials, RegisterData, Role } from '@/types'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -12,6 +12,23 @@ export const useAuthStore = defineStore('auth', () => {
   // Getters
   const isAuthenticated = computed(() => !!token.value && !!user.value)
   const isLoggedIn = computed(() => isAuthenticated.value)
+  
+  // Role-based getters
+  const userRoles = computed(() => user.value?.roles || [])
+  const hasRole = (roleName: string) => {
+    return userRoles.value.some(role => role.name === roleName)
+  }
+  const isAdmin = computed(() => hasRole('admin'))
+  const isUser = computed(() => hasRole('user'))
+  const isContributor = computed(() => hasRole('contributor'))
+  
+  // Get primary role (first role or legacy role)
+  const primaryRole = computed(() => {
+    if (user.value?.roles && user.value.roles.length > 0) {
+      return user.value.roles[0].name
+    }
+    return user.value?.role || 'user'
+  })
 
   // Actions
   const initializeAuth = () => {
@@ -106,6 +123,17 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('user', JSON.stringify(updatedUser))
   }
 
+  // Role checking utilities
+  const checkPermission = (requiredRole: string): boolean => {
+    if (!user.value) return false
+    return hasRole(requiredRole) || hasRole('admin') // Admin has all permissions
+  }
+
+  const getRoleDisplayName = (roleName: string): string => {
+    const role = userRoles.value.find(r => r.name === roleName)
+    return role?.display_name || roleName
+  }
+
   return {
     // State
     user: computed(() => user.value),
@@ -114,6 +142,11 @@ export const useAuthStore = defineStore('auth', () => {
     // Getters
     isAuthenticated,
     isLoggedIn,
+    userRoles,
+    isAdmin,
+    isUser,
+    isContributor,
+    primaryRole,
     // Actions
     login,
     register,
@@ -121,6 +154,10 @@ export const useAuthStore = defineStore('auth', () => {
     initializeAuth,
     refreshUser,
     updateUser,
-    clearAuth
+    clearAuth,
+    // Utilities
+    hasRole,
+    checkPermission,
+    getRoleDisplayName
   }
 })

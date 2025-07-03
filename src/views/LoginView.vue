@@ -12,10 +12,24 @@
               
               <!-- Demo account info -->
               <div class="demo-info">
-                <small class="text-info">
+                <small class="text-info d-block mb-1">
                   <i class="bi bi-info-circle"></i>
-                  Demo: test@example.com / password
+                  <strong>Tài khoản demo:</strong>
                 </small>
+                <small class="text-muted d-block">
+                  📧 Admin: admin@balozone.com / admin123
+                </small>
+                <small class="text-muted d-block">
+                  👤 User: test@example.com / password
+                </small>
+                <div class="mt-2">
+                  <router-link to="/roles-demo" class="btn btn-sm btn-outline-info me-2">
+                    🎯 Demo Roles
+                  </router-link>
+                  <router-link to="/api-tester" class="btn btn-sm btn-outline-success">
+                    🔧 API Tester
+                  </router-link>
+                </div>
               </div>
             </div>
 
@@ -88,6 +102,32 @@
                 <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
                 {{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
               </button>
+
+              <!-- Quick login buttons for demo -->
+              <div class="demo-login-buttons mt-3">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <button 
+                      type="button" 
+                      class="btn btn-outline-warning btn-sm w-100"
+                      @click="quickLogin('admin')"
+                      :disabled="loading"
+                    >
+                      👑 Login Admin
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button 
+                      type="button" 
+                      class="btn btn-outline-primary btn-sm w-100"
+                      @click="quickLogin('user')"
+                      :disabled="loading"
+                    >
+                      👤 Login User
+                    </button>
+                  </div>
+                </div>
+              </div>
             </form>
 
             <div class="text-center mt-4">
@@ -180,6 +220,18 @@ const handleLogin = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const quickLogin = async (userType: 'admin' | 'user') => {
+  if (userType === 'admin') {
+    form.email = 'admin@balozone.com'
+    form.password = 'admin123'
+  } else {
+    form.email = 'test@example.com'
+    form.password = 'password'
+  }
+  
+  await handleLogin()
 }
 </script>
 

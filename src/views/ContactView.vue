@@ -303,8 +303,8 @@ import { isValidEmail, isValidPhone } from '../utils'
 import Breadcrumb from '../components/Breadcrumb.vue'
 
 const breadcrumbItems = [
-  { text: 'Home', to: '/' },
-  { text: 'Contact', to: '/contact' }
+  { name: 'Home', path: '/' },
+  { name: 'Contact', path: '/contact' }
 ]
 
 const form = reactive({
@@ -429,9 +429,9 @@ const submitForm = async () => {
     // Reset form
     Object.keys(form).forEach(key => {
       if (key === 'newsletter') {
-        form[key] = false
+        (form as any)[key] = false
       } else {
-        form[key] = ''
+        (form as any)[key] = ''
       }
     })
     

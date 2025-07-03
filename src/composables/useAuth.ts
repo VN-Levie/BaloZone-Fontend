@@ -21,6 +21,13 @@ export const useAuth = () => {
     isLoading: computed(() => authStore.isLoading),
     token: computed(() => authStore.token),
     
+    // Role-based getters
+    userRoles: computed(() => authStore.userRoles),
+    isAdmin: computed(() => authStore.isAdmin),
+    isUser: computed(() => authStore.isUser),
+    isContributor: computed(() => authStore.isContributor),
+    primaryRole: computed(() => authStore.primaryRole),
+    
     // Actions from store
     login,
     register,
@@ -28,6 +35,11 @@ export const useAuth = () => {
     initializeAuth: authStore.initializeAuth,
     refreshUser: authStore.refreshUser,
     updateUser: authStore.updateUser,
-    clearAuth: authStore.clearAuth
+    clearAuth: authStore.clearAuth,
+    
+    // Role utilities
+    hasRole: authStore.hasRole,
+    checkPermission: authStore.checkPermission,
+    getRoleDisplayName: authStore.getRoleDisplayName
   }
 }

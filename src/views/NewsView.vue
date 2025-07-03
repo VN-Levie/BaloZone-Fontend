@@ -210,8 +210,8 @@ const selectedCategory = ref('')
 const categories = ref<string[]>([])
 
 const breadcrumbItems = [
-  { text: 'Home', to: '/' },
-  { text: 'News', to: '/news' }
+  { name: 'Home', path: '/' },
+  { name: 'News', path: '/news' }
 ]
 
 const visiblePages = computed(() => {
@@ -259,7 +259,7 @@ const fetchArticles = async () => {
 const fetchCategories = async () => {
   try {
     const response = await newsApi.getCategories()
-    categories.value = response
+    categories.value = response.data.map((cat: any) => cat.name || cat)
   } catch (err) {
     console.error('Failed to load categories:', err)
   }
@@ -274,7 +274,7 @@ const changePage = (page: number) => {
 }
 
 // Debounced search
-let searchTimeout: NodeJS.Timeout
+let searchTimeout: ReturnType<typeof setTimeout>
 const debouncedSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {

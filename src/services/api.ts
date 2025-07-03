@@ -16,10 +16,12 @@ import type {
   CategoryWithProductsResponse,
   CreateOrderRequest,
   Address,
-  PaymentMethod
+  PaymentMethod,
+  Role,
+  RolesResponse
 } from '@/types'
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api'
+const API_BASE_URL = 'http://localhost:8000/api'
 
 // Utility function to get auth token
 const getAuthToken = (): string | null => {
@@ -107,6 +109,24 @@ export const productsApi = {
   // Get sale campaigns for a product
   getProductSaleCampaigns: (productId: number): Promise<ApiResponse<any[]>> =>
     makeRequest(`/products/${productId}/sale-campaigns`),
+
+  // Admin/Contributor only methods
+  createProduct: (productData: any): Promise<ApiResponse<Product>> =>
+    makeRequest('/products', {
+      method: 'POST',
+      body: JSON.stringify(productData),
+    }),
+
+  updateProduct: (id: number, productData: any): Promise<ApiResponse<Product>> =>
+    makeRequest(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(productData),
+    }),
+
+  deleteProduct: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/products/${id}`, {
+      method: 'DELETE',
+    }),
 }
 
 // Categories API
@@ -126,6 +146,24 @@ export const categoriesApi = {
   // Get single category by slug
   getCategoryBySlug: (slug: string): Promise<CategoryWithProductsResponse> =>
     makeRequest(`/categories/slug/${slug}`),
+
+  // Admin/Contributor only methods
+  createCategory: (categoryData: any): Promise<ApiResponse<Category>> =>
+    makeRequest('/categories', {
+      method: 'POST',
+      body: JSON.stringify(categoryData),
+    }),
+
+  updateCategory: (id: number, categoryData: any): Promise<ApiResponse<Category>> =>
+    makeRequest(`/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(categoryData),
+    }),
+
+  deleteCategory: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/categories/${id}`, {
+      method: 'DELETE',
+    }),
 }
 
 // Brands API
@@ -135,6 +173,27 @@ export const brandsApi = {
 
   // Get active brands
   getActiveBrands: (): Promise<ApiResponse<Brand[]>> => makeRequest('/brands-active'),
+
+  // Get single brand
+  getBrand: (id: number): Promise<ApiResponse<Brand>> => makeRequest(`/brands/${id}`),
+
+  // Admin/Contributor only methods
+  createBrand: (brandData: any): Promise<ApiResponse<Brand>> =>
+    makeRequest('/brands', {
+      method: 'POST',
+      body: JSON.stringify(brandData),
+    }),
+
+  updateBrand: (id: number, brandData: any): Promise<ApiResponse<Brand>> =>
+    makeRequest(`/brands/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(brandData),
+    }),
+
+  deleteBrand: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/brands/${id}`, {
+      method: 'DELETE',
+    }),
 }
 
 // Auth API
@@ -154,6 +213,47 @@ export const authApi = {
   refresh: (): Promise<AuthResponse> =>
     makeRequest('/auth/refresh', { method: 'POST' }),
   getMe: (): Promise<ApiResponse<User>> => makeRequest('/auth/me'),
+}
+
+// Roles API
+export const rolesApi = {
+  // Get all roles (Admin only)
+  getRoles: (): Promise<RolesResponse> => makeRequest('/roles'),
+  
+  // Get single role (Admin only)
+  getRole: (id: number): Promise<ApiResponse<Role>> => makeRequest(`/roles/${id}`),
+
+  // Admin only methods
+  createRole: (roleData: any): Promise<ApiResponse<Role>> =>
+    makeRequest('/roles', {
+      method: 'POST',
+      body: JSON.stringify(roleData),
+    }),
+
+  updateRole: (id: number, roleData: any): Promise<ApiResponse<Role>> =>
+    makeRequest(`/roles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(roleData),
+    }),
+
+  deleteRole: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/roles/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Assign role to user
+  assignRole: (userId: number, roleId: number): Promise<ApiResponse<any>> =>
+    makeRequest('/roles/assign', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, role_id: roleId }),
+    }),
+
+  // Remove role from user
+  removeRole: (userId: number, roleId: number): Promise<ApiResponse<any>> =>
+    makeRequest('/roles/remove', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, role_id: roleId }),
+    }),
 }
 
 // Order API
@@ -182,6 +282,41 @@ export const userApi = {
   // Delete account
   deleteAccount: (): Promise<ApiResponse<any>> =>
     makeRequest('/delete-account', { method: 'DELETE' }),
+}
+
+// Admin User Management API
+export const adminUserApi = {
+  // Get all users (Admin only)
+  getUsers: (params?: any): Promise<PaginatedResponse<User>> => {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value)
+        }
+        return acc
+      }, {} as Record<string, string>)
+    ).toString() : ''
+    return makeRequest(`/admin/users${queryString}`)
+  },
+
+  // Update user (Admin only)
+  updateUser: (id: number, userData: any): Promise<ApiResponse<User>> =>
+    makeRequest(`/admin/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    }),
+
+  // Delete user (Admin only)
+  deleteUser: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/admin/users/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Toggle user status (Admin only)
+  toggleUserStatus: (id: number): Promise<ApiResponse<User>> =>
+    makeRequest(`/admin/users/${id}/toggle-status`, {
+      method: 'POST',
+    }),
 }
 
 // Address Book API
@@ -236,18 +371,35 @@ export const newsApi = {
   getNewsById: (id: number): Promise<ApiResponse<News>> => makeRequest(`/news/${id}`),
 
   // Get news categories
-  getCategories: (): Promise<string[]> => makeRequest('/news-categories'),
+  getCategories: (): Promise<ApiResponse<Category[]>> => makeRequest('/categories'),
 
-  // Subscribe to newsletter (if endpoint exists)
-  subscribeNewsletter: (email: string): Promise<ApiResponse<any>> =>
-    makeRequest('/newsletter/subscribe', {
+  // Admin/Contributor only methods
+  createNews: (newsData: any): Promise<ApiResponse<News>> =>
+    makeRequest('/news', {
       method: 'POST',
-      body: JSON.stringify({ email }),
+      body: JSON.stringify(newsData),
+    }),
+
+  updateNews: (id: number, newsData: any): Promise<ApiResponse<News>> =>
+    makeRequest(`/news/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(newsData),
+    }),
+
+  deleteNews: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/news/${id}`, {
+      method: 'DELETE',
     }),
 }
 
 // Vouchers API
 export const vouchersApi = {
+  // Get all vouchers
+  getVouchers: (): Promise<PaginatedResponse<Voucher>> => makeRequest('/vouchers'),
+
+  // Get single voucher
+  getVoucher: (id: number): Promise<ApiResponse<Voucher>> => makeRequest(`/vouchers/${id}`),
+
   // Get active vouchers
   getActiveVouchers: (): Promise<ApiResponse<Voucher[]>> =>
     makeRequest('/vouchers-active'),
@@ -258,19 +410,56 @@ export const vouchersApi = {
       method: 'POST',
       body: JSON.stringify({ code }),
     }),
+
+  // Admin/Contributor only methods
+  createVoucher: (voucherData: any): Promise<ApiResponse<Voucher>> =>
+    makeRequest('/vouchers', {
+      method: 'POST',
+      body: JSON.stringify(voucherData),
+    }),
+
+  updateVoucher: (id: number, voucherData: any): Promise<ApiResponse<Voucher>> =>
+    makeRequest(`/vouchers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(voucherData),
+    }),
+
+  deleteVoucher: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/vouchers/${id}`, {
+      method: 'DELETE',
+    }),
 }
 
 // Comments API
 export const commentsApi = {
+  // Get all comments
+  getComments: (): Promise<PaginatedResponse<Comment>> => makeRequest('/comments'),
+
+  // Get single comment
+  getComment: (id: number): Promise<ApiResponse<Comment>> => makeRequest(`/comments/${id}`),
+
   // Get comments for a product
   getProductComments: (productId: number): Promise<PaginatedResponse<Comment>> =>
     makeRequest(`/comments/product/${productId}`),
 
-  // Create a new comment
+  // Create a new comment (authenticated users)
   createComment: (commentData: any): Promise<ApiResponse<Comment>> =>
     makeRequest('/comments', {
       method: 'POST',
       body: JSON.stringify(commentData),
+    }),
+
+  // Update comment (own comments only)
+  updateComment: (id: number, commentData: any): Promise<ApiResponse<Comment>> =>
+    makeRequest(`/comments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(commentData),
+    }),
+
+  // Delete comment (own comments only)
+  deleteComment: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/comments/${id}`, {
+      method: 'DELETE',
     }),
   
   // Get comments by current user
@@ -280,16 +469,42 @@ export const commentsApi = {
 
 // Contact API
 export const contactApi = {
+  // Get all contacts (public)
+  getContacts: (): Promise<PaginatedResponse<any>> => makeRequest('/contacts'),
+
+  // Get single contact (public)
+  getContact: (id: number): Promise<ApiResponse<any>> => makeRequest(`/contacts/${id}`),
+
   // Send a contact message
   submitContact: (contactData: any): Promise<ApiResponse<any>> =>
     makeRequest('/contacts', {
       method: 'POST',
       body: JSON.stringify(contactData),
     }),
+
+  // Admin/Contributor only methods
+  getAdminContacts: (): Promise<PaginatedResponse<any>> => makeRequest('/admin/contacts'),
+
+  updateContact: (id: number, contactData: any): Promise<ApiResponse<any>> =>
+    makeRequest(`/contacts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(contactData),
+    }),
+
+  deleteContact: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/contacts/${id}`, {
+      method: 'DELETE',
+    }),
 }
 
 // Sale Campaigns API
 export const saleCampaignsApi = {
+  // Get all sale campaigns
+  getSaleCampaigns: (): Promise<PaginatedResponse<any>> => makeRequest('/sale-campaigns'),
+
+  // Get single sale campaign
+  getSaleCampaign: (id: number): Promise<ApiResponse<any>> => makeRequest(`/sale-campaigns/${id}`),
+
   // Get active sale campaigns
   getActiveSaleCampaigns: (): Promise<ApiResponse<any[]>> =>
     makeRequest('/sale-campaigns-active'),
@@ -301,17 +516,41 @@ export const saleCampaignsApi = {
   // Get products in a sale campaign
   getSaleCampaignProducts: (id: number): Promise<PaginatedResponse<Product>> =>
     makeRequest(`/sale-campaigns/${id}/products`),
+
+  // Admin/Contributor only methods
+  createSaleCampaign: (campaignData: any): Promise<ApiResponse<any>> =>
+    makeRequest('/sale-campaigns', {
+      method: 'POST',
+      body: JSON.stringify(campaignData),
+    }),
+
+  updateSaleCampaign: (id: number, campaignData: any): Promise<ApiResponse<any>> =>
+    makeRequest(`/sale-campaigns/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(campaignData),
+    }),
+
+  deleteSaleCampaign: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/sale-campaigns/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Add products to sale campaign
+  addProductsToSaleCampaign: (id: number, productIds: number[]): Promise<ApiResponse<any>> =>
+    makeRequest(`/sale-campaigns/${id}/products`, {
+      method: 'POST',
+      body: JSON.stringify({ product_ids: productIds }),
+    }),
+
+  // Remove product from sale campaign
+  removeProductFromSaleCampaign: (campaignId: number, productId: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/sale-campaigns/${campaignId}/products/${productId}`, {
+      method: 'DELETE',
+    }),
 }
 
 // Orders API
 export const ordersApi = {
-  // Create a new order
-  createOrder: (orderData: CreateOrderRequest): Promise<ApiResponse<Order>> =>
-    makeRequest('/orders', {
-      method: 'POST',
-      body: JSON.stringify(orderData),
-    }),
-
   // Get user orders
   getUserOrders: (page = 1): Promise<PaginatedResponse<Order>> =>
     makeRequest(`/orders?page=${page}`),
@@ -320,10 +559,41 @@ export const ordersApi = {
   getOrder: (id: number): Promise<ApiResponse<Order>> =>
     makeRequest(`/orders/${id}`),
 
+  // Create a new order
+  createOrder: (orderData: CreateOrderRequest): Promise<ApiResponse<Order>> =>
+    makeRequest('/orders', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    }),
+
   // Cancel order
   cancelOrder: (id: number): Promise<ApiResponse<Order>> =>
     makeRequest(`/orders/${id}/cancel`, {
-      method: 'PATCH',
+      method: 'POST',
+    }),
+
+  // Get order stats for current user
+  getOrderStats: (): Promise<ApiResponse<any>> =>
+    makeRequest('/orders-stats'),
+
+  // Admin/Contributor only methods
+  getAdminOrders: (params?: any): Promise<PaginatedResponse<Order>> => {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value)
+        }
+        return acc
+      }, {} as Record<string, string>)
+    ).toString() : ''
+    return makeRequest(`/admin/orders${queryString}`)
+  },
+
+  // Update order status (Admin/Contributor only)
+  updateOrderStatus: (id: number, status: string): Promise<ApiResponse<Order>> =>
+    makeRequest(`/orders/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
     }),
 }
 

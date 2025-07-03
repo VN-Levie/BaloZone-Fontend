@@ -24,7 +24,8 @@ export const useCheckout = () => {
   
   const discount = computed(() => {
     if (!selectedVoucher.value) return 0
-    return selectedVoucher.value.price
+    const voucherPrice = selectedVoucher.value.price
+    return typeof voucherPrice === 'string' ? parseFloat(voucherPrice) : voucherPrice
   })
 
   const total = computed(() => {

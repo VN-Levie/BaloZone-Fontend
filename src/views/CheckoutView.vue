@@ -246,7 +246,7 @@
                 </div>
                 <div v-if="selectedVoucher" class="total-row discount">
                   <span>Giảm giá:</span>
-                  <span>-{{ formatPrice(discount) }}</span>
+                  <span>-{{ formatPrice(Number(discount)) }}</span>
                 </div>
                 <hr>
                 <div class="total-row final">

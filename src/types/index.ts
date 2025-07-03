@@ -55,13 +55,33 @@ export interface Comment {
   user?: User
 }
 
+export interface Role {
+  id: number
+  name: string
+  display_name: string
+  description: string
+  created_at: string
+  updated_at: string
+  pivot?: {
+    user_id: number
+    role_id: number
+  }
+  users_count?: number
+}
+
 export interface User {
   id: number
   name: string
   email: string
+  email_verified_at?: string | null
   phone?: string
   address?: string
-  role: 'admin' | 'user'
+  status: 'active' | 'inactive'
+  created_at: string
+  updated_at: string
+  roles?: Role[]
+  // Legacy support
+  role?: 'admin' | 'user'
 }
 
 export interface News {
@@ -186,15 +206,30 @@ export interface SaleCampaign {
   status: 'active' | 'inactive'
   created_at: string
   updated_at: string
+  products?: Product[]
+  products_count?: number
 }
 
 export interface Contact {
   id: number
   name: string
   email: string
+  phone?: string
+  subject?: string
   message: string
+  status?: 'pending' | 'read' | 'replied'
   created_at: string
   updated_at: string
+}
+
+export interface UserStats {
+  total_orders: number
+  total_spent: number
+  pending_orders: number
+  completed_orders: number
+  cancelled_orders: number
+  favourite_products: number
+  recent_activity: any[]
 }
 
 // API Response types
@@ -253,6 +288,11 @@ export interface AuthResponse {
   access_token?: string
   token_type?: string
   expires_in?: number
+}
+
+export interface RolesResponse {
+  success: boolean
+  data: Role[]
 }
 
 export interface LoginCredentials {

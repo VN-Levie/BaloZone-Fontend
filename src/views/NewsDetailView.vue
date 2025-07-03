@@ -6,7 +6,11 @@
       <LoadingSpinner v-if="loading" />
       
       <div v-else-if="error" class="alert alert-danger">
-        {{ error }}
+     const breadcrumbItems = computed(() => [
+  { name: 'Home', path: '/' },
+  { name: 'News', path: '/news' },
+  { name: news.value?.title || 'Article', path: `/news/${route.params.id}` }
+]) error }}
       </div>
       
       <div v-else-if="article" class="row">
@@ -238,9 +242,9 @@ const error = ref<string | null>(null)
 const newsletterEmail = ref('')
 
 const breadcrumbItems = computed(() => [
-  { text: 'Home', to: '/' },
-  { text: 'News', to: '/news' },
-  { text: article.value?.title || 'Article', to: `/news/${route.params.id}` }
+  { name: 'Home', path: '/' },
+  { name: 'News', path: '/news' },
+  { name: article.value?.title || 'Article', path: `/news/${route.params.id}` }
 ])
 
 const fetchArticle = async () => {
@@ -284,7 +288,7 @@ const fetchSidebarData = async () => {
     
     // Fetch categories
     const categoriesResponse = await newsApi.getCategories()
-    categories.value = categoriesResponse.map((cat: any) => ({
+    categories.value = categoriesResponse.data.map((cat: any) => ({
       name: cat.name || cat,
       count: cat.count || 0
     }))

@@ -8,6 +8,15 @@
       </div>
       <h5 class="user-name">{{ user?.name || 'User' }}</h5>
       <p class="user-email">{{ user?.email }}</p>
+      <div class="user-roles" v-if="user?.roles && user.roles.length > 0">
+        <RoleBadge 
+          v-for="role in user.roles" 
+          :key="role.id" 
+          :role="role" 
+          size="small" 
+          class="role-badge-white"
+        />
+      </div>
       <div class="user-status">
         <span class="status-badge status-active">
           <i class="bi bi-check-circle-fill"></i>
@@ -59,6 +68,8 @@
 
 <script setup lang="ts">
 import { defineProps } from 'vue'
+import RoleBadge from './RoleBadge.vue'
+
 const props = defineProps<{ user: any, activeTab: string }>()
 </script>
 
@@ -82,6 +93,20 @@ const props = defineProps<{ user: any, activeTab: string }>()
   bottom: 0;
   background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
   pointer-events: none;
+}
+
+.user-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.role-badge-white {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 .user-info {

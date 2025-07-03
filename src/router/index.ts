@@ -91,6 +91,23 @@ const router = createRouter({
       name: 'about',
       component: () => import('../views/AboutView.vue'),
     },
+    {
+      path: '/roles-demo',
+      name: 'roles-demo',
+      component: () => import('../views/RolesDemoView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin',
+      name: 'admin-dashboard',
+      component: () => import('../views/AdminDashboardView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/api-tester',
+      name: 'api-tester',
+      component: () => import('../views/ApiTesterView.vue'),
+    },
     // Static pages
     {
       path: '/warranty-policy',

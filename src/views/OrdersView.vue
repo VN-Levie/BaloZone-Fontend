@@ -57,11 +57,11 @@
                   <div v-for="order in orders" :key="order.id" class="card mb-3">
                     <div class="card-header d-flex justify-content-between align-items-center">
                       <div>
-                        <h6 class="mb-0">Order #{{ order.order_number }}</h6>
+                        <h6 class="mb-0">Order #{{ order.id }}</h6>
                         <small class="text-muted">{{ formatDate(order.created_at) }}</small>
                       </div>
-                      <span :class="getStatusBadgeClass(order.status)">
-                        {{ getStatusText(order.status) }}
+                      <span :class="getStatusBadgeClass(order.payment_status)">
+                        {{ getStatusText(order.payment_status) }}
                       </span>
                     </div>
                     
@@ -70,17 +70,16 @@
                         <div class="col-md-8">
                           <div class="order-items">
                             <div 
-                              v-for="item in order.items" 
+                              v-for="item in order.order_details" 
                               :key="item.id"
                               class="d-flex align-items-center mb-2"
                             >
-                              <img 
-                                :src="item.product.image_url || '/placeholder-image.jpg'" 
-                                :alt="item.product.name"
+                              <img                                :src="item.product?.image || '/placeholder-image.jpg'"
+                                :alt="item.product?.name"
                                 class="order-item-image me-3"
                               >
                               <div class="flex-grow-1">
-                                <h6 class="mb-1">{{ item.product.name }}</h6>
+                                <h6 class="mb-1">{{ item.product?.name }}</h6>
                                 <small class="text-muted">
                                   Quantity: {{ item.quantity }} × {{ formatPrice(item.price) }}
                                 </small>
@@ -94,21 +93,9 @@
                         
                         <div class="col-md-4">
                           <div class="order-summary">
-                            <div class="d-flex justify-content-between mb-1">
-                              <span>Subtotal:</span>
-                              <span>{{ formatPrice(order.subtotal) }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                              <span>Shipping:</span>
-                              <span>{{ formatPrice(order.shipping_fee) }}</span>
-                            </div>
-                            <div v-if="order.discount_amount > 0" class="d-flex justify-content-between mb-1">
-                              <span>Discount:</span>
-                              <span class="text-success">-{{ formatPrice(order.discount_amount) }}</span>
-                            </div>
                             <div class="d-flex justify-content-between border-top pt-2">
                               <strong>Total:</strong>
-                              <strong>{{ formatPrice(order.total_amount) }}</strong>
+                              <strong>{{ formatPrice(order.total_price) }}</strong>
                             </div>
                           </div>
                         </div>
@@ -117,23 +104,20 @@
                       <div class="row mt-3">
                         <div class="col-md-6">
                           <h6>Shipping Address</h6>
-                          <p class="mb-0">{{ order.shipping_address.full_name }}</p>
-                          <p class="mb-0">{{ order.shipping_address.address_line_1 }}</p>
-                          <p class="mb-0" v-if="order.shipping_address.address_line_2">
-                            {{ order.shipping_address.address_line_2 }}
-                          </p>
+                          <p class="mb-0">{{ order.address?.name }}</p>
+                          <p class="mb-0">{{ order.address?.address }}</p>
                           <p class="mb-0">
-                            {{ order.shipping_address.city }}, {{ order.shipping_address.state }}
+                            {{ order.address?.ward }}, {{ order.address?.district }}
                           </p>
-                          <p class="mb-0">{{ order.shipping_address.postal_code }}</p>
-                          <p class="mb-0">{{ order.shipping_address.phone }}</p>
+                          <p class="mb-0">{{ order.address?.province }}</p>
+                          <p class="mb-0">{{ order.address?.phone }}</p>
                         </div>
                         
                         <div class="col-md-6">
                           <h6>Order Actions</h6>
                           <div class="btn-group-vertical w-100">
                             <button 
-                              v-if="order.status === 'pending'"
+                              v-if="order.payment_status === 'pending'"
                               @click="cancelOrder(order.id)"
                               class="btn btn-outline-danger btn-sm"
                             >
@@ -146,7 +130,7 @@
                               View Details
                             </button>
                             <button 
-                              v-if="order.status === 'delivered'"
+                              v-if="order.payment_status === 'completed'"
                               @click="reorderItems(order.id)"
                               class="btn btn-outline-success btn-sm"
                             >
@@ -224,8 +208,8 @@ const selectedStatus = ref('')
 const selectedDateRange = ref('')
 
 const breadcrumbItems = [
-  { text: 'Home', to: '/' },
-  { text: 'My Orders', to: '/orders' }
+  { name: 'Home', path: '/' },
+  { name: 'My Orders', path: '/orders' }
 ]
 
 const getStatusBadgeClass = (status: string) => {
@@ -273,7 +257,7 @@ const fetchOrders = async () => {
       days: selectedDateRange.value ? parseInt(selectedDateRange.value) : undefined
     }
     
-    const response = await ordersApi.getOrders(params)
+    const response = await ordersApi.getUserOrders(params.page)
     orders.value = response.data
     totalPages.value = response.last_page
   } catch (err: any) {
@@ -312,8 +296,10 @@ const reorderItems = async (orderId: number) => {
     const order = orders.value.find(o => o.id === orderId)
     if (!order) return
     
-    for (const item of order.items) {
-      await addToCart(item.product, item.quantity)
+    for (const item of order.order_details || []) {
+      if (item.product) {
+        await addToCart(item.product, item.quantity)
+      }
     }
     
     router.push('/cart')
