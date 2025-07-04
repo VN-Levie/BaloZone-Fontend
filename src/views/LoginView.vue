@@ -155,7 +155,7 @@ import type { LoginCredentials } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
-const { login, refreshUser } = useAuth()
+const { login, refreshUser, user } = useAuth()
 const { showLoginSuccess } = useToast()
 
 const loading = ref(false)
@@ -207,8 +207,9 @@ const handleLogin = async () => {
     // Đảm bảo user state luôn mới nhất
     await refreshUser()
     
-    // Show success toast
-    showLoginSuccess(response.data.user.name || 'User')
+    // Show success toast - get user name from auth store
+    const userName = user.value?.name || 'User'
+    showLoginSuccess(userName)
     
     // Redirect to intended page or home
     const redirectTo = (route.query.redirect as string) || '/'

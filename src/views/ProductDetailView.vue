@@ -50,7 +50,7 @@
             <!-- Rating -->
             <div class="product-rating mb-3">
               <div class="stars">
-                <span class="ms-2 text-muted">({{ reviews.length }} đánh giá)</span>
+                <span class="ms-2 text-muted">({{ totalComments }} đánh giá)</span>
               </div>
             </div>
 
@@ -148,7 +148,7 @@
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
-              Đánh giá ({{ reviews.length }})
+              Đánh giá ({{ totalComments }})
             </button>
           </li>
         </ul>
@@ -161,27 +161,7 @@
 
           <!-- Reviews tab -->
           <div class="tab-pane fade" id="reviews" role="tabpanel">
-            <div class="reviews-content">
-              <!-- Reviews list -->
-              <div class="reviews-list">
-                <div v-if="reviews.length === 0" class="text-center text-muted py-4">
-                  Chưa có đánh giá nào cho sản phẩm này.
-                </div>
-                <div v-else>
-                  <div v-for="review in reviews" :key="review.id" class="review-item border-bottom py-3">
-                    <div class="review-header d-flex justify-content-between mb-2">
-                      <div class="reviewer-info">
-                        <span class="reviewer-name fw-semibold">{{ review.user?.name }}</span>
-                      </div>
-                      <div class="review-date text-muted">{{ formatDate(review.created_at) }}</div>
-                    </div>
-                    <div class="review-content">
-                      <p>{{ review.comment }}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CommentsSection :product-id="product.id" />
           </div>
         </div>
       </div>
@@ -220,9 +200,11 @@ import type { Product, Comment } from '@/types'
 import { formatPrice, formatDate, getImageUrl } from '@/utils'
 import { useCart } from '@/composables/useCart'
 import { useWishlist } from '@/composables/useWishlist'
+import { useComments } from '@/composables/useComments'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import ShareModal from '@/components/ShareModal.vue'
 import ImageZoom from '@/components/ImageZoom.vue'
+import CommentsSection from '@/components/CommentsSection.vue'
 
 const route = useRoute()
 const { addToCart: addToCartComposable, isInCart } = useCart()
@@ -234,6 +216,16 @@ const relatedProducts = ref<Product[]>([])
 const loading = ref(true)
 const quantity = ref(1)
 const isAddingToCart = ref(false)
+
+// For compatibility with existing template
+const reviews = ref<Comment[]>([])
+
+const totalComments = computed(() => reviews.value.length)
+const averageRating = computed(() => {
+  if (reviews.value.length === 0) return 0
+  const sum = reviews.value.reduce((acc, review) => acc + (review.rating || 0), 0)
+  return Math.round((sum / reviews.value.length) * 10) / 10
+})
 
 const fetchProduct = async (id: number) => {
   loading.value = true
@@ -254,10 +246,6 @@ const fetchProduct = async (id: number) => {
     loading.value = false
   }
 }
-
-const reviews = computed((): Comment[] => {
-  return product.value?.comments || []
-})
 
 // Product images array for zoom component
 const productImages = computed(() => {

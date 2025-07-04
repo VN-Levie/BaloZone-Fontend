@@ -16,7 +16,10 @@ import {
   Tooltip,
   Legend,
   BarElement,
-  ArcElement
+  ArcElement,
+  LineController,
+  BarController,
+  DoughnutController
 } from 'chart.js'
 import type { ChartConfiguration } from 'chart.js'
 
@@ -28,6 +31,9 @@ ChartJS.register(
   LineElement,
   BarElement,
   ArcElement,
+  LineController,
+  BarController,
+  DoughnutController,
   Title,
   Tooltip,
   Legend

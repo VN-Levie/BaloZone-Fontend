@@ -201,11 +201,14 @@ export interface SaleCampaign {
   name: string
   slug: string
   description: string
+  discount_percentage: number
   start_date: string
   end_date: string
+  banner_image?: string
   status: 'active' | 'inactive' | 'scheduled'
   is_featured: boolean
   priority: number
+  products_count?: number
   created_at: string
   updated_at: string
   sale_products?: SaleProduct[]
@@ -255,6 +258,7 @@ export interface UserStats {
 
 // API Response types
 export interface ApiResponse<T> {
+  success: boolean
   data: T
   message?: string
 }
@@ -325,4 +329,143 @@ export interface LoginCredentials {
 
 export interface RegisterData extends LoginCredentials {
   name: string
+}
+
+// Comments interfaces
+export interface Comment {
+  id: number
+  user_id: number
+  product_id: number
+  content: string
+  rating: number
+  author: {
+    id: number
+    name: string
+    email: string
+    avatar?: string
+  }
+  created_at: string
+  updated_at: string
+}
+
+export interface CommentRequest {
+  content: string
+  rating: number
+}
+
+export interface CommentsResponse {
+  current_page: number
+  data: Comment[]
+  first_page_url: string
+  from: number
+  last_page: number
+  last_page_url: string
+  links: Array<{
+    url: string | null
+    label: string
+    active: boolean
+  }>
+  next_page_url: string | null
+  path: string
+  per_page: number
+  prev_page_url: string | null
+  to: number
+  total: number
+}
+
+// Dashboard Types
+export interface DashboardOverview {
+  total_users: number
+  total_orders: number
+  total_products: number
+  total_contacts: number
+  total_revenue: string
+  monthly_revenue: string
+  new_users_this_month: number
+  orders_this_month: number
+}
+
+export interface OrderStats {
+  shipped: number
+  delivered: number
+  pending: number
+  processing: number
+  cancelled: number
+}
+
+export interface ContactStats {
+  resolved: number
+  pending: number
+}
+
+export interface TopProduct {
+  id: number
+  name: string
+  total_sold: string
+  price?: string
+  total_revenue?: string
+}
+
+export interface ChartDataPoint {
+  date: string
+  revenue: number | string
+  orders?: number
+}
+
+export interface DashboardStats {
+  overview: DashboardOverview
+  order_stats: OrderStats
+  contact_stats: ContactStats
+  top_products: TopProduct[]
+  revenue_chart: ChartDataPoint[]
+  order_chart: ChartDataPoint[]
+}
+
+export interface MonthlyRevenueData {
+  month: number
+  month_name: string
+  revenue: number | string
+  order_count: number
+}
+
+export interface DashboardRevenue {
+  year: number
+  monthly_data: MonthlyRevenueData[]
+}
+
+export interface UsersByStatus {
+  active: number
+  inactive: number
+}
+
+export interface DashboardUsers {
+  total_users: number
+  new_users_this_week: number
+  new_users_this_month: number
+  users_by_status: UsersByStatus
+}
+
+export interface LowStockProduct {
+  id: number
+  name: string
+  stock: number
+  price: string
+}
+
+export interface ProductsByCategory {
+  category_name: string
+  product_count: number
+}
+
+export interface ProductsByBrand {
+  brand_name: string
+  product_count: number
+}
+
+export interface DashboardProducts {
+  top_selling_products: TopProduct[]
+  low_stock_products: LowStockProduct[]
+  out_of_stock_products: LowStockProduct[]
+  products_by_category: ProductsByCategory[]
+  products_by_brand: ProductsByBrand[]
 }

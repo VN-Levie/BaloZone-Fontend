@@ -1,5 +1,6 @@
 <template>
   <header class="app-header">
+    <!-- <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top"> -->
     <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
       <div class="container-fluid px-4">
         <router-link to="/" class="navbar-brand brand-logo">
@@ -21,39 +22,18 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <!-- Search bar -->
-          <div class="navbar-search mx-auto">
-            <div class="search-container">
-              <input
-                v-model="searchQuery"
-                type="text"
-                class="search-input"
-                placeholder="Tìm kiếm sản phẩm..."
-                @keypress.enter="performSearch"
-                @focus="showSuggestions = true"
-                @blur="hideSuggestions"
-                @input="updateSearchSuggestions"
-              />
-              <button class="search-btn" @click="performSearch">
-                <i class="bi bi-search"></i>
-              </button>
-              
-              <!-- Search Suggestions Dropdown -->
-              <div v-if="showSuggestions && searchSuggestions.length > 0" class="search-suggestions">
-                <div class="suggestions-header">
-                  <small class="text-muted">Gợi ý tìm kiếm</small>
-                </div>
-                <div
-                  v-for="suggestion in searchSuggestions"
-                  :key="suggestion"
-                  class="suggestion-item"
-                  @mousedown="selectSuggestion(suggestion)"
-                >
-                  <i class="bi bi-search"></i>
-                  <span>{{ suggestion }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- <div class="navbar-search mx-auto">
+            <EnhancedSearchBar
+              v-model="headerSearchQuery"
+              :suggestions="headerSuggestions"
+              :search-history="headerSearchHistory"
+              :is-loading="isLoadingSuggestions"
+              :show-filters="false"
+              placeholder="Tìm kiếm sản phẩm..."
+              @search="handleHeaderSearch"
+              class="header-search-bar"
+            />
+          </div> -->
 
           <!-- Right side navigation -->
           <ul class="navbar-nav ms-auto">
@@ -186,8 +166,10 @@ import { useAuth } from '@/composables/useAuth'
 import { useCart } from '@/composables/useCart'
 import { useWishlist } from '@/composables/useWishlist'
 import { useToast } from '@/composables/useToast'
+import { useAdvancedSearch } from '@/composables/useAdvancedSearch'
 import { categoriesApi } from '@/services/api'
 import RoleBadge from './RoleBadge.vue'
+import EnhancedSearchBar from '@/components/EnhancedSearchBar.vue'
 import type { Category } from '@/types'
 
 const router = useRouter()
@@ -197,69 +179,23 @@ const { cartItemsCount } = useCart()
 const { wishlistCount } = useWishlist()
 const { showLogoutSuccess } = useToast()
 
-const searchQuery = ref('')
+// Use advanced search for header
+const {
+  searchQuery: headerSearchQuery,
+  suggestions: headerSuggestions,
+  searchHistory: headerSearchHistory,
+  isLoadingSuggestions,
+  loadSearchHistory
+} = useAdvancedSearch()
+
 const categories = ref<Category[]>([])
 const loadingCategories = ref(false)
 
-// Search suggestions state
-const showSuggestions = ref(false)
-const searchSuggestions = ref<string[]>([])
-const popularSearches = [
-  'balo laptop',
-  'balo học sinh',
-  'balo du lịch',
-  'vali kéo',
-  'vali nhỏ gọn',
-  'túi xách nữ',
-  'túi đeo chéo',
-  'balo nike',
-  'balo adidas',
-  'vali samsonite'
-]
-
-let searchTimeout: number | null = null
-
-// Search functions
-const updateSearchSuggestions = () => {
-  if (searchTimeout) clearTimeout(searchTimeout)
-  
-  searchTimeout = setTimeout(() => {
-    const query = searchQuery.value.toLowerCase().trim()
-    
-    if (query.length === 0) {
-      searchSuggestions.value = popularSearches
-    } else {
-      // Filter suggestions based on input
-      const filtered = popularSearches.filter(item => 
-        item.toLowerCase().includes(query)
-      )
-      
-      // Add current query as first suggestion if it's not empty
-      if (query.length > 0 && !filtered.includes(query)) {
-        filtered.unshift(query)
-      }
-      
-      searchSuggestions.value = filtered.slice(0, 6)
-    }
-  }, 200)
-}
-
-const selectSuggestion = (suggestion: string) => {
-  searchQuery.value = suggestion
-  showSuggestions.value = false
-  performSearch()
-}
-
-const hideSuggestions = () => {
-  setTimeout(() => {
-    showSuggestions.value = false
-  }, 200)
-}
-
-const performSearch = () => {
-  if (searchQuery.value.trim()) {
-    router.push({ name: 'search', query: { q: searchQuery.value.trim() } })
-    searchQuery.value = ''
+// Header search function
+const handleHeaderSearch = (query: string) => {
+  if (query.trim()) {
+    router.push({ name: 'search', query: { q: query.trim() } })
+    headerSearchQuery.value = ''
   }
 }
 
@@ -295,8 +231,7 @@ const fetchCategories = async () => {
 
 onMounted(async () => {
   await fetchCategories()
-  // Initialize with popular searches
-  searchSuggestions.value = popularSearches
+  await loadSearchHistory()
 })
 </script>
 
@@ -691,6 +626,73 @@ onMounted(async () => {
   
   .placeholder-item {
     width: 60px;
+  }
+}
+
+/* Header search bar styles */
+.header-search-bar {
+  max-width: 400px;
+  width: 100%;
+}
+
+.header-search-bar .enhanced-search-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-search-bar .search-input {
+  background: transparent;
+  border: none;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.header-search-bar .search-input::placeholder {
+  color: #666;
+}
+
+.header-search-bar .search-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.header-search-bar .search-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.header-search-bar .suggestions-dropdown {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  margin-top: 8px;
+}
+
+@media (max-width: 991px) {
+  .header-search-bar {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-search-bar {
+    max-width: 250px;
+  }
+  
+  .header-search-bar .search-input {
+    font-size: 0.9rem;
   }
 }
 </style>

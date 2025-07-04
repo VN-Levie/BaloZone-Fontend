@@ -13,12 +13,18 @@ import type {
   User,
   Order,
   Comment,
+  CommentsResponse,
+  CommentRequest,
   CategoryWithProductsResponse,
   CreateOrderRequest,
   Address,
   PaymentMethod,
   Role,
-  RolesResponse
+  RolesResponse,
+  DashboardStats,
+  DashboardRevenue,
+  DashboardUsers,
+  DashboardProducts
 } from '@/types'
 
 const API_BASE_URL = 'http://localhost:8000/api'
@@ -99,8 +105,17 @@ export const productsApi = {
     makeRequest(`/products/brand/${brandSlug}`),
 
   // Search products
-  searchProducts: (query: string): Promise<PaginatedResponse<Product>> =>
-    makeRequest(`/products-search?q=${query}`),
+  searchProducts: (params: any): Promise<PaginatedResponse<Product>> => {
+    const queryString = new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = String(value)
+        }
+        return acc
+      }, {} as Record<string, string>)
+    ).toString()
+    return makeRequest(`/products-search?${queryString}`)
+  },
 
   // Get on-sale products
   getOnSaleProducts: (): Promise<ApiResponse<Product[]>> =>
@@ -440,25 +455,19 @@ export const vouchersApi = {
 
 // Comments API
 export const commentsApi = {
-  // Get all comments
-  getComments: (): Promise<PaginatedResponse<Comment>> => makeRequest('/comments'),
-
-  // Get single comment
-  getComment: (id: number): Promise<ApiResponse<Comment>> => makeRequest(`/comments/${id}`),
-
   // Get comments for a product
-  getProductComments: (productId: number): Promise<PaginatedResponse<Comment>> =>
-    makeRequest(`/comments/product/${productId}`),
+  getProductComments: (productId: number, page = 1, perPage = 10): Promise<CommentsResponse> =>
+    makeRequest(`/products/${productId}/comments?page=${page}&per_page=${perPage}`),
 
-  // Create a new comment (authenticated users)
-  createComment: (commentData: any): Promise<ApiResponse<Comment>> =>
-    makeRequest('/comments', {
+  // Create a new comment for a product (authenticated users)
+  createProductComment: (productId: number, commentData: CommentRequest): Promise<ApiResponse<Comment>> =>
+    makeRequest(`/products/${productId}/comments`, {
       method: 'POST',
       body: JSON.stringify(commentData),
     }),
 
   // Update comment (own comments only)
-  updateComment: (id: number, commentData: any): Promise<ApiResponse<Comment>> =>
+  updateComment: (id: number, commentData: CommentRequest): Promise<ApiResponse<Comment>> =>
     makeRequest(`/comments/${id}`, {
       method: 'PUT',
       body: JSON.stringify(commentData),
@@ -469,10 +478,6 @@ export const commentsApi = {
     makeRequest(`/comments/${id}`, {
       method: 'DELETE',
     }),
-  
-  // Get comments by current user
-  getMyComments: (): Promise<PaginatedResponse<Comment>> =>
-    makeRequest('/my-comments'),
 }
 
 // Contact API
@@ -674,14 +679,20 @@ export const paymentMethodsApi = {
 // Admin Dashboard API
 export const adminDashboardApi = {
   // Get dashboard statistics
-  getDashboardStats: (): Promise<ApiResponse<any>> =>
+  getDashboardStats: (): Promise<ApiResponse<DashboardStats>> =>
     makeRequest('/admin/dashboard/stats'),
 
-  // Get recent activities
-  getRecentActivities: (): Promise<ApiResponse<any[]>> =>
-    makeRequest('/admin/dashboard/activities'),
+  // Get monthly revenue report
+  getRevenueReport: (year?: number): Promise<ApiResponse<DashboardRevenue>> => {
+    const params = year ? `?year=${year}` : ''
+    return makeRequest(`/admin/dashboard/revenue${params}`)
+  },
 
-  // Get system overview
-  getSystemOverview: (): Promise<ApiResponse<any>> =>
-    makeRequest('/admin/dashboard/overview'),
+  // Get user analytics
+  getUserAnalytics: (): Promise<ApiResponse<DashboardUsers>> =>
+    makeRequest('/admin/dashboard/users'),
+
+  // Get product analytics
+  getProductAnalytics: (): Promise<ApiResponse<DashboardProducts>> =>
+    makeRequest('/admin/dashboard/products'),
 }

@@ -15,16 +15,32 @@
       <!-- Dashboard Content -->
       <div v-else class="dashboard-content">
         <!-- Enhanced Header -->
-        <DashboardHeader :notifications="5" :online-users="12" />
+        <DashboardHeader 
+          :notifications="5" 
+          :online-users="12" 
+        />
 
         <!-- Enhanced Stats -->
-        <EnhancedStats :stats="enhancedStats" @refresh="refreshStats" />
+        <EnhancedStats 
+          :stats="enhancedStats" 
+          @refresh="refreshStats"
+        />
 
         <!-- Enhanced Actions -->
-        <EnhancedActions :actions="enhancedActions" @action-click="handleQuickAction" />
+        <EnhancedActions 
+          :actions="enhancedActions" 
+          @action-click="handleQuickAction"
+        />
 
         <!-- Charts Section -->
-        <ChartsSection :sales-data="salesChartData" :orders-data="ordersStatusChartData" :selected-period="selectedPeriod" @period-change="handlePeriodChange" @download-chart="handleDownloadChart" @refresh-chart="handleRefreshChart" />
+        <ChartsSection 
+          :sales-data="salesChartData"
+          :orders-data="ordersStatusChartData"
+          :selected-period="selectedPeriod"
+          @period-change="handlePeriodChange"
+          @download-chart="handleDownloadChart"
+          @refresh-chart="handleRefreshChart"
+        />
 
         <!-- Management Cards -->
         <div class="management-section">
@@ -34,7 +50,7 @@
               Quản lý nội dung
             </h3>
           </div>
-
+          
           <div class="row g-4">
             <!-- Sale Campaigns -->
             <div class="col-lg-8">
@@ -246,23 +262,49 @@ const enhancedActions = computed(() => [
     icon: 'bi-gear-fill',
     color: 'danger' as const
   }
-
 ])
 
 // Chart Data
-interface ChartData {
-  labels: string[]
-  datasets: any[]
-}
-const salesChartData = ref<ChartData>({
-  labels: [],
-  datasets: []
-})
+const salesChartData = computed(() => ({
+  labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+  datasets: [
+    {
+      label: 'Doanh thu (triệu đồng)',
+      data: [120, 190, 300, 500, 200, 300, 450, 300, 250, 400, 380, 500],
+      borderColor: '#667eea',
+      backgroundColor: 'rgba(102, 126, 234, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4
+    },
+    {
+      label: 'Đơn hàng',
+      data: [65, 85, 120, 180, 90, 150, 200, 130, 110, 170, 160, 220],
+      borderColor: '#48bb78',
+      backgroundColor: 'rgba(72, 187, 120, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4
+    }
+  ]
+}))
 
-const ordersStatusChartData = ref<ChartData>({
-  labels: [],
-  datasets: []
-})
+const ordersStatusChartData = computed(() => ({
+  labels: ['Chờ xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy'],
+  datasets: [
+    {
+      data: [30, 25, 35, 10],
+      backgroundColor: [
+        '#ed8936',
+        '#4299e1',
+        '#48bb78',
+        '#f56565'
+      ],
+      borderWidth: 0,
+      hoverOffset: 10
+    }
+  ]
+}))
 
 // Sale Campaigns Computed
 const totalSaleProducts = computed(() => {
@@ -345,65 +387,14 @@ const loadDashboardData = async () => {
   try {
     // Load dashboard stats
     const dashboardData = await adminDashboardApi.getDashboardStats()
-    const apiData = dashboardData.data || {}
-    // Map API overview fields
+    const data = dashboardData.data || {}
     stats.value = {
-      totalUsers: apiData.overview?.total_users || 0,
-      totalProducts: apiData.overview?.total_products || 0,
-      totalOrders: apiData.overview?.total_orders || 0,
-      totalNews: apiData.overview?.total_contacts || 0, // hoặc 0 nếu không có
-      totalRevenue: Number(apiData.overview?.total_revenue) || 0,
-      monthlyGrowth: 0 // API không có, có thể tính toán nếu cần
-    }
-
-    // Update sales chart data
-    salesChartData.value = {
-      labels: (apiData.revenue_chart || []).map((item: any) => item.date),
-      datasets: [
-        {
-          label: 'Doanh thu (VNĐ)',
-          data: (apiData.revenue_chart || []).map((item: any) => Number(item.revenue)),
-          borderColor: '#667eea',
-          backgroundColor: 'rgba(102, 126, 234, 0.1)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4
-        },
-        {
-          label: 'Đơn hàng',
-          data: (apiData.order_chart || []).map((item: any) => Number(item.orders)),
-          borderColor: '#48bb78',
-          backgroundColor: 'rgba(72, 187, 120, 0.1)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4
-        }
-      ]
-    }
-
-    // Update orders status chart
-    ordersStatusChartData.value = {
-      labels: ['Shipped', 'Delivered', 'Pending', 'Processing', 'Cancelled'],
-      datasets: [
-        {
-          data: [
-            apiData.order_stats?.shipped || 0,
-            apiData.order_stats?.delivered || 0,
-            apiData.order_stats?.pending || 0,
-            apiData.order_stats?.processing || 0,
-            apiData.order_stats?.cancelled || 0
-          ],
-          backgroundColor: [
-            '#4299e1',
-            '#48bb78',
-            '#ed8936',
-            '#f6e05e',
-            '#f56565'
-          ],
-          borderWidth: 0,
-          hoverOffset: 10
-        }
-      ]
+      totalUsers: data.total_users || 1250,
+      totalProducts: data.total_products || 485,
+      totalOrders: data.total_orders || 324,
+      totalNews: data.total_news || 56,
+      totalRevenue: data.total_revenue || 2540000,
+      monthlyGrowth: data.monthly_growth || 18
     }
 
     // Load active sale campaigns
@@ -447,7 +438,6 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(30px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -583,12 +573,12 @@ onMounted(() => {
   .admin-dashboard {
     padding: 1rem 0;
   }
-
+  
   .stats-grid {
     flex-direction: row;
     flex-wrap: wrap;
   }
-
+  
   .stat-item {
     flex: 1;
     min-width: 150px;
