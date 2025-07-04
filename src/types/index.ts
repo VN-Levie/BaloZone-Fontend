@@ -503,11 +503,23 @@ export interface AdminProductResponse {
 
 export interface AdminProductsListResponse {
   success: boolean
-  data: AdminProduct[]
-  meta?: {
+  data: {
+    data: AdminProduct[]
     current_page: number
     last_page: number
     per_page: number
     total: number
+    first_page_url: string
+    from: number
+    last_page_url: string
+    links: Array<{
+      url: string | null
+      label: string
+      active: boolean
+    }>
+    next_page_url: string | null
+    path: string
+    prev_page_url: string | null
+    to: number
   }
 }

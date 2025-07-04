@@ -709,10 +709,10 @@ export const adminDashboardApi = {
 // Admin Products Management API
 export const adminProductsApi = {
   // Get all products for admin
-  getProducts: (page?: number, limit?: number): Promise<AdminProductsListResponse> => {
-    const params = new URLSearchParams()
-    if (page) params.append('page', page.toString())
-    if (limit) params.append('limit', limit.toString())
+  getProducts: (page?: number, limit?: number, filters?: URLSearchParams): Promise<AdminProductsListResponse> => {
+    const params = filters || new URLSearchParams()
+    if (page && !params.has('page')) params.append('page', page.toString())
+    if (limit && !params.has('limit')) params.append('limit', limit.toString())
     const queryString = params.toString()
     return makeRequest(`/dashboard/products${queryString ? '?' + queryString : ''}`)
   },

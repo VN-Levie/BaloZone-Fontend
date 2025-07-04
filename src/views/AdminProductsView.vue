@@ -13,7 +13,7 @@
             class="btn btn-primary"
             @click="router.push('/admin/products/create')"
           >
-            <i class="fas fa-plus"></i>
+            <i class="bi bi-plus"></i>
             Thêm sản phẩm
           </button>
         </div>
@@ -31,7 +31,7 @@
             placeholder="Tìm kiếm sản phẩm..."
             @input="handleSearch"
           />
-          <i class="fas fa-search search-icon"></i>
+          <i class="bi bi-search search-icon"></i>
         </div>
         
         <select v-model="selectedCategory" class="form-control" @change="() => loadProducts()">
@@ -65,7 +65,7 @@
       </div>
 
       <div v-else-if="products.length === 0" class="empty-state">
-        <i class="fas fa-box-open empty-icon"></i>
+        <i class="bi bi-box-seam empty-icon"></i>
         <h3>Không có sản phẩm nào</h3>
         <p>Hãy tạo sản phẩm đầu tiên của bạn</p>
         <button 
@@ -73,83 +73,95 @@
           class="btn btn-primary"
           @click="router.push('/admin/products/create')"
         >
-          <i class="fas fa-plus"></i>
+          <i class="bi bi-plus"></i>
           Thêm sản phẩm đầu tiên
         </button>
       </div>
 
-      <div v-else class="products-grid">
-        <div
-          v-for="product in products"
-          :key="product.id"
-          class="product-card"
-        >
-          <div class="product-image">
-            <img 
-              :src="product.image || '/placeholder-product.jpg'" 
-              :alt="product.name"
-              @error="handleImageError"
-            />
-            <div class="product-actions">
-              <button 
-                type="button"
-                class="action-btn edit"
-                @click="editProduct(product.id)"
-                title="Chỉnh sửa"
-              >
-                <i class="fas fa-edit"></i>
-              </button>
-              <button 
-                type="button"
-                class="action-btn delete"
-                @click="confirmDelete(product)"
-                title="Xóa"
-              >
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="product-info">
-            <h4 class="product-name">{{ product.name }}</h4>
-            <div class="product-meta">
-              <span v-if="product.category" class="category-badge">
-                {{ product.category.name }}
-              </span>
-              <span v-if="product.brand" class="brand-badge">
-                {{ product.brand.name }}
-              </span>
-            </div>
-            
-            <div class="product-pricing">
-              <span v-if="product.discount_price" class="current-price">
-                {{ formatPrice(product.discount_price) }}
-              </span>
-              <span 
-                class="original-price"
-                :class="{ 'discounted': product.discount_price }"
-              >
-                {{ formatPrice(product.price) }}
-              </span>
-            </div>
-
-            <div class="product-stock">
-              <span 
-                class="stock-badge"
-                :class="getStockClass(product.stock)"
-              >
-                <i class="fas fa-box"></i>
-                {{ product.stock }} trong kho
-              </span>
-            </div>
-
-            <div class="product-dates">
-              <small class="text-muted">
-                Tạo: {{ formatDate(product.created_at) }}
-              </small>
-            </div>
-          </div>
-        </div>
+      <div v-else class="products-table-container">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Hình ảnh</th>
+              <th>Tên sản phẩm</th>
+              <th>Danh mục</th>
+              <th>Thương hiệu</th>
+              <th>Giá gốc</th>
+              <th>Giá KM</th>
+              <th>Tồn kho</th>
+              <th>Ngày tạo</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="product in products" :key="product.id">
+              <td class="product-image-cell">
+                <img 
+                  :src="product.image || '/placeholder-product.jpg'" 
+                  :alt="product.name"
+                  class="product-thumbnail"
+                  @error="handleImageError"
+                />
+              </td>
+              <td class="product-name-cell">
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-slug">{{ product.slug }}</div>
+              </td>
+              <td>
+                <span v-if="product.category" class="category-badge">
+                  {{ product.category.name }}
+                </span>
+                <span v-else>-</span>
+              </td>
+              <td>
+                <span v-if="product.brand" class="brand-badge">
+                  {{ product.brand.name }}
+                </span>
+                <span v-else>-</span>
+              </td>
+              <td class="price-cell">
+                {{ formatPrice(product.price || 0) }}
+              </td>
+              <td class="price-cell">
+                <span v-if="product.discount_price" class="discount-price">
+                  {{ formatPrice(product.discount_price) }}
+                </span>
+                <span v-else>-</span>
+              </td>
+              <td class="stock-cell">
+                <span 
+                  class="stock-badge"
+                  :class="getStockClass(product.stock || 0)"
+                >
+                  {{ product.stock || 0 }}
+                </span>
+              </td>
+              <td class="date-cell">
+                {{ formatDate(product.created_at) }}
+              </td>
+              <td class="actions-cell">
+                <div class="action-buttons">
+                  <button 
+                    type="button"
+                    class="btn-icon btn-edit"
+                    @click="editProduct(product.id)"
+                    title="Chỉnh sửa"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    type="button"
+                    class="btn-icon btn-delete"
+                    @click="confirmDelete(product)"
+                    title="Xóa"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Pagination -->
@@ -161,7 +173,7 @@
             :disabled="pagination.current_page <= 1"
             @click="changePage(pagination.current_page - 1)"
           >
-            <i class="fas fa-chevron-left"></i>
+            <i class="bi bi-chevron-left"></i>
             Trước
           </button>
 
@@ -185,7 +197,7 @@
             @click="changePage(pagination.current_page + 1)"
           >
             Sau
-            <i class="fas fa-chevron-right"></i>
+            <i class="bi bi-chevron-right"></i>
           </button>
         </nav>
       </div>
@@ -197,7 +209,7 @@
         <div class="modal-header">
           <h3>Xác nhận xóa sản phẩm</h3>
           <button type="button" class="close-btn" @click="closeDeleteModal">
-            <i class="fas fa-times"></i>
+            <i class="bi bi-x"></i>
           </button>
         </div>
         <div class="modal-body">
@@ -214,8 +226,8 @@
             @click="deleteProduct"
             :disabled="deleting"
           >
-            <i v-if="deleting" class="fas fa-spinner fa-spin"></i>
-            <i v-else class="fas fa-trash"></i>
+            <i v-if="deleting" class="bi bi-arrow-repeat spin-animation"></i>
+            <i v-else class="bi bi-trash"></i>
             {{ deleting ? 'Đang xóa...' : 'Xóa' }}
           </button>
         </div>
@@ -264,15 +276,49 @@ const productToDelete = ref<AdminProduct | null>(null)
 const loadProducts = async (page = 1) => {
   loading.value = true
   try {
-    const response = await adminProductsApi.getProducts(page, 12)
+    // Build query parameters for filters
+    const params = new URLSearchParams()
+    params.append('page', page.toString())
+    params.append('limit', '12')
     
-    if (response.success) {
-      products.value = response.data
-      pagination.value = response.meta || null
+    if (searchQuery.value.trim()) {
+      params.append('search', searchQuery.value.trim())
+    }
+    
+    if (selectedCategory.value) {
+      params.append('category_id', selectedCategory.value)
+    }
+    
+    if (selectedBrand.value) {
+      params.append('brand_id', selectedBrand.value)
+    }
+    
+    if (sortBy.value) {
+      params.append('sort', sortBy.value)
+    }
+
+    const response = await adminProductsApi.getProducts(page, 12, params)
+    
+    if (response.success && response.data) {
+      // Handle Laravel pagination structure: response.data.data contains the products
+      const productData = response.data.data || []
+      products.value = Array.isArray(productData) ? productData.filter(product => product && product.id) : []
+      
+      // Extract pagination info from the response.data object
+      pagination.value = {
+        current_page: response.data.current_page || 1,
+        last_page: response.data.last_page || 1,
+        per_page: response.data.per_page || 10,
+        total: response.data.total || 0
+      }
+    } else {
+      products.value = []
+      pagination.value = null
     }
   } catch (error) {
     console.error('Failed to load products:', error)
     showError('Lỗi', 'Không thể tải danh sách sản phẩm')
+    products.value = []
   } finally {
     loading.value = false
   }
@@ -281,18 +327,20 @@ const loadProducts = async (page = 1) => {
 const loadCategories = async () => {
   try {
     const response = await categoriesApi.getCategories()
-    categories.value = response.data
+    categories.value = Array.isArray(response.data) ? response.data : []
   } catch (error) {
     console.error('Failed to load categories:', error)
+    categories.value = []
   }
 }
 
 const loadBrands = async () => {
   try {
     const response = await brandsApi.getBrands()
-    brands.value = response.data
+    brands.value = Array.isArray(response.data) ? response.data : []
   } catch (error) {
     console.error('Failed to load brands:', error)
+    brands.value = []
   }
 }
 
@@ -357,14 +405,24 @@ const getPageNumbers = () => {
 
 // Utility functions
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(price)
+  try {
+    const validPrice = typeof price === 'number' && !isNaN(price) ? price : 0
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(validPrice)
+  } catch (error) {
+    return '0 ₫'
+  }
 }
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('vi-VN')
+  try {
+    if (!dateString) return new Date().toLocaleDateString('vi-VN')
+    return new Date(dateString).toLocaleDateString('vi-VN')
+  } catch (error) {
+    return new Date().toLocaleDateString('vi-VN')
+  }
 }
 
 const getStockClass = (stock: number) => {
@@ -485,6 +543,134 @@ onMounted(() => {
   gap: 20px;
 }
 
+/* Table Styles */
+.products-table-container {
+  overflow-x: auto;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.products-table th {
+  background: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 2px solid #e9ecef;
+  font-size: 14px;
+}
+
+.products-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+.products-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.product-image-cell {
+  width: 80px;
+}
+
+.product-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.product-name-cell {
+  min-width: 200px;
+}
+
+.product-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.product-slug {
+  font-size: 12px;
+  color: #6c757d;
+  font-family: monospace;
+}
+
+.price-cell {
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: right;
+  min-width: 100px;
+}
+
+.discount-price {
+  color: #e74c3c;
+}
+
+.stock-cell {
+  text-align: center;
+  min-width: 80px;
+}
+
+.date-cell {
+  min-width: 100px;
+  font-size: 13px;
+  color: #6c757d;
+}
+
+.actions-cell {
+  width: 100px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.btn-edit {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.btn-edit:hover {
+  background: #bbdefb;
+  color: #0d47a1;
+}
+
+.btn-delete {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.btn-delete:hover {
+  background: #ffcdd2;
+  color: #b71c1c;
+}
+
 .product-card {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -574,9 +760,10 @@ onMounted(() => {
 .category-badge,
 .brand-badge {
   font-size: 11px;
-  padding: 2px 8px;
+  padding: 4px 8px;
   border-radius: 12px;
   font-weight: 500;
+  display: inline-block;
 }
 
 .category-badge {
@@ -587,6 +774,33 @@ onMounted(() => {
 .brand-badge {
   background: #f3e5f5;
   color: #7b1fa2;
+}
+
+.stock-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 40px;
+  justify-content: center;
+}
+
+.stock-badge.in-stock {
+  background: #d4edda;
+  color: #155724;
+}
+
+.stock-badge.low-stock {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.stock-badge.out-of-stock {
+  background: #f8d7da;
+  color: #721c24;
 }
 
 .product-pricing {
@@ -791,7 +1005,7 @@ onMounted(() => {
   color: #dc3545;
 }
 
-.fa-spinner {
+.spin-animation {
   animation: spin 1s linear infinite;
 }
 
@@ -815,8 +1029,23 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
   
-  .products-grid {
-    grid-template-columns: 1fr;
+  .products-table-container {
+    overflow-x: scroll;
+  }
+  
+  .products-table {
+    min-width: 800px;
+  }
+  
+  .products-table th,
+  .products-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  
+  .product-thumbnail {
+    width: 40px;
+    height: 40px;
   }
   
   .pagination-nav {
