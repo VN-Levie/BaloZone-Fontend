@@ -120,6 +120,24 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/admin/products',
+      name: 'admin-products',
+      component: () => import('../views/AdminProductsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/products/create',
+      name: 'admin-create-product',
+      component: () => import('../views/AdminCreateProductView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/products/:id/edit',
+      name: 'admin-edit-product',
+      component: () => import('../views/AdminEditProductView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/api-tester',
       name: 'api-tester',
       component: () => import('../views/ApiTesterView.vue'),

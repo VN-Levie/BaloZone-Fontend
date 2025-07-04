@@ -469,3 +469,45 @@ export interface DashboardProducts {
   products_by_category: ProductsByCategory[]
   products_by_brand: ProductsByBrand[]
 }
+
+// Admin Product Management Types
+export interface CreateProductRequest {
+  category_id: number
+  brand_id?: number
+  name: string
+  description?: string
+  price: number
+  discount_price?: number
+  stock: number
+  image?: string
+  gallery?: string[]
+  color?: string
+}
+
+export interface UpdateProductRequest extends CreateProductRequest {
+  id: number
+}
+
+export interface AdminProduct extends Product {
+  gallery: string[]
+  color?: string
+  stock: number
+  discount_price?: number
+}
+
+export interface AdminProductResponse {
+  success: boolean
+  message: string
+  data: AdminProduct
+}
+
+export interface AdminProductsListResponse {
+  success: boolean
+  data: AdminProduct[]
+  meta?: {
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+  }
+}

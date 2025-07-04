@@ -24,7 +24,12 @@ import type {
   DashboardStats,
   DashboardRevenue,
   DashboardUsers,
-  DashboardProducts
+  DashboardProducts,
+  CreateProductRequest,
+  UpdateProductRequest,
+  AdminProduct,
+  AdminProductResponse,
+  AdminProductsListResponse
 } from '@/types'
 
 const API_BASE_URL = 'http://localhost:8000/api'
@@ -695,4 +700,47 @@ export const adminDashboardApi = {
   // Get product analytics
   getProductAnalytics: (): Promise<ApiResponse<DashboardProducts>> =>
     makeRequest('/admin/dashboard/products'),
+}
+
+// Admin Products Management API
+export const adminProductsApi = {
+  // Get all products for admin
+  getProducts: (page?: number, limit?: number): Promise<AdminProductsListResponse> => {
+    const params = new URLSearchParams()
+    if (page) params.append('page', page.toString())
+    if (limit) params.append('limit', limit.toString())
+    const queryString = params.toString()
+    return makeRequest(`/dashboard/products${queryString ? '?' + queryString : ''}`)
+  },
+
+  // Get single product for admin
+  getProduct: (id: number): Promise<AdminProductResponse> =>
+    makeRequest(`/dashboard/products/${id}`),
+
+  // Create new product
+  createProduct: (productData: CreateProductRequest): Promise<AdminProductResponse> =>
+    makeRequest('/dashboard/products', {
+      method: 'POST',
+      body: JSON.stringify(productData),
+    }),
+
+  // Update product
+  updateProduct: (id: number, productData: UpdateProductRequest): Promise<AdminProductResponse> =>
+    makeRequest(`/dashboard/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(productData),
+    }),
+
+  // Delete product
+  deleteProduct: (id: number): Promise<ApiResponse<null>> =>
+    makeRequest(`/dashboard/products/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Bulk delete products
+  bulkDeleteProducts: (ids: number[]): Promise<ApiResponse<null>> =>
+    makeRequest('/dashboard/products/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    }),
 }
