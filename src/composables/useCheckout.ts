@@ -21,11 +21,37 @@ export const useCheckout = () => {
 
   // Computed
   const subtotal = computed(() => totalAmount.value)
-  
+
   const discount = computed(() => {
     if (!selectedVoucher.value) return 0
-    const voucherPrice = selectedVoucher.value.price
-    return typeof voucherPrice === 'string' ? parseFloat(voucherPrice) : voucherPrice
+    
+    // Handle legacy price field
+    if (selectedVoucher.value.price !== undefined && selectedVoucher.value.price !== null) {
+      const voucherPrice = selectedVoucher.value.price
+      return typeof voucherPrice === 'string' ? parseFloat(voucherPrice) || 0 : voucherPrice || 0
+    }
+    
+    // Handle new discount structure
+    if (selectedVoucher.value.discount_type && selectedVoucher.value.discount_value) {
+      const discountValue = parseFloat(selectedVoucher.value.discount_value) || 0
+      
+      if (selectedVoucher.value.discount_type === 'percentage') {
+        // Calculate percentage discount
+        const percentageDiscount = (subtotal.value * discountValue) / 100
+        
+        // Apply max discount limit if exists
+        if (selectedVoucher.value.max_discount_amount) {
+          const maxDiscount = parseFloat(selectedVoucher.value.max_discount_amount) || 0
+          return Math.min(percentageDiscount, maxDiscount)
+        }
+        
+        return percentageDiscount
+      } else if (selectedVoucher.value.discount_type === 'fixed') {
+        return discountValue
+      }
+    }
+    
+    return 0
   })
 
   const total = computed(() => {
@@ -46,7 +72,7 @@ export const useCheckout = () => {
     try {
       const response = await addressBookApi.getAddresses()
       addresses.value = response.data
-      
+
       // Auto-select default address
       const defaultAddress = addresses.value.find(addr => addr.is_default)
       if (defaultAddress) {
@@ -68,7 +94,7 @@ export const useCheckout = () => {
     try {
       const response = await paymentMethodsApi.getPaymentMethods()
       paymentMethods.value = response.data.filter(pm => pm.status === 'active')
-      
+
       // Auto-select first payment method
       if (paymentMethods.value.length > 0) {
         selectedPaymentMethod.value = paymentMethods.value[0]
@@ -96,10 +122,36 @@ export const useCheckout = () => {
     try {
       const response = await vouchersApi.validateVoucher(code)
       selectedVoucher.value = response.data
+      
+      // Handle discount amount safely
+      let discountMessage = ''
+      const voucher = response.data
+      
+      if (voucher.price !== undefined && voucher.price !== null) {
+        // Legacy price field
+        const discountAmount = typeof voucher.price === 'string' 
+          ? parseFloat(voucher.price) || 0
+          : voucher.price || 0
+        discountMessage = `Giảm ${discountAmount.toLocaleString()}đ`
+      } else if (voucher.discount_type && voucher.discount_value) {
+        // New discount structure
+        const discountValue = parseFloat(voucher.discount_value) || 0
+        
+        if (voucher.discount_type === 'percentage') {
+          discountMessage = `Giảm ${discountValue}%`
+          if (voucher.max_discount_amount) {
+            const maxDiscount = parseFloat(voucher.max_discount_amount) || 0
+            discountMessage += ` (tối đa ${maxDiscount.toLocaleString()}đ)`
+          }
+        } else if (voucher.discount_type === 'fixed') {
+          discountMessage = `Giảm ${discountValue.toLocaleString()}đ`
+        }
+      }
+      
       addToast({
         type: 'success',
         title: 'Thành công',
-        message: `Áp dụng voucher thành công! Giảm ${response.data.price.toLocaleString()}đ`
+        message: `Áp dụng voucher thành công! ${discountMessage}`
       })
       return true
     } catch (error) {
@@ -158,21 +210,21 @@ export const useCheckout = () => {
 
     try {
       const orderData: CreateOrderRequest = {
-        address_id: selectedAddress.value!.id,
-        payment_method_id: selectedPaymentMethod.value!.id,
-        voucher_id: selectedVoucher.value?.id,
-        comment: orderComment.value.trim() || undefined,
         items: cartItems.value.map(item => ({
           product_id: item.product.id,
           quantity: item.quantity
-        }))
+        })),
+        shipping_address_id: selectedAddress.value!.id,
+        payment_method: selectedPaymentMethod.value!.code || selectedPaymentMethod.value!.name.toLowerCase(),
+        voucher_code: selectedVoucher.value?.code,
+        note: orderComment.value.trim() || undefined
       }
 
       const response = await ordersApi.createOrder(orderData)
-      
+
       // Clear cart after successful order
       clearCart()
-      
+
       // Reset form
       selectedVoucher.value = null
       orderComment.value = ''
@@ -185,21 +237,23 @@ export const useCheckout = () => {
       return response.data
     } catch (error: any) {
       console.error('Failed to place order:', error)
-      
-      // Handle validation errors from backend
+
       let errorMessage = 'Không thể đặt hàng. Vui lòng thử lại'
-      
-      try {
-        if (error.message) {
-          const errorData = JSON.parse(error.message.replace(/^HTTP \d+: /, ''))
-          if (errorData.message) {
-            errorMessage = errorData.message
-          }
+
+      // Handle different error formats from API
+      if (error.response?.data) {
+        const errorData = error.response.data
+        if (errorData.message) {
+          errorMessage = errorData.message
+        } else if (errorData.errors && typeof errorData.errors === 'object') {
+          // Handle validation errors (422)
+          const errorList = Object.values(errorData.errors).flat()
+          errorMessage = errorList.length > 0 ? errorList[0] as string : errorMessage
         }
-      } catch (parseError) {
-        // Use default error message
+      } else if (error.message) {
+        errorMessage = error.message
       }
-      
+
       addToast({
         type: 'error',
         title: 'Lỗi',

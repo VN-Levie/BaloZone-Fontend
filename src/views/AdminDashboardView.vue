@@ -31,6 +31,193 @@
           @action-click="handleQuickAction"
         />
 
+        <!-- Quick Management Section -->
+        <div class="row g-4 mt-4">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                  <i class="bi bi-lightning-charge-fill text-warning me-2"></i>
+                  Quản lý nhanh
+                </h5>
+                <small class="text-muted">Truy cập nhanh các chức năng chính</small>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <!-- Product Management -->
+                  <div class="col-md-6 col-lg-3">
+                    <div class="quick-management-card product-card" @click="router.push('/admin/products')">
+                      <div class="card-icon">
+                        <i class="bi bi-box-seam-fill"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6 class="card-title">Sản phẩm</h6>
+                        <p class="card-subtitle">{{ stats.totalProducts }} sản phẩm</p>
+                        <div class="card-actions">
+                          <button 
+                            class="btn btn-sm btn-primary"
+                            @click.stop="router.push('/admin/products')"
+                          >
+                            <i class="bi bi-grid-3x2-gap me-1"></i>Danh sách
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-success"
+                            @click.stop="router.push('/admin/products/create')"
+                          >
+                            <i class="bi bi-plus-lg me-1"></i>Thêm mới
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Category Management -->
+                  <div class="col-md-6 col-lg-3">
+                    <div class="quick-management-card category-card" @click="router.push('/admin/categories')">
+                      <div class="card-icon">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6 class="card-title">Danh mục</h6>
+                        <p class="card-subtitle">Quản lý phân loại</p>
+                        <div class="card-actions">
+                          <button 
+                            class="btn btn-sm btn-info"
+                            @click.stop="router.push('/admin/categories')"
+                          >
+                            <i class="bi bi-list-ul me-1"></i>Danh sách
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-warning"
+                            @click.stop="router.push('/admin/categories/create')"
+                          >
+                            <i class="bi bi-folder-plus me-1"></i>Tạo mới
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Brand Management -->
+                  <div class="col-md-6 col-lg-3">
+                    <div class="quick-management-card brand-card" @click="router.push('/admin/brands')">
+                      <div class="card-icon">
+                        <i class="bi bi-award-fill"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6 class="card-title">Thương hiệu</h6>
+                        <p class="card-subtitle">Quản lý nhãn hàng</p>
+                        <div class="card-actions">
+                          <button 
+                            class="btn btn-sm btn-success"
+                            @click.stop="router.push('/admin/brands')"
+                          >
+                            <i class="bi bi-star me-1"></i>Danh sách
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-primary"
+                            @click.stop="router.push('/admin/brands/create')"
+                          >
+                            <i class="bi bi-plus-circle me-1"></i>Tạo mới
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Orders Management -->
+                  <div class="col-md-6 col-lg-3">
+                    <div class="quick-management-card order-card" @click="router.push('/admin/orders')">
+                      <div class="card-icon">
+                        <i class="bi bi-cart-check-fill"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6 class="card-title">Đơn hàng</h6>
+                        <p class="card-subtitle">{{ stats.totalOrders }} đơn hàng</p>
+                        <div class="card-actions">
+                          <button 
+                            class="btn btn-sm btn-danger"
+                            @click.stop="router.push('/admin/orders')"
+                          >
+                            <i class="bi bi-clipboard-check me-1"></i>Xử lý
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-secondary"
+                            @click.stop="router.push('/admin/reports/orders')"
+                          >
+                            <i class="bi bi-graph-up me-1"></i>Báo cáo
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Users Management -->
+                  <div class="col-md-6 col-lg-3">
+                    <div class="quick-management-card user-card" @click="router.push('/admin/users')">
+                      <div class="card-icon">
+                        <i class="bi bi-people-fill"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6 class="card-title">Người dùng</h6>
+                        <p class="card-subtitle">{{ stats.totalUsers }} tài khoản</p>
+                        <div class="card-actions">
+                          <button 
+                            class="btn btn-sm btn-secondary"
+                            @click.stop="router.push('/admin/users')"
+                          >
+                            <i class="bi bi-person-lines-fill me-1"></i>Quản lý
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-info"
+                            @click.stop="router.push('/admin/roles')"
+                          >
+                            <i class="bi bi-shield-check me-1"></i>Phân quyền
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Category Trash Access -->
+                <div class="row g-3 mt-3">
+                  <div class="col-12">
+                    <div class="alert alert-light border d-flex justify-content-between align-items-center">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-trash3-fill text-warning me-2"></i>
+                        <span><strong>Thùng rác:</strong> Quản lý các mục đã xóa tạm thời</span>
+                      </div>
+                      <div class="btn-group">
+                        <button 
+                          class="btn btn-sm btn-outline-warning"
+                          @click="router.push('/admin/categories/trashed')"
+                        >
+                          <i class="bi bi-folder-x me-1"></i>Danh mục đã xóa
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-outline-info"
+                          @click="router.push('/admin/brands/trashed')"
+                        >
+                          <i class="bi bi-award me-1"></i>Thương hiệu đã xóa
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-outline-secondary"
+                          @click="router.push('/admin/products/trashed')"
+                          disabled
+                          title="Chức năng sắp có"
+                        >
+                          <i class="bi bi-box me-1"></i>Sản phẩm đã xóa
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Charts Section -->
         <ChartsSection 
           :sales-data="salesChartData"
@@ -226,19 +413,43 @@ const enhancedStats = computed(() => [
 // Enhanced Actions Data
 const enhancedActions = computed(() => [
   {
+    id: 'manage-products',
+    title: 'Quản lý sản phẩm',
+    description: 'Xem, thêm, sửa, xóa sản phẩm',
+    icon: 'bi-box-seam-fill',
+    color: 'primary' as const,
+    badge: stats.value.totalProducts ? `${stats.value.totalProducts}` : undefined,
+    shortcut: 'Ctrl+P'
+  },
+  {
     id: 'create-product',
     title: 'Tạo sản phẩm mới',
-    description: 'Thêm sản phẩm mới vào danh mục',
+    description: 'Thêm sản phẩm mới vào kho',
     icon: 'bi-plus-circle-fill',
-    color: 'primary' as const,
+    color: 'success' as const,
     shortcut: 'Ctrl+N'
+  },
+  {
+    id: 'manage-categories',
+    title: 'Quản lý danh mục',
+    description: 'Quản lý danh mục sản phẩm',
+    icon: 'bi-grid-3x3-gap-fill',
+    color: 'info' as const,
+    badge: 'Mới'
+  },
+  {
+    id: 'create-category',
+    title: 'Tạo danh mục mới',
+    description: 'Thêm danh mục sản phẩm mới',
+    icon: 'bi-folder-plus',
+    color: 'warning' as const
   },
   {
     id: 'manage-orders',
     title: 'Quản lý đơn hàng',
-    description: 'Xem và xử lý đơn hàng mới',
+    description: 'Xem và xử lý đơn hàng',
     icon: 'bi-clipboard-check-fill',
-    color: 'success' as const,
+    color: 'danger' as const,
     badge: stats.value.totalOrders > 0 ? 'Mới' : undefined
   },
   {
@@ -252,25 +463,17 @@ const enhancedActions = computed(() => [
   {
     id: 'manage-users',
     title: 'Quản lý người dùng',
-    description: 'Xem và quản lý tài khoản người dùng',
+    description: 'Xem và quản lý tài khoản',
     icon: 'bi-person-gear',
     color: 'info' as const
   },
   {
     id: 'revenue-report',
     title: 'Báo cáo doanh thu',
-    description: 'Xem báo cáo chi tiết về doanh thu',
+    description: 'Xem báo cáo chi tiết',
     icon: 'bi-graph-up-arrow',
     color: 'success' as const
-  },
-  {
-    id: 'system-settings',
-    title: 'Cài đặt hệ thống',
-    description: 'Cấu hình và cài đặt hệ thống',
-    icon: 'bi-gear-fill',
-    color: 'danger' as const
   }
-
 ])
 
 // Chart Data
@@ -321,8 +524,17 @@ const formatCurrency = (amount: string | number): string => {
 
 const handleQuickAction = (actionId: string) => {
   switch (actionId) {
+    case 'manage-products':
+      router.push('/admin/products')
+      break
     case 'create-product':
       router.push('/admin/products/create')
+      break
+    case 'manage-categories':
+      router.push('/admin/categories')
+      break
+    case 'create-category':
+      router.push('/admin/categories/create')
       break
     case 'manage-orders':
       router.push('/admin/orders')
@@ -618,24 +830,111 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
-.info-card .card-header {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-bottom: 1px solid #e2e8f0;
+/* Quick Management Cards */
+.quick-management-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
   padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
-.info-card .card-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #2d3748;
-  margin: 0;
+.quick-management-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.quick-management-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+}
+
+.quick-management-card:hover::before {
+  transform: scaleX(1);
+}
+
+.quick-management-card .card-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  transition: all 0.3s ease;
 }
 
-.info-card .card-body {
-  padding: 1.5rem;
+.quick-management-card.product-card .card-icon {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+}
+
+.quick-management-card.category-card .card-icon {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: white;
+}
+
+.quick-management-card.brand-card .card-icon {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.quick-management-card.order-card .card-icon {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.quick-management-card.user-card .card-icon {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.quick-management-card:hover .card-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.quick-management-card .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.quick-management-card .card-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.quick-management-card .card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.quick-management-card .btn {
+  border-radius: 8px;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.quick-management-card .btn:hover {
+  transform: translateY(-1px);
 }
 
 /* Loading States */
@@ -781,18 +1080,6 @@ onMounted(() => {
   .info-card .card-header,
   .info-card .card-body {
     padding: 1rem;
-  }
-}
-
-@media (max-width: 576px) {
-  .product-meta {
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-start;
-  }
-  
-  .stock-level {
-    flex-wrap: wrap;
   }
 }
 </style>

@@ -144,7 +144,7 @@
                 <div v-if="selectedVoucher" class="voucher-applied">
                   <div class="voucher-info">
                     <div class="voucher-code">{{ selectedVoucher.code }}</div>
-                    <div class="voucher-discount">-{{ selectedVoucher.price.toLocaleString() }}đ</div>
+                    <div class="voucher-discount">-{{ formatVoucherPrice(selectedVoucher) }}{{ selectedVoucher.discount_type === 'percentage' ? '' : 'đ' }}</div>
                   </div>
                   <button class="btn btn-sm btn-outline-danger" @click="removeVoucher">
                     <i class="bi bi-x"></i>
@@ -181,7 +181,7 @@
                       class="btn btn-sm btn-outline-secondary me-2 mb-2"
                       @click="applyAvailableVoucher(voucher)"
                     >
-                      {{ voucher.code }} (-{{ voucher.price.toLocaleString() }}đ)
+                      {{ voucher.code }} (-{{ formatVoucherPrice(voucher) }}{{ voucher.discount_type === 'percentage' ? '' : 'đ' }})
                     </button>
                   </div>
                 </div>
@@ -225,11 +225,11 @@
                   </div>
                   <div class="item-details">
                     <div class="item-name">{{ item.product.name }}</div>
-                    <div class="item-price">{{ formatPrice(item.product.price) }}</div>
+                    <div class="item-price">{{ formatProductPrice(item.product.price) }}</div>
                     <div class="item-quantity">Số lượng: {{ item.quantity }}</div>
                   </div>
                   <div class="item-total">
-                    {{ formatPrice(item.product.price * item.quantity) }}
+                    {{ calculateProductTotal(item.product.price, item.quantity) }}
                   </div>
                 </div>
               </div>
@@ -333,6 +333,46 @@ const applyVoucher = async () => {
 
 const applyAvailableVoucher = (voucher: Voucher) => {
   selectedVoucher.value = voucher
+}
+
+// Format voucher price safely
+const formatVoucherPrice = (voucher: Voucher): string => {
+  console.log('formatVoucherPrice called with voucher:', voucher);
+  
+  if (!voucher) return '0'
+  
+  // Handle legacy price field first
+  if (voucher.price !== undefined && voucher.price !== null) {
+    const numPrice = typeof voucher.price === 'string' ? parseFloat(voucher.price) || 0 : voucher.price || 0
+    return numPrice.toLocaleString()
+  }
+  
+  // Handle new discount structure
+  if (voucher.discount_type && voucher.discount_value) {
+    const discountValue = parseFloat(voucher.discount_value) || 0
+    
+    if (voucher.discount_type === 'percentage') {
+      return `${discountValue}%`
+    } else if (voucher.discount_type === 'fixed') {
+      return discountValue.toLocaleString()
+    }
+  }
+  
+  return '0'
+}
+
+// Format product price safely
+const formatProductPrice = (price: string | number | undefined): string => {
+  if (price === undefined || price === null) return '0'
+  const numPrice = typeof price === 'string' ? parseFloat(price) || 0 : price || 0
+  return formatPrice(numPrice)
+}
+
+// Calculate safe product total
+const calculateProductTotal = (price: string | number | undefined, quantity: number): string => {
+  if (price === undefined || price === null) return '0'
+  const numPrice = typeof price === 'string' ? parseFloat(price) || 0 : price || 0
+  return formatPrice(numPrice * quantity)
 }
 
 const handleAddressAdded = async (addressData: any) => {

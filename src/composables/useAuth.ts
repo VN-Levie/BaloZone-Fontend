@@ -9,8 +9,14 @@ export const useAuth = () => {
     return await authStore.login({ email, password } as LoginCredentials)
   }
 
-  const register = async (name: string, email: string, password: string) => {
-    return await authStore.register({ name, email, password } as RegisterData)
+  const register = async (name: string, email: string, password: string, phone?: string) => {
+    return await authStore.register({ 
+      name, 
+      email, 
+      password, 
+      password_confirmation: password,
+      phone 
+    } as RegisterData)
   }
 
   return {

@@ -6,8 +6,9 @@ export interface Product {
   brand_id?: number
   name: string
   description?: string
-  price: number
-  originalPrice: number
+  price: number | string
+  originalPrice: number | string
+  discount_price?: number | string
   quantity: number
   image?: string
   slug: string
@@ -32,6 +33,10 @@ export interface Category {
   created_at: string
   updated_at: string
   products?: Product[]
+  // Admin-specific fields
+  active_products_count?: number
+  total_revenue?: number
+  deleted_at?: string
 }
 
 export interface Brand {
@@ -43,6 +48,11 @@ export interface Brand {
   status: 'active' | 'inactive'
   created_at: string
   updated_at: string
+  // Admin-specific fields
+  products_count?: number
+  active_products_count?: number
+  total_revenue?: number
+  deleted_at?: string
 }
 
 export interface Comment {
@@ -105,11 +115,24 @@ export interface News {
 export interface Voucher {
   id: number
   code: string
-  price: number | string
-  end_at: string
-  quantity: number
+  name: string
+  description: string
+  discount_type: 'percentage' | 'fixed'
+  discount_value: string
+  min_order_value: string
+  max_discount_amount: string | null
+  usage_limit: number
+  used_count: number
+  start_date: string
+  end_date: string
+  is_active: boolean
   created_at: string
   updated_at: string
+  deleted_at: string | null
+  // Legacy field for backward compatibility
+  price?: number | string
+  end_at?: string
+  quantity?: number
 }
 
 export interface Address {
@@ -130,6 +153,7 @@ export interface PaymentMethod {
   id: number
   name: string
   display_name: string
+  code?: string
   status: 'active' | 'inactive'
   created_at: string
   updated_at: string
@@ -149,30 +173,61 @@ export interface OrderDetail {
 export interface Order {
   id: number
   user_id: number
-  address_id: number
-  payment_method_id: number
-  voucher_id?: number
-  comment?: string
-  total_price: number
-  payment_status: 'pending' | 'paid' | 'failed' // Updated to match API
+  order_number: string
+  status: string
+  total_amount: string
+  shipping_fee: string
+  voucher_discount: string
+  final_amount: string
+  payment_method: string
+  payment_status: 'pending' | 'paid' | 'failed'
+  shipping_address: {
+    recipient_name: string | null
+    recipient_phone: string | null
+    address: string
+    ward: string
+    district: string
+    province: string
+  }
+  items: {
+    id: number
+    product_id: number
+    product_name: string
+    product_image: string
+    quantity: number
+    price: string
+    total: number
+  }[]
+  order_history?: {
+    status: string
+    note: string
+    created_at: string
+  }[]
   created_at: string
   updated_at: string
+  
+  // Legacy fields for backward compatibility
+  address_id?: number
+  payment_method_id?: number
+  voucher_id?: number
+  comment?: string
+  total_price?: number
   user?: User
   address?: Address
-  payment_method?: PaymentMethod
+  payment_method_obj?: PaymentMethod
   voucher?: Voucher
   order_details?: OrderDetail[]
 }
 
 export interface CreateOrderRequest {
-  address_id: number
-  payment_method_id: number
-  voucher_id?: number
-  comment?: string
   items: {
     product_id: number
     quantity: number
   }[]
+  shipping_address_id: number
+  payment_method: string
+  voucher_code?: string
+  note?: string
 }
 
 // Legacy types - keep for backward compatibility
@@ -288,6 +343,16 @@ export interface PaginatedResponse<T> {
   total: number
 }
 
+// Simplified pagination metadata interface
+export interface PaginationMeta {
+  current_page: number
+  last_page: number
+  per_page: number
+  total: number
+  from: number
+  to: number
+}
+
 export interface ProductFilters {
   page?: number
   limit?: number
@@ -329,6 +394,8 @@ export interface LoginCredentials {
 
 export interface RegisterData extends LoginCredentials {
   name: string
+  password_confirmation: string
+  phone?: string
 }
 
 // Comments interfaces
@@ -477,8 +544,8 @@ export interface CreateProductRequest {
   name: string
   slug: string
   description?: string
-  price: number
-  discount_price?: number
+  price: number | string
+  discount_price?: number | string
   stock: number
   color?: string
   // Note: image and gallery are now handled as files in the API call

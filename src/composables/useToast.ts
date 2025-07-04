@@ -97,6 +97,15 @@ export const useToast = () => {
     )
   }
 
+  // Generic showToast method
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', title?: string) => {
+    return addToast({
+      type,
+      title: title || (type === 'error' ? 'Lỗi' : type === 'success' ? 'Thành công' : type === 'warning' ? 'Cảnh báo' : 'Thông báo'),
+      message
+    })
+  }
+
   return {
     toasts,
     addToast,
@@ -106,6 +115,7 @@ export const useToast = () => {
     showError,
     showWarning,
     showInfo,
+    showToast,
     showAddToCartSuccess,
     showAddToWishlistSuccess,
     showRemoveFromWishlistSuccess,

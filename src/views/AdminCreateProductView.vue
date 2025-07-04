@@ -13,7 +13,7 @@
             class="btn btn-outline"
             @click="router.back()"
           >
-            <i class="fas fa-arrow-left"></i>
+            <i class="bi bi-arrow-left"></i>
             Quay lại
           </button>
         </div>
@@ -57,7 +57,7 @@
               />
               <div v-if="errors.slug" class="invalid-feedback">{{ errors.slug[0] }}</div>
               <div v-else-if="!form.slug.trim() && form.name.trim()" class="form-text text-warning">
-                <i class="fas fa-exclamation-triangle"></i>
+                <i class="bi bi-exclamation-triangle"></i>
                 Slug không được để trống. Nhấn vào đây để tự động tạo.
                 <button type="button" class="btn-link ml-2" @click="generateSlug">Tạo slug</button>
               </div>
@@ -210,7 +210,7 @@
                   @change="handleImageChange"
                 />
                 <label for="image" class="file-upload-btn">
-                  <i class="fas fa-upload"></i>
+                  <i class="bi bi-upload"></i>
                   Chọn ảnh chính
                 </label>
                 <div v-if="errors.image" class="invalid-feedback">{{ errors.image[0] }}</div>
@@ -222,7 +222,7 @@
                   class="remove-image-btn"
                   @click="removeMainImage"
                 >
-                  <i class="fas fa-times"></i>
+                  <i class="bi bi-x"></i>
                 </button>
               </div>
             </div>
@@ -243,7 +243,7 @@
                         class="remove-gallery-btn"
                         @click="removeGalleryImage(index)"
                       >
-                        <i class="fas fa-times"></i>
+                        <i class="bi bi-x"></i>
                       </button>
                     </div>
                   </div>
@@ -257,7 +257,7 @@
                       :id="`gallery-${galleryPreviews.length}`"
                     />
                     <label :for="`gallery-${galleryPreviews.length}`" class="add-gallery-btn">
-                      <i class="fas fa-plus"></i>
+                      <i class="bi bi-plus"></i>
                       <span>Thêm ảnh</span>
                     </label>
                   </div>
@@ -282,8 +282,8 @@
             class="btn btn-primary"
             :disabled="loading || !isFormValid"
           >
-            <i v-if="loading" class="fas fa-spinner fa-spin"></i>
-            <i v-else class="fas fa-save"></i>
+            <i v-if="loading" class="bi bi-arrow-repeat spin-animation"></i>
+            <i v-else class="bi bi-floppy"></i>
             {{ loading ? 'Đang tạo...' : 'Tạo sản phẩm' }}
           </button>
         </div>
@@ -299,6 +299,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { adminProductsApi, categoriesApi, brandsApi } from '@/services/api'
 import { useToast } from '@/composables/useToast'
+import { parseApiError } from '@/utils/errorHandler'
 import type { CreateProductRequest, Category, Brand } from '@/types'
 
 const router = useRouter()
@@ -356,9 +357,9 @@ const isFormValid = computed(() => {
   return form.name.trim() !== '' && 
          form.slug.trim() !== '' &&
          form.category_id > 0 && 
-         form.price > 0 && 
-         form.stock >= 0 &&
-         (!form.discount_price || form.discount_price < form.price)
+         Number(form.price) > 0 && 
+         Number(form.stock) >= 0 &&
+         (!form.discount_price || Number(form.discount_price) < Number(form.price))
 })
 
 // Methods
@@ -392,7 +393,8 @@ const loadCategories = async () => {
     categories.value = response.data
   } catch (error) {
     console.error('Failed to load categories:', error)
-    showError('Lỗi', 'Không thể tải danh sách danh mục')
+    const friendlyMessage = parseApiError(error)
+    showError('Lỗi', friendlyMessage)
   }
 }
 
@@ -402,7 +404,8 @@ const loadBrands = async () => {
     brands.value = response.data
   } catch (error) {
     console.error('Failed to load brands:', error)
-    showError('Lỗi', 'Không thể tải danh sách thương hiệu')
+    const friendlyMessage = parseApiError(error)
+    showError('Lỗi', friendlyMessage)
   }
 }
 
@@ -510,25 +513,11 @@ const handleSubmit = async () => {
     console.error('Failed to create product:', error)
     
     // Handle validation errors
-    if (error.message.includes('422')) {
-      try {
-        const errorData = JSON.parse(error.message.split(': ')[1])
-        console.log('Validation errors received:', errorData)
-        if (errorData.errors) {
-          errors.value = errorData.errors
-          
-          // Show specific error message for slug if present
-          if (errorData.errors.slug) {
-            showError('Lỗi Slug', errorData.errors.slug[0])
-          } else {
-            showError('Lỗi Validation', 'Có lỗi validation trong form. Vui lòng kiểm tra lại.')
-          }
-        }
-      } catch (parseError) {
-        showError('Lỗi', 'Có lỗi xảy ra khi tạo sản phẩm')
-      }
+    if (error.errors && Object.keys(error.errors).length > 0) {
+      errors.value = error.errors
     } else {
-      showError('Lỗi', error.message || 'Có lỗi xảy ra khi tạo sản phẩm')
+      const friendlyMessage = parseApiError(error)
+      showError('Lỗi', friendlyMessage)
     }
   } finally {
     loading.value = false
@@ -926,7 +915,7 @@ onMounted(() => {
   font-size: 12px;
 }
 
-.fa-spinner {
+.spin-animation {
   animation: spin 1s linear infinite;
 }
 

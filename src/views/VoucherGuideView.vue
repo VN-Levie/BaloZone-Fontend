@@ -311,11 +311,12 @@
                                         </div>
                                         <div class="voucher-details">
                                             <h6>{{ getVoucherTitle(voucher) }}</h6>
-                                            <p>{{ getVoucherDescription(voucher) }}</p>
+                                            <!-- <p>{{ getVoucherDescription() }}</p> -->
+                                            <p>{{ voucher.description }}</p>
                                             <div class="voucher-meta">
                                                 <div class="voucher-expiry">
                                                     <i class="bi bi-clock me-1"></i>
-                                                    <span>Hết hạn: {{ formatDate(voucher.end_at) }}</span>
+                                                    <span>Hết hạn: {{ formatDate(voucher.end_date) }}</span>
                                                 </div>
                                                 <div class="voucher-quantity">
                                                     <i class="bi bi-box me-1"></i>
@@ -529,7 +530,7 @@ const copyVoucherCode = async (code: string) => {
 
 // Format voucher title based on price and code
 const getVoucherTitle = (voucher: Voucher): string => {
-    const price = parseFloat(voucher.price.toString())
+    const price = parseFloat(voucher.price?.toString() || '0')
     const code = voucher.code.toLowerCase()
 
     // Special handling for specific voucher types based on code
@@ -552,7 +553,7 @@ const getVoucherTitle = (voucher: Voucher): string => {
 
 // Format voucher description based on price and type
 const getVoucherDescription = (voucher: Voucher): string => {
-    const price = parseFloat(voucher.price.toString())
+    const price = parseFloat(voucher.price?.toString() || '0')
     const code = voucher.code.toLowerCase()
 
     // Special handling for specific voucher types
@@ -633,7 +634,7 @@ const shouldShowHotBadge = (voucher: Voucher, index: number): boolean => {
     if (index === 0) return true // First voucher is always hot
 
     const code = voucher.code.toLowerCase()
-    const price = parseFloat(voucher.price.toString())
+    const price = parseFloat(voucher.price?.toString() || '0')
 
     // Show hot badge for flash sales or high value vouchers
     return code.includes('flash') || price >= 150000

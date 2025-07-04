@@ -1,20 +1,28 @@
 <template>
-  <div class="admin-products">
+  <div class="admin-categories">
     <!-- Header -->
     <div class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <h1 class="page-title">Quản Lý Sản Phẩm</h1>
-          <p class="page-subtitle">Danh sách tất cả sản phẩm trong hệ thống</p>
+          <h1 class="page-title">Quản Lý Danh Mục</h1>
+          <p class="page-subtitle">Danh sách tất cả danh mục trong hệ thống</p>
         </div>
         <div class="header-actions">
           <button 
             type="button" 
+            class="btn btn-outline"
+            @click="router.push('/admin/categories/trashed')"
+          >
+            <i class="bi bi-trash"></i>
+            Thùng rác
+          </button>
+          <button 
+            type="button" 
             class="btn btn-primary"
-            @click="router.push('/admin/products/create')"
+            @click="router.push('/admin/categories/create')"
           >
             <i class="bi bi-plus"></i>
-            Thêm sản phẩm
+            Thêm danh mục
           </button>
         </div>
       </div>
@@ -28,123 +36,108 @@
             v-model="searchQuery"
             type="text"
             class="form-control"
-            placeholder="Tìm kiếm sản phẩm..."
+            placeholder="Tìm kiếm danh mục..."
             @input="handleSearch"
           />
           <i class="bi bi-search search-icon"></i>
         </div>
         
-        <select v-model="selectedCategory" class="form-control" @change="() => loadProducts()">
+        <select v-model="hasProducts" class="form-control" @change="() => loadCategories()">
           <option value="">Tất cả danh mục</option>
-          <option v-for="category in categories" :key="category.id" :value="category.id">
-            {{ category.name }}
-          </option>
+          <option value="true">Có sản phẩm</option>
+          <option value="false">Không có sản phẩm</option>
         </select>
 
-        <select v-model="selectedBrand" class="form-control" @change="() => loadProducts()">
-          <option value="">Tất cả thương hiệu</option>
-          <option v-for="brand in brands" :key="brand.id" :value="brand.id">
-            {{ brand.name }}
-          </option>
-        </select>
-
-        <select v-model="sortBy" class="form-control" @change="() => loadProducts()">
+        <select v-model="sortBy" class="form-control" @change="() => loadCategories()">
           <option value="created_at">Mới nhất</option>
           <option value="name">Tên A-Z</option>
-          <option value="price">Giá thấp đến cao</option>
-          <option value="price_desc">Giá cao đến thấp</option>
-          <option value="stock">Tồn kho</option>
+          <option value="products_count">Số sản phẩm</option>
+        </select>
+
+        <select v-model="sortOrder" class="form-control" @change="() => loadCategories()">
+          <option value="desc">Giảm dần</option>
+          <option value="asc">Tăng dần</option>
         </select>
       </div>
     </div>
 
-    <!-- Products List -->
-    <div class="products-content">
+    <!-- Categories List -->
+    <div class="categories-content">
       <div v-if="loading" class="loading-section">
         <LoadingSpinner />
       </div>
 
-      <div v-else-if="products.length === 0" class="empty-state">
+      <div v-else-if="categories.length === 0" class="empty-state">
         <i class="bi bi-box-seam empty-icon"></i>
-        <h3>Không có sản phẩm nào</h3>
-        <p>Hãy tạo sản phẩm đầu tiên của bạn</p>
+        <h3>Không có danh mục nào</h3>
+        <p>Hãy tạo danh mục đầu tiên của bạn</p>
         <button 
           type="button" 
           class="btn btn-primary"
-          @click="router.push('/admin/products/create')"
+          @click="router.push('/admin/categories/create')"
         >
           <i class="bi bi-plus"></i>
-          Thêm sản phẩm đầu tiên
+          Thêm danh mục đầu tiên
         </button>
       </div>
 
-      <div v-else class="products-table-container">
-        <table class="products-table">
+      <div v-else class="categories-table-container">
+        <table class="categories-table">
           <thead>
             <tr>
               <th>Hình ảnh</th>
-              <th>Tên sản phẩm</th>
-              <th>Danh mục</th>
-              <th>Thương hiệu</th>
-              <th>Giá gốc</th>
-              <th>Giá KM</th>
-              <th>Tồn kho</th>
+              <th>Tên danh mục</th>
+              <th>Slug</th>
+              <th>Số sản phẩm</th>
+              <th>Sản phẩm hoạt động</th>
+              <th>Doanh thu</th>
               <th>Ngày tạo</th>
               <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="product in products" :key="product.id">
-              <td class="product-image-cell">
+            <tr v-for="category in categories" :key="category.id">
+              <td class="category-image-cell">
                 <img 
-                  :src="product.image || '/placeholder-product.jpg'" 
-                  :alt="product.name"
-                  class="product-thumbnail"
+                  :src="category.image || 'https://placehold.co/600x400?text=img'" 
+                  :alt="category.name"
+                  class="category-thumbnail"
                   @error="handleImageError"
                 />
               </td>
-              <td class="product-name-cell">
-                <div class="product-name">{{ product.name }}</div>
-                <div class="product-slug">{{ product.slug }}</div>
+              <td class="category-name-cell">
+                <div class="category-name">{{ category.name }}</div>
+                <div class="category-description">{{ category.description || 'Không có mô tả' }}</div>
               </td>
-              <td>
-                <span v-if="product.category" class="category-badge">
-                  {{ product.category.name }}
-                </span>
-                <span v-else>-</span>
+              <td class="slug-cell">
+                <code class="slug-code">{{ category.slug }}</code>
               </td>
-              <td>
-                <span v-if="product.brand" class="brand-badge">
-                  {{ product.brand.name }}
-                </span>
-                <span v-else>-</span>
+              <td class="number-cell">
+                <span class="count-badge">{{ category.products_count || 0 }}</span>
               </td>
-              <td class="price-cell">
-                {{ formatPrice(product.price  || 0) }}
+              <td class="number-cell">
+                <span class="count-badge active">{{ category.active_products_count || 0 }}</span>
               </td>
-              <td class="price-cell">
-                <span v-if="product.discount_price" class="discount-price">
-                  {{ formatPrice(product.discount_price) }}
-                </span>
-                <span v-else>-</span>
-              </td>
-              <td class="stock-cell">
-                <span 
-                  class="stock-badge"
-                  :class="getStockClass(product.stock || 0)"
-                >
-                  {{ product.stock || 0 }}
-                </span>
+              <td class="revenue-cell">
+                {{ formatRevenue(category.total_revenue || 0) }}
               </td>
               <td class="date-cell">
-                {{ formatDate(product.created_at) }}
+                {{ formatDate(category.created_at) }}
               </td>
               <td class="actions-cell">
                 <div class="action-buttons">
                   <button 
                     type="button"
+                    class="btn-icon btn-view"
+                    @click="viewCategoryProducts(category.id)"
+                    title="Xem sản phẩm"
+                  >
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button 
+                    type="button"
                     class="btn-icon btn-edit"
-                    @click="editProduct(product.id)"
+                    @click="editCategory(category.id)"
                     title="Chỉnh sửa"
                   >
                     <i class="bi bi-pencil"></i>
@@ -152,7 +145,7 @@
                   <button 
                     type="button"
                     class="btn-icon btn-delete"
-                    @click="confirmDelete(product)"
+                    @click="confirmDelete(category)"
                     title="Xóa"
                   >
                     <i class="bi bi-trash"></i>
@@ -207,14 +200,18 @@
     <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>Xác nhận xóa sản phẩm</h3>
+          <h3>Xác nhận xóa danh mục</h3>
           <button type="button" class="close-btn" @click="closeDeleteModal">
             <i class="bi bi-x"></i>
           </button>
         </div>
         <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>{{ productToDelete?.name }}</strong>?</p>
-          <p class="text-danger">Hành động này không thể hoàn tác.</p>
+          <p>Bạn có chắc chắn muốn xóa danh mục <strong>{{ categoryToDelete?.name }}</strong>?</p>
+          <p v-if="categoryToDelete?.products_count && categoryToDelete.products_count > 0" class="text-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            Danh mục này có {{ categoryToDelete.products_count }} sản phẩm. Việc xóa có thể không thành công nếu có sản phẩm đang hoạt động.
+          </p>
+          <p class="text-danger">Hành động này có thể hoàn tác từ thùng rác.</p>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-outline" @click="closeDeleteModal">
@@ -223,7 +220,7 @@
           <button 
             type="button" 
             class="btn btn-danger"
-            @click="deleteProduct"
+            @click="deleteCategory"
             :disabled="deleting"
           >
             <i v-if="deleting" class="bi bi-arrow-repeat spin-animation"></i>
@@ -237,28 +234,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { adminProductsApi, categoriesApi, brandsApi } from '@/services/api'
+import { adminCategoriesApi } from '@/services/api'
 import { useToast } from '@/composables/useToast'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import type { AdminProduct, Category, Brand } from '@/types'
+import type { Category } from '@/types'
 
 const router = useRouter()
 const { showSuccess, showError } = useToast()
 
 // State
-const products = ref<AdminProduct[]>([])
 const categories = ref<Category[]>([])
-const brands = ref<Brand[]>([])
 const loading = ref(false)
 const deleting = ref(false)
 
 // Filters
 const searchQuery = ref('')
-const selectedCategory = ref('')
-const selectedBrand = ref('')
+const hasProducts = ref('')
 const sortBy = ref('created_at')
+const sortOrder = ref('desc')
 
 // Pagination
 const pagination = ref<{
@@ -270,113 +265,109 @@ const pagination = ref<{
 
 // Delete modal
 const showDeleteModal = ref(false)
-const productToDelete = ref<AdminProduct | null>(null)
+const categoryToDelete = ref<Category | null>(null)
 
 // Methods
-const loadProducts = async (page = 1) => {
+const loadCategories = async (page = 1) => {
   loading.value = true
   try {
     // Build query parameters for filters
     const params = new URLSearchParams()
     params.append('page', page.toString())
-    params.append('limit', '12')
+    params.append('per_page', '15')
     
     if (searchQuery.value.trim()) {
       params.append('search', searchQuery.value.trim())
     }
     
-    if (selectedCategory.value) {
-      params.append('category_id', selectedCategory.value)
-    }
-    
-    if (selectedBrand.value) {
-      params.append('brand_id', selectedBrand.value)
+    if (hasProducts.value) {
+      params.append('has_products', hasProducts.value)
     }
     
     if (sortBy.value) {
-      params.append('sort', sortBy.value)
+      params.append('sort_by', sortBy.value)
+    }
+    
+    if (sortOrder.value) {
+      params.append('sort_order', sortOrder.value)
     }
 
-    const response = await adminProductsApi.getProducts(page, 12, params)
+    const response = await adminCategoriesApi.getCategories(page, 15, params)
     
-    if (response.success && response.data) {
-      // Handle Laravel pagination structure: response.data.data contains the products
-      const productData = response.data.data || []
-      products.value = Array.isArray(productData) ? productData.filter(product => product && product.id) : []
-      
-      // Extract pagination info from the response.data object
-      pagination.value = {
-        current_page: response.data.current_page || 1,
-        last_page: response.data.last_page || 1,
-        per_page: response.data.per_page || 10,
-        total: response.data.total || 0
+    if (response && response.data) {
+      // Handle Laravel pagination structure: response.data contains categories or { data, pagination }
+      if (Array.isArray(response.data)) {
+        // Direct array response
+        categories.value = response.data.filter(category => category && category.id)
+        pagination.value = null
+      } else {
+        // Paginated response - cast to any to handle dynamic structure
+        const paginatedData = response.data as any
+        const categoryData = paginatedData.data || paginatedData
+        categories.value = Array.isArray(categoryData) ? categoryData.filter((category: any) => category && category.id) : []
+        
+        // Extract pagination info
+        pagination.value = {
+          current_page: paginatedData.current_page || 1,
+          last_page: paginatedData.last_page || 1,
+          per_page: paginatedData.per_page || 15,
+          total: paginatedData.total || 0
+        }
       }
     } else {
-      products.value = []
+      categories.value = []
       pagination.value = null
     }
   } catch (error) {
-    console.error('Failed to load products:', error)
-    showError('Lỗi', 'Không thể tải danh sách sản phẩm')
-    products.value = []
+    console.error('Failed to load categories:', error)
+    showError('Lỗi', 'Không thể tải danh sách danh mục')
+    categories.value = []
   } finally {
     loading.value = false
-  }
-}
-
-const loadCategories = async () => {
-  try {
-    const response = await categoriesApi.getCategories()
-    categories.value = Array.isArray(response.data) ? response.data : []
-  } catch (error) {
-    console.error('Failed to load categories:', error)
-    categories.value = []
-  }
-}
-
-const loadBrands = async () => {
-  try {
-    const response = await brandsApi.getBrands()
-    brands.value = Array.isArray(response.data) ? response.data : []
-  } catch (error) {
-    console.error('Failed to load brands:', error)
-    brands.value = []
   }
 }
 
 const handleSearch = () => {
   // Debounce search
   setTimeout(() => {
-    loadProducts(1)
+    loadCategories(1)
   }, 300)
 }
 
-const editProduct = (productId: number) => {
-  router.push(`/admin/products/${productId}/edit`)
+const editCategory = (categoryId: number) => {
+  router.push(`/admin/categories/${categoryId}/edit`)
 }
 
-const confirmDelete = (product: AdminProduct) => {
-  productToDelete.value = product
+const viewCategoryProducts = (categoryId: number) => {
+  router.push(`/admin/categories/${categoryId}/products`)
+}
+
+const confirmDelete = (category: Category) => {
+  categoryToDelete.value = category
   showDeleteModal.value = true
 }
 
 const closeDeleteModal = () => {
   showDeleteModal.value = false
-  productToDelete.value = null
+  categoryToDelete.value = null
 }
 
-const deleteProduct = async () => {
-  if (!productToDelete.value) return
+const deleteCategory = async () => {
+  if (!categoryToDelete.value) return
 
   deleting.value = true
   try {
-    await adminProductsApi.deleteProduct(productToDelete.value.id)
-    showSuccess('Thành công', 'Xóa sản phẩm thành công')
+    await adminCategoriesApi.deleteCategory(categoryToDelete.value.id)
+    showSuccess('Thành công', 'Xóa danh mục thành công')
     closeDeleteModal()
-    loadProducts() // Reload current page
-  } catch (error) {
-    console.error('Failed to delete product:', error)
-    showError('Lỗi', 'Không thể xóa sản phẩm')
+    loadCategories() // Reload current page
+  } catch (error: any) {
+    console.error('Failed to delete category:', error)
+    if (error.message.includes('has active products')) {
+      showError('Không thể xóa', 'Danh mục này có sản phẩm đang hoạt động. Vui lòng xóa hoặc chuyển sản phẩm trước.')
+    } else {
+      showError('Lỗi', 'Không thể xóa danh mục')
+    }
   } finally {
     deleting.value = false
   }
@@ -384,7 +375,7 @@ const deleteProduct = async () => {
 
 const changePage = (page: number) => {
   if (page >= 1 && pagination.value && page <= pagination.value.last_page) {
-    loadProducts(page)
+    loadCategories(page)
   }
 }
 
@@ -404,17 +395,14 @@ const getPageNumbers = () => {
 }
 
 // Utility functions
-const formatPrice = (price: number | string) => {
+const formatRevenue = (revenue: number) => {
   try {
-    //convert price to number if it's a string
-    if (typeof price === 'string') {
-      price = parseFloat(price)
-    }
-    const validPrice = typeof price === 'number' && !isNaN(price) ? price : 0
+    const validRevenue = typeof revenue === 'number' && !isNaN(revenue) ? revenue : 0
+    if (validRevenue === 0) return '0 ₫'
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
-    }).format(validPrice)
+    }).format(validRevenue)
   } catch (error) {
     return '0 ₫'
   }
@@ -429,27 +417,19 @@ const formatDate = (dateString: string) => {
   }
 }
 
-const getStockClass = (stock: number) => {
-  if (stock === 0) return 'out-of-stock'
-  if (stock < 10) return 'low-stock'
-  return 'in-stock'
-}
-
 const handleImageError = (event: Event) => {
   const target = event.target as HTMLImageElement
-  target.src = '/placeholder-product.jpg'
+  target.src = 'https://placehold.co/600x400?text=img'
 }
 
 // Lifecycle
 onMounted(() => {
-  loadProducts()
   loadCategories()
-  loadBrands()
 })
 </script>
 
 <style scoped>
-.admin-products {
+.admin-categories {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
@@ -465,6 +445,11 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
 }
 
 .page-title {
@@ -506,7 +491,7 @@ onMounted(() => {
   color: #666;
 }
 
-.products-content {
+.categories-content {
   background: white;
   border-radius: 12px;
   padding: 20px;
@@ -541,18 +526,12 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
 /* Table Styles */
-.products-table-container {
+.categories-table-container {
   overflow-x: auto;
 }
 
-.products-table {
+.categories-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
@@ -561,7 +540,7 @@ onMounted(() => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.products-table th {
+.categories-table th {
   background: #f8f9fa;
   color: #495057;
   font-weight: 600;
@@ -571,21 +550,21 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.products-table td {
+.categories-table td {
   padding: 12px 15px;
   border-bottom: 1px solid #e9ecef;
   vertical-align: middle;
 }
 
-.products-table tbody tr:hover {
+.categories-table tbody tr:hover {
   background: #f8f9fa;
 }
 
-.product-image-cell {
+.category-image-cell {
   width: 80px;
 }
 
-.product-thumbnail {
+.category-thumbnail {
   width: 60px;
   height: 60px;
   object-fit: cover;
@@ -593,37 +572,67 @@ onMounted(() => {
   border: 1px solid #e9ecef;
 }
 
-.product-name-cell {
+.category-name-cell {
   min-width: 200px;
 }
 
-.product-name {
+.category-name {
   font-weight: 600;
   color: #2c3e50;
   margin-bottom: 4px;
   line-height: 1.3;
 }
 
-.product-slug {
+.category-description {
   font-size: 12px;
   color: #6c757d;
-  font-family: monospace;
+  line-height: 1.4;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.price-cell {
-  font-weight: 600;
-  color: #2c3e50;
-  text-align: right;
-  min-width: 100px;
+.slug-cell {
+  min-width: 150px;
 }
 
-.discount-price {
-  color: #e74c3c;
+.slug-code {
+  background: #f8f9fa;
+  color: #495057;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  border: 1px solid #e9ecef;
 }
 
-.stock-cell {
+.number-cell {
   text-align: center;
   min-width: 80px;
+}
+
+.count-badge {
+  background: #e9ecef;
+  color: #495057;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 30px;
+  display: inline-block;
+}
+
+.count-badge.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.revenue-cell {
+  font-weight: 600;
+  color: #28a745;
+  text-align: right;
+  min-width: 120px;
 }
 
 .date-cell {
@@ -633,18 +642,18 @@ onMounted(() => {
 }
 
 .actions-cell {
-  width: 100px;
+  width: 120px;
 }
 
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
 }
 
 .btn-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border: none;
   border-radius: 6px;
   display: flex;
@@ -652,7 +661,17 @@ onMounted(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.btn-view {
+  background: #e8f5e8;
+  color: #28a745;
+}
+
+.btn-view:hover {
+  background: #d4edda;
+  color: #1e7e34;
 }
 
 .btn-edit {
@@ -673,200 +692,6 @@ onMounted(() => {
 .btn-delete:hover {
   background: #ffcdd2;
   color: #b71c1c;
-}
-
-.product-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.product-image {
-  position: relative;
-  height: 200px;
-  overflow: hidden;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-actions {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  gap: 5px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.product-card:hover .product-actions {
-  opacity: 1;
-}
-
-.action-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.action-btn.edit {
-  background: #007bff;
-  color: white;
-}
-
-.action-btn.edit:hover {
-  background: #0056b3;
-}
-
-.action-btn.delete {
-  background: #dc3545;
-  color: white;
-}
-
-.action-btn.delete:hover {
-  background: #c82333;
-}
-
-.product-info {
-  padding: 15px;
-}
-
-.product-name {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 10px 0;
-  color: #1a1a1a;
-  line-height: 1.4;
-}
-
-.product-meta {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.category-badge,
-.brand-badge {
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-weight: 500;
-  display: inline-block;
-}
-
-.category-badge {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-
-.brand-badge {
-  background: #f3e5f5;
-  color: #7b1fa2;
-}
-
-.stock-badge {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 40px;
-  justify-content: center;
-}
-
-.stock-badge.in-stock {
-  background: #d4edda;
-  color: #155724;
-}
-
-.stock-badge.low-stock {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.stock-badge.out-of-stock {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.product-pricing {
-  margin-bottom: 10px;
-}
-
-.current-price {
-  font-size: 18px;
-  font-weight: 600;
-  color: #dc3545;
-  margin-right: 8px;
-}
-
-.original-price {
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
-}
-
-.original-price.discounted {
-  text-decoration: line-through;
-  color: #999;
-  font-size: 14px;
-}
-
-.product-stock {
-  margin-bottom: 10px;
-}
-
-.stock-badge {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.stock-badge.in-stock {
-  background: #d4edda;
-  color: #155724;
-}
-
-.stock-badge.low-stock {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.stock-badge.out-of-stock {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.product-dates {
-  border-top: 1px solid #f0f0f0;
-  padding-top: 8px;
-}
-
-.text-muted {
-  color: #666;
-  font-size: 12px;
 }
 
 .pagination-section {
@@ -1009,6 +834,17 @@ onMounted(() => {
   color: #dc3545;
 }
 
+.text-warning {
+  color: #856404;
+  background: #fff3cd;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ffeaa7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .spin-animation {
   animation: spin 1s linear infinite;
 }
@@ -1019,7 +855,7 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .admin-products {
+  .admin-categories {
     padding: 15px;
   }
   
@@ -1029,25 +865,30 @@ onMounted(() => {
     gap: 15px;
   }
   
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
   .filters-grid {
     grid-template-columns: 1fr;
   }
   
-  .products-table-container {
+  .categories-table-container {
     overflow-x: scroll;
   }
   
-  .products-table {
-    min-width: 800px;
+  .categories-table {
+    min-width: 900px;
   }
   
-  .products-table th,
-  .products-table td {
+  .categories-table th,
+  .categories-table td {
     padding: 8px 10px;
     font-size: 12px;
   }
   
-  .product-thumbnail {
+  .category-thumbnail {
     width: 40px;
     height: 40px;
   }

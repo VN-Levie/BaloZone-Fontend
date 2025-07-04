@@ -72,8 +72,22 @@ const makeRequest = async <T>(
     const response = await fetch(url, config)
     
     if (!response.ok) {
-      const errorData = await response.text()
-      throw new Error(`HTTP ${response.status}: ${errorData}`)
+      let errorData: any = {}
+      try {
+        errorData = await response.json()
+      } catch {
+        errorData = { message: await response.text() }
+      }
+      
+      // Create a structured error object
+      const apiError = {
+        status: response.status,
+        message: errorData.message || `HTTP ${response.status}`,
+        errors: errorData.errors || {},
+        data: errorData
+      }
+      
+      throw apiError
     }
     
     const data = await response.json()
@@ -220,6 +234,188 @@ export const brandsApi = {
     }),
 }
 
+// Admin Categories API
+export const adminCategoriesApi = {
+  // Get all categories for admin
+  getCategories: (page = 1, limit = 15, params?: URLSearchParams): Promise<PaginatedResponse<Category>> => {
+    let url = `/dashboard/categories?page=${page}&per_page=${limit}`
+    if (params) {
+      url += `&${params.toString()}`
+    }
+    return makeRequest(url)
+  },
+
+  // Get single category
+  getCategory: (id: number): Promise<ApiResponse<Category>> =>
+    makeRequest(`/dashboard/categories/${id}`),
+
+  // Create category with file upload
+  createCategory: (formData: FormData): Promise<ApiResponse<Category>> =>
+    makeRequest('/dashboard/categories', {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Let browser set Content-Type for FormData
+    }),
+
+  // Update category
+  updateCategory: (id: number, categoryData: any): Promise<ApiResponse<Category>> =>
+    makeRequest(`/dashboard/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(categoryData),
+    }),
+
+  // Update category with file upload
+  updateCategoryWithFile: (id: number, formData: FormData): Promise<ApiResponse<Category>> =>
+    makeRequest(`/dashboard/categories/${id}`, {
+      method: 'POST', // Using POST with _method for file upload
+      body: formData,
+      headers: {}, // Let browser set Content-Type for FormData
+    }),
+
+  // Delete category (soft delete)
+  deleteCategory: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/dashboard/categories/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Get trashed categories
+  getTrashedCategories: (page = 1, limit = 15): Promise<PaginatedResponse<Category>> =>
+    makeRequest(`/dashboard/categories/trashed?page=${page}&per_page=${limit}`),
+
+  // Get trashed categories with filters
+  getTrashed: (params?: any): Promise<ApiResponse<PaginatedResponse<Category>>> => {
+    const queryParams = new URLSearchParams()
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined) {
+          queryParams.append(key, params[key].toString())
+        }
+      })
+    }
+    const url = `/dashboard/categories/trashed?${queryParams.toString()}`
+    return makeRequest(url)
+  },
+
+  // Restore category
+  restoreCategory: (id: number): Promise<ApiResponse<Category>> =>
+    makeRequest(`/dashboard/categories/${id}/restore`, {
+      method: 'POST',
+    }),
+
+  // Restore category (alias)
+  restore: (id: number): Promise<ApiResponse<Category>> =>
+    makeRequest(`/dashboard/categories/${id}/restore`, {
+      method: 'POST',
+    }),
+
+  // Force delete category
+  forceDeleteCategory: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/dashboard/categories/${id}/force`, {
+      method: 'DELETE',
+    }),
+
+  // Force delete category (alias)
+  forceDelete: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/dashboard/categories/${id}/force`, {
+      method: 'DELETE',
+    }),
+
+  // Get category with products
+  getCategoryWithProducts: (id: number, page = 1, limit = 15, includeTrashed = false): Promise<PaginatedResponse<any>> =>
+    makeRequest(`/dashboard/categories/${id}/products?page=${page}&per_page=${limit}&include_trashed=${includeTrashed}`),
+}
+
+// Admin Brands API
+export const adminBrandsApi = {
+  // Get all brands for admin
+  getBrands: (page = 1, limit = 15, params?: URLSearchParams): Promise<PaginatedResponse<Brand>> => {
+    let url = `/dashboard/brands?page=${page}&per_page=${limit}`
+    if (params) {
+      url += `&${params.toString()}`
+    }
+    return makeRequest(url)
+  },
+
+  // Get single brand
+  getBrand: (id: number): Promise<ApiResponse<Brand>> =>
+    makeRequest(`/dashboard/brands/${id}`),
+
+  // Create brand with file upload
+  createBrand: (formData: FormData): Promise<ApiResponse<Brand>> =>
+    makeRequest('/dashboard/brands', {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Let browser set Content-Type for FormData
+    }),
+
+  // Update brand
+  updateBrand: (id: number, brandData: any): Promise<ApiResponse<Brand>> =>
+    makeRequest(`/dashboard/brands/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(brandData),
+    }),
+
+  // Update brand with file upload
+  updateBrandWithFile: (id: number, formData: FormData): Promise<ApiResponse<Brand>> =>
+    makeRequest(`/dashboard/brands/${id}`, {
+      method: 'POST', // Using POST with _method for file upload
+      body: formData,
+      headers: {}, // Let browser set Content-Type for FormData
+    }),
+
+  // Delete brand (soft delete)
+  deleteBrand: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/dashboard/brands/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Get trashed brands
+  getTrashedBrands: (page = 1, limit = 15): Promise<PaginatedResponse<Brand>> =>
+    makeRequest(`/dashboard/brands/trashed?page=${page}&per_page=${limit}`),
+
+  // Get trashed brands with filters
+  getTrashed: (params?: any): Promise<ApiResponse<PaginatedResponse<Brand>>> => {
+    const queryParams = new URLSearchParams()
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined) {
+          queryParams.append(key, params[key].toString())
+        }
+      })
+    }
+    const url = `/dashboard/brands/trashed?${queryParams.toString()}`
+    return makeRequest(url)
+  },
+
+  // Restore brand
+  restoreBrand: (id: number): Promise<ApiResponse<Brand>> =>
+    makeRequest(`/dashboard/brands/${id}/restore`, {
+      method: 'POST',
+    }),
+
+  // Restore brand (alias)
+  restore: (id: number): Promise<ApiResponse<Brand>> =>
+    makeRequest(`/dashboard/brands/${id}/restore`, {
+      method: 'POST',
+    }),
+
+  // Force delete brand
+  forceDeleteBrand: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/dashboard/brands/${id}/force`, {
+      method: 'DELETE',
+    }),
+
+  // Force delete brand (alias)
+  forceDelete: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/dashboard/brands/${id}/force`, {
+      method: 'DELETE',
+    }),
+
+  // Get quick stats
+  getQuickStats: (): Promise<ApiResponse<any>> =>
+    makeRequest('/dashboard/brands/quick-stats'),
+}
+
 // Auth API
 export const authApi = {
   login: (credentials: LoginCredentials): Promise<AuthResponse> =>
@@ -242,26 +438,26 @@ export const authApi = {
 // Roles API
 export const rolesApi = {
   // Get all roles (Admin only)
-  getRoles: (): Promise<RolesResponse> => makeRequest('/admin/roles'),
+  getRoles: (): Promise<RolesResponse> => makeRequest('/dashboard/roles'),
   
   // Get single role (Admin only)
-  getRole: (id: number): Promise<ApiResponse<Role>> => makeRequest(`/admin/roles/${id}`),
+  getRole: (id: number): Promise<ApiResponse<Role>> => makeRequest(`/dashboard/roles/${id}`),
 
   // Admin only methods
   createRole: (roleData: any): Promise<ApiResponse<Role>> =>
-    makeRequest('/admin/roles', {
+    makeRequest('/dashboard/roles', {
       method: 'POST',
       body: JSON.stringify(roleData),
     }),
 
   updateRole: (id: number, roleData: any): Promise<ApiResponse<Role>> =>
-    makeRequest(`/admin/roles/${id}`, {
+    makeRequest(`/dashboard/roles/${id}`, {
       method: 'PUT',
       body: JSON.stringify(roleData),
     }),
 
   deleteRole: (id: number): Promise<ApiResponse<void>> =>
-    makeRequest(`/admin/roles/${id}`, {
+    makeRequest(`/dashboard/roles/${id}`, {
       method: 'DELETE',
     }),
 
@@ -301,7 +497,7 @@ export const userApi = {
     }),
   
   // Get user stats
-  getUserStats: (): Promise<ApiResponse<any>> => makeRequest('/user-stats'),
+  getUserStats: (): Promise<ApiResponse<any>> => makeRequest('/dashboard/user-stats'),
 
   // Delete account
   deleteAccount: (): Promise<ApiResponse<any>> =>
@@ -320,25 +516,25 @@ export const adminUserApi = {
         return acc
       }, {} as Record<string, string>)
     ).toString() : ''
-    return makeRequest(`/admin/users${queryString}`)
+    return makeRequest(`/dashboard/users${queryString}`)
   },
 
   // Update user (Admin only)
   updateUser: (id: number, userData: any): Promise<ApiResponse<User>> =>
-    makeRequest(`/admin/users/${id}`, {
+    makeRequest(`/dashboard/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(userData),
     }),
 
   // Delete user (Admin only)
   deleteUser: (id: number): Promise<ApiResponse<void>> =>
-    makeRequest(`/admin/users/${id}`, {
+    makeRequest(`/dashboard/users/${id}`, {
       method: 'DELETE',
     }),
 
   // Toggle user status (Admin only)
   toggleUserStatus: (id: number): Promise<ApiResponse<User>> =>
-    makeRequest(`/admin/users/${id}/toggle-status`, {
+    makeRequest(`/dashboard/users/${id}/toggle-status`, {
       method: 'POST',
     }),
 }
@@ -434,7 +630,7 @@ export const vouchersApi = {
 
   // Get active vouchers
   getActiveVouchers: (): Promise<ApiResponse<Voucher[]>> =>
-    makeRequest('/vouchers-active'),
+    makeRequest('/vouchers'),
 
   // Validate voucher code
   validateVoucher: (code: string): Promise<ApiResponse<Voucher>> =>
@@ -505,7 +701,7 @@ export const contactApi = {
     }),
 
   // Admin/Contributor only methods
-  getAdminContacts: (): Promise<PaginatedResponse<any>> => makeRequest('/admin/contacts'),
+  getAdminContacts: (): Promise<PaginatedResponse<any>> => makeRequest('/dashboard/contacts'),
 
   updateContact: (id: number, contactData: any): Promise<ApiResponse<any>> =>
     makeRequest(`/contacts/${id}`, {
@@ -574,8 +770,12 @@ export const saleCampaignsApi = {
 // Orders API
 export const ordersApi = {
   // Get user orders
-  getUserOrders: (page = 1): Promise<PaginatedResponse<Order>> =>
-    makeRequest(`/orders?page=${page}`),
+  getUserOrders: (page = 1, status?: string, days?: number): Promise<ApiResponse<PaginatedResponse<Order>>> => {
+    const params = new URLSearchParams({ page: page.toString() })
+    if (status) params.append('status', status)
+    if (days) params.append('days', days.toString())
+    return makeRequest(`/orders?${params.toString()}`)
+  },
 
   // Get single order
   getOrder: (id: number): Promise<ApiResponse<Order>> =>
@@ -596,7 +796,7 @@ export const ordersApi = {
 
   // Get order stats for current user
   getOrderStats: (): Promise<ApiResponse<any>> =>
-    makeRequest('/orders-stats'),
+    makeRequest('/dashboard/orders-stats'),
 
   // Admin/Contributor only methods
   getAdminOrders: (params?: any): Promise<PaginatedResponse<Order>> => {
@@ -608,7 +808,7 @@ export const ordersApi = {
         return acc
       }, {} as Record<string, string>)
     ).toString() : ''
-    return makeRequest(`/admin/orders${queryString}`)
+    return makeRequest(`/dashboard/orders${queryString}`)
   },
 
   // Update order status (Admin/Contributor only)
@@ -689,21 +889,21 @@ export const paymentMethodsApi = {
 export const adminDashboardApi = {
   // Get dashboard statistics
   getDashboardStats: (): Promise<ApiResponse<DashboardStats>> =>
-    makeRequest('/admin/dashboard/stats'),
+    makeRequest('/dashboard/stats'),
 
   // Get monthly revenue report
   getRevenueReport: (year?: number): Promise<ApiResponse<DashboardRevenue>> => {
     const params = year ? `?year=${year}` : ''
-    return makeRequest(`/admin/dashboard/revenue${params}`)
+    return makeRequest(`/dashboard/revenue${params}`)
   },
 
   // Get user analytics
   getUserAnalytics: (): Promise<ApiResponse<DashboardUsers>> =>
-    makeRequest('/admin/dashboard/users'),
+    makeRequest('/dashboard/users'),
 
   // Get product analytics
   getProductAnalytics: (): Promise<ApiResponse<DashboardProducts>> =>
-    makeRequest('/admin/dashboard/products'),
+    makeRequest('/dashboard/products'),
 }
 
 // Admin Products Management API

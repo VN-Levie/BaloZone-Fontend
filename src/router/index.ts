@@ -78,6 +78,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/order/:id',
+      name: 'order-detail',
+      component: () => import('../views/OrderDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/news',
       name: 'news',
       component: () => import('../views/NewsView.vue'),
@@ -135,6 +141,54 @@ const router = createRouter({
       path: '/admin/products/:id/edit',
       name: 'admin-edit-product',
       component: () => import('../views/AdminEditProductView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/categories',
+      name: 'admin-categories',
+      component: () => import('../views/AdminCategoriesView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/categories/create',
+      name: 'admin-create-category',
+      component: () => import('../views/AdminCreateCategoryView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/categories/:id/edit',
+      name: 'admin-edit-category',
+      component: () => import('../views/AdminEditCategoryView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/categories/trashed',
+      name: 'admin-categories-trashed',
+      component: () => import('../views/AdminCategoriesTrashedView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/brands',
+      name: 'admin-brands',
+      component: () => import('../views/AdminBrandsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/brands/create',
+      name: 'admin-create-brand',
+      component: () => import('../views/AdminCreateBrandView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/brands/:id/edit',
+      name: 'admin-edit-brand',
+      component: () => import('../views/AdminEditBrandView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/brands/trashed',
+      name: 'admin-brands-trashed',
+      component: () => import('../views/AdminBrandsTrashedView.vue'),
       meta: { requiresAuth: true }
     },
     {

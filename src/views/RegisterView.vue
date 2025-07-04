@@ -45,6 +45,21 @@
               </div>
 
               <div class="mb-3">
+                <label for="phone" class="form-label">Số điện thoại <span class="text-muted">(không bắt buộc)</span></label>
+                <input
+                  id="phone"
+                  v-model="form.phone"
+                  type="tel"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.phone }"
+                  placeholder="Nhập số điện thoại"
+                />
+                <div v-if="errors.phone" class="invalid-feedback">
+                  {{ errors.phone }}
+                </div>
+              </div>
+
+              <div class="mb-3">
                 <label for="password" class="form-label">Mật khẩu</label>
                 <div class="input-group">
                   <input
@@ -153,6 +168,7 @@ const generalError = ref('')
 const form = reactive({
   name: '',
   email: '',
+  phone: '',
   password: '',
   confirmPassword: '',
   acceptTerms: false
@@ -161,6 +177,7 @@ const form = reactive({
 const errors = reactive({
   name: '',
   email: '',
+  phone: '',
   password: '',
   confirmPassword: '',
   acceptTerms: ''
@@ -181,6 +198,15 @@ const validateForm = (): boolean => {
   
   if (!form.email) {
     errors.email = 'Email là bắt buộc'
+    isValid = false
+  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+    errors.email = 'Email không hợp lệ'
+    isValid = false
+  }
+  
+  // Phone validation (optional field)
+  if (form.phone && !/^[0-9+\-\s()]*$/.test(form.phone)) {
+    errors.phone = 'Số điện thoại không hợp lệ'
     isValid = false
   }
   
@@ -215,7 +241,7 @@ const handleRegister = async () => {
   generalError.value = ''
   
   try {
-    const response = await register(form.name, form.email, form.password)
+    const response = await register(form.name, form.email, form.password, form.phone || undefined)
     
     // Show success toast
     showSuccess(
@@ -228,7 +254,27 @@ const handleRegister = async () => {
     
   } catch (error: any) {
     console.error('Registration failed:', error)
-    generalError.value = parseAuthError(error)
+    
+    // Handle specific validation errors from API
+    if (error.response?.data?.errors) {
+      const apiErrors = error.response.data.errors
+      
+      // Map API errors to form errors
+      Object.keys(apiErrors).forEach(field => {
+        if (field === 'name' && apiErrors[field]) {
+          errors.name = apiErrors[field][0]
+        } else if (field === 'email' && apiErrors[field]) {
+          errors.email = apiErrors[field][0]
+        } else if (field === 'phone' && apiErrors[field]) {
+          errors.phone = apiErrors[field][0]
+        } else if (field === 'password' && apiErrors[field]) {
+          errors.password = apiErrors[field][0]
+        }
+      })
+    } else {
+      // Show general error
+      generalError.value = parseAuthError(error)
+    }
   } finally {
     loading.value = false
   }
