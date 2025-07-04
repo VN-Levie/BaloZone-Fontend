@@ -88,6 +88,16 @@ const router = createRouter({
       component: () => import('../views/NewsDetailView.vue'),
     },
     {
+      path: '/sale-campaigns',
+      name: 'sale-campaigns',
+      component: () => import('../views/SaleCampaignsView.vue'),
+    },
+    {
+      path: '/sale-campaigns/:id',
+      name: 'sale-campaign-detail',
+      component: () => import('../views/SaleCampaignDetailView.vue'),
+    },
+    {
       path: '/contact',
       name: 'contact',
       component: () => import('../views/ContactView.vue'),

@@ -208,7 +208,7 @@ const handleLogin = async () => {
     await refreshUser()
     
     // Show success toast
-    showLoginSuccess(response.user.name || 'User')
+    showLoginSuccess(response.data.user.name || 'User')
     
     // Redirect to intended page or home
     const redirectTo = (route.query.redirect as string) || '/'

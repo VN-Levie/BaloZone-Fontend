@@ -50,12 +50,17 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await authApi.login(credentials)
-      // Lấy token từ response.authorization.token
-      const authToken = response.authorization?.token
-      const userData = response.user
-      token.value = authToken ?? null
+      // Handle new API response format: response.data.access_token and response.data.user
+      const authToken = response.data?.access_token || response.authorization?.token
+      const userData = response.data?.user || (response as any).user
+      
+      if (!authToken || !userData) {
+        throw new Error('Invalid response format from login API')
+      }
+      
+      token.value = authToken
       user.value = userData
-      localStorage.setItem('auth_token', authToken || '')
+      localStorage.setItem('auth_token', authToken)
       localStorage.setItem('user', JSON.stringify(userData))
       return response
     } catch (error) {
@@ -69,12 +74,17 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await authApi.register(data)
-      // Lấy token từ response.authorization.token
-      const authToken = response.authorization?.token
-      const userData = response.user
-      token.value = authToken ?? null
+      // Handle new API response format: response.data.access_token and response.data.user
+      const authToken = response.data?.access_token || response.authorization?.token
+      const userData = response.data?.user || (response as any).user
+      
+      if (!authToken || !userData) {
+        throw new Error('Invalid response format from register API')
+      }
+      
+      token.value = authToken
       user.value = userData
-      localStorage.setItem('auth_token', authToken || '')
+      localStorage.setItem('auth_token', authToken)
       localStorage.setItem('user', JSON.stringify(userData))
       return response
     } catch (error) {

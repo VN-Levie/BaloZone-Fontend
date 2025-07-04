@@ -189,7 +189,7 @@ const testLogin = async () => {
     })
     results.value.login = {
       success: true,
-      message: `✅ Login successful. User: ${response.user.name}, Roles: ${response.user.roles?.map(r => r.name).join(', ')}`,
+      message: `✅ Login successful. User: ${response.data.user.name}, Roles: ${response.data.user.roles?.map((r: any) => r.name).join(', ')}`,
       data: response
     }
   } catch (error: any) {

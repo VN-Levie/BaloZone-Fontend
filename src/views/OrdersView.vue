@@ -130,7 +130,7 @@
                               View Details
                             </button>
                             <button 
-                              v-if="order.payment_status === 'completed'"
+                              v-if="order.payment_status === 'paid'"
                               @click="reorderItems(order.id)"
                               class="btn btn-outline-success btn-sm"
                             >

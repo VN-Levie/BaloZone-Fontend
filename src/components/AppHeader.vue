@@ -165,6 +165,11 @@
           </li>
           
           <!-- Static navigation items -->
+          <li>
+            <router-link to="/sale-campaigns" class="sale-link">
+              🔥 Khuyến Mãi
+            </router-link>
+          </li>
           <li><router-link to="/news">Tin Tức</router-link></li>
           <li><router-link to="/contact">Liên Hệ</router-link></li>
           <li><router-link to="/about">Giới Thiệu</router-link></li>
@@ -591,6 +596,30 @@ onMounted(async () => {
   gap: 0.25rem;
   justify-content: center;
   margin-top: 0.5rem;
+}
+
+/* Sale link styling */
+.sale-link {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border-radius: 20px !important;
+  padding: 8px 16px !important;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3) !important;
+  animation: pulse-sale 2s infinite !important;
+}
+
+.sale-link:hover {
+  background: linear-gradient(45deg, #ff5252, #d84315) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4) !important;
+}
+
+@keyframes pulse-sale {
+  0% { box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3); }
+  50% { box-shadow: 0 4px 16px rgba(255, 107, 107, 0.5); }
+  100% { box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3); }
 }
 
 @keyframes pulse {

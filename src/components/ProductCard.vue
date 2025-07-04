@@ -4,7 +4,18 @@
       <router-link :to="`/product/${product.id}`" class="product-image-link">
         <img :src="product.image" :alt="product.name" class="product-image" />
       </router-link>
-      <div v-if="product.discount" class="discount-badge">-{{ product.discount }}%</div>
+      
+      <!-- Sale Badge -->
+      <SaleBadge 
+        v-if="hasSale"
+        variant="discount"
+        :discount-percentage="saleDiscountPercentage"
+        size="medium"
+      />
+      
+      <!-- Legacy discount badge (fallback) -->
+      <div v-else-if="product.discount" class="discount-badge">-{{ product.discount }}%</div>
+      
       <div class="product-actions">
         <button class="action-btn" title="Yêu thích" @click="toggleWishlistHandler">
           <i class="bi bi-heart" :class="{ 'bi-heart-fill': isInWishlistComputed }"></i>
@@ -39,11 +50,26 @@
         <span class="rating-text">({{ product.reviews || 0 }})</span>
       </div>
       <div class="product-pricing">
-        <span class="current-price">{{ formatPrice(product.price) }}</span>
-        <span v-if="product.originalPrice && product.originalPrice > product.price" class="original-price">
-          {{ formatPrice(product.originalPrice) }}
-        </span>
+        <!-- Sale pricing -->
+        <template v-if="hasSale">
+          <span class="current-price sale-price">{{ formatPrice(salePrice) }}</span>
+          <span class="original-price">{{ formatPrice(originalPrice) }}</span>
+          <span class="save-amount">Tiết kiệm {{ formatPrice(originalPrice - salePrice) }}</span>
+        </template>
+        <!-- Regular pricing -->
+        <template v-else>
+          <span class="current-price">{{ formatPrice(product.price) }}</span>
+          <span v-if="product.originalPrice && product.originalPrice > product.price" class="original-price">
+            {{ formatPrice(product.originalPrice) }}
+          </span>
+        </template>
       </div>
+      
+      <!-- Sale campaign info -->
+      <div v-if="hasSale && saleEndTime" class="sale-info">
+        <span class="sale-end">{{ saleEndTime }}</span>
+      </div>
+      
       <div v-if="product.sold" class="product-meta">
         <span class="sold-count">Đã bán {{ product.sold }}</span>
       </div>
@@ -66,14 +92,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import type { Product } from '@/types'
+import type { Product, ProductWithSale } from '@/types'
 import { useCart } from '@/composables/useCart'
 import { useWishlist } from '@/composables/useWishlist'
 import { useToast } from '@/composables/useToast'
-import { formatPrice } from '@/utils'
+import SaleBadge from './SaleBadge.vue'
 
 interface Props {
-  product: Product
+  product: Product | ProductWithSale
   listView?: boolean
 }
 
@@ -83,9 +109,57 @@ const { addToCart, isInCart } = useCart()
 const { toggleWishlist, isInWishlist } = useWishlist()
 const { showAddToCartSuccess, showAddToWishlistSuccess, showRemoveFromWishlistSuccess } = useToast()
 
+// Sale-related computed properties
+const hasSale = computed(() => {
+  const productWithSale = props.product as ProductWithSale
+  return !!(productWithSale.current_sale && 
+           productWithSale.current_sale.sale_price < productWithSale.current_sale.original_price)
+})
+
+const salePrice = computed(() => {
+  const productWithSale = props.product as ProductWithSale
+  return productWithSale.current_sale?.sale_price || props.product.price
+})
+
+const originalPrice = computed(() => {
+  const productWithSale = props.product as ProductWithSale
+  return productWithSale.current_sale?.original_price || props.product.price
+})
+
+const saleDiscountPercentage = computed(() => {
+  const productWithSale = props.product as ProductWithSale
+  return productWithSale.current_sale?.discount_percentage || 0
+})
+
+const saleEndTime = computed(() => {
+  const productWithSale = props.product as ProductWithSale
+  if (!productWithSale.current_sale?.sale_campaign?.end_date) return null
+  
+  const endDate = new Date(productWithSale.current_sale.sale_campaign.end_date)
+  const now = new Date()
+  const timeDiff = endDate.getTime() - now.getTime()
+  
+  if (timeDiff <= 0) return 'Đã kết thúc'
+  
+  const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  
+  if (days > 0) return `Còn ${days} ngày`
+  if (hours > 0) return `Còn ${hours} giờ`
+  return 'Sắp kết thúc'
+})
+
 // Computed properties
 const isInWishlistComputed = computed(() => isInWishlist(props.product.id))
 const isInCartComputed = computed(() => isInCart(props.product.id))
+
+// Utility function
+const formatPrice = (price: number): string => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(price)
+}
 
 // Event handlers
 const toggleWishlistHandler = () => {
@@ -313,6 +387,33 @@ const addToCartHandler = () => {
   color: #6c757d;
   text-decoration: line-through;
   margin-left: 8px;
+}
+
+/* Sale pricing styles */
+.sale-price {
+  color: #ff4757 !important;
+  font-weight: 700;
+}
+
+.save-amount {
+  color: #22c55e;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.sale-info {
+  margin-top: 8px;
+}
+
+.sale-end {
+  background: #fff3cd;
+  color: #856404;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid #ffeaa7;
 }
 
 .product-meta {

@@ -212,47 +212,47 @@ export const authApi = {
     makeRequest('/auth/logout', { method: 'POST' }),
   refresh: (): Promise<AuthResponse> =>
     makeRequest('/auth/refresh', { method: 'POST' }),
-  getMe: (): Promise<ApiResponse<User>> => makeRequest('/auth/me'),
+  getMe: (): Promise<User> => makeRequest('/auth/me'),
 }
 
 // Roles API
 export const rolesApi = {
   // Get all roles (Admin only)
-  getRoles: (): Promise<RolesResponse> => makeRequest('/roles'),
+  getRoles: (): Promise<RolesResponse> => makeRequest('/admin/roles'),
   
   // Get single role (Admin only)
-  getRole: (id: number): Promise<ApiResponse<Role>> => makeRequest(`/roles/${id}`),
+  getRole: (id: number): Promise<ApiResponse<Role>> => makeRequest(`/admin/roles/${id}`),
 
   // Admin only methods
   createRole: (roleData: any): Promise<ApiResponse<Role>> =>
-    makeRequest('/roles', {
+    makeRequest('/admin/roles', {
       method: 'POST',
       body: JSON.stringify(roleData),
     }),
 
   updateRole: (id: number, roleData: any): Promise<ApiResponse<Role>> =>
-    makeRequest(`/roles/${id}`, {
+    makeRequest(`/admin/roles/${id}`, {
       method: 'PUT',
       body: JSON.stringify(roleData),
     }),
 
   deleteRole: (id: number): Promise<ApiResponse<void>> =>
-    makeRequest(`/roles/${id}`, {
+    makeRequest(`/admin/roles/${id}`, {
       method: 'DELETE',
     }),
 
   // Assign role to user
-  assignRole: (userId: number, roleId: number): Promise<ApiResponse<any>> =>
+  assignRole: (userId: number, roleName: string): Promise<ApiResponse<any>> =>
     makeRequest('/roles/assign', {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId, role_id: roleId }),
+      body: JSON.stringify({ user_id: userId, role_name: roleName }),
     }),
 
   // Remove role from user
-  removeRole: (userId: number, roleId: number): Promise<ApiResponse<any>> =>
+  removeRole: (userId: number, roleName: string): Promise<ApiResponse<any>> =>
     makeRequest('/roles/remove', {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId, role_id: roleId }),
+      body: JSON.stringify({ user_id: userId, role_name: roleName }),
     }),
 }
 
@@ -322,17 +322,21 @@ export const adminUserApi = {
 // Address Book API
 export const addressBookApi = {
   // Get all addresses
-  getAddresses: (): Promise<ApiResponse<any[]>> => makeRequest('/address-books'),
+  getAddresses: (): Promise<ApiResponse<Address[]>> => makeRequest('/address-books'),
+
+  // Get single address
+  getAddress: (id: number): Promise<ApiResponse<Address>> => 
+    makeRequest(`/address-books/${id}`),
 
   // Create a new address
-  createAddress: (addressData: any): Promise<ApiResponse<any>> =>
+  createAddress: (addressData: any): Promise<ApiResponse<Address>> =>
     makeRequest('/address-books', {
       method: 'POST',
       body: JSON.stringify(addressData),
     }),
 
   // Update an address
-  updateAddress: (id: number, addressData: any): Promise<ApiResponse<any>> =>
+  updateAddress: (id: number, addressData: any): Promise<ApiResponse<Address>> =>
     makeRequest(`/address-books/${id}`, {
       method: 'PUT',
       body: JSON.stringify(addressData),
@@ -341,6 +345,10 @@ export const addressBookApi = {
   // Delete an address
   deleteAddress: (id: number): Promise<ApiResponse<any>> =>
     makeRequest(`/address-books/${id}`, { method: 'DELETE' }),
+
+  // Set default address
+  setDefaultAddress: (id: number): Promise<ApiResponse<any>> =>
+    makeRequest(`/address-books/${id}/set-default`, { method: 'POST' }),
 }
 
 // News API
@@ -632,7 +640,48 @@ export const addressesApi = {
 
 // Payment Methods API
 export const paymentMethodsApi = {
-  // Get available payment methods
+  // Get all payment methods
   getPaymentMethods: (): Promise<ApiResponse<PaymentMethod[]>> =>
     makeRequest('/payment-methods'),
+  
+  // Get active payment methods only
+  getActivePaymentMethods: (): Promise<ApiResponse<PaymentMethod[]>> =>
+    makeRequest('/payment-methods-active'),
+  
+  // Get single payment method
+  getPaymentMethod: (id: number): Promise<ApiResponse<PaymentMethod>> =>
+    makeRequest(`/payment-methods/${id}`),
+
+  // Admin/Contributor only methods
+  createPaymentMethod: (data: any): Promise<ApiResponse<PaymentMethod>> =>
+    makeRequest('/payment-methods', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updatePaymentMethod: (id: number, data: any): Promise<ApiResponse<PaymentMethod>> =>
+    makeRequest(`/payment-methods/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deletePaymentMethod: (id: number): Promise<ApiResponse<void>> =>
+    makeRequest(`/payment-methods/${id}`, {
+      method: 'DELETE',
+    }),
+}
+
+// Admin Dashboard API
+export const adminDashboardApi = {
+  // Get dashboard statistics
+  getDashboardStats: (): Promise<ApiResponse<any>> =>
+    makeRequest('/admin/dashboard/stats'),
+
+  // Get recent activities
+  getRecentActivities: (): Promise<ApiResponse<any[]>> =>
+    makeRequest('/admin/dashboard/activities'),
+
+  // Get system overview
+  getSystemOverview: (): Promise<ApiResponse<any>> =>
+    makeRequest('/admin/dashboard/overview'),
 }

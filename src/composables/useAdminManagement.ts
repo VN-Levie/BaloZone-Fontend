@@ -257,7 +257,7 @@ export function useAdminManagement() {
         return false
       }
       try {
-        await rolesApi.assignRole(userId, roleId)
+        await rolesApi.assignRole(userId, roleId.toString())
         showSuccess('Thành công', 'Đã gán vai trò cho người dùng')
         return true
       } catch (err: any) {
@@ -271,7 +271,7 @@ export function useAdminManagement() {
         return false
       }
       try {
-        await rolesApi.removeRole(userId, roleId)
+        await rolesApi.removeRole(userId, roleId.toString())
         showSuccess('Thành công', 'Đã xóa vai trò khỏi người dùng')
         return true
       } catch (err: any) {

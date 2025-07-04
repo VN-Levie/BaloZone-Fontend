@@ -115,12 +115,12 @@ export interface Voucher {
 export interface Address {
   id: number
   user_id: number
-  name: string
+  name: string // recipient_name in API
   phone: string
-  address: string
+  address: string // street_address in API  
   ward: string
   district: string
-  province: string
+  province: string // state_province in API
   is_default: boolean
   created_at: string
   updated_at: string
@@ -154,7 +154,7 @@ export interface Order {
   voucher_id?: number
   comment?: string
   total_price: number
-  payment_status: 'pending' | 'processing' | 'completed' | 'cancelled'
+  payment_status: 'pending' | 'paid' | 'failed' // Updated to match API
   created_at: string
   updated_at: string
   user?: User
@@ -199,15 +199,36 @@ export interface AddressBook {
 export interface SaleCampaign {
   id: number
   name: string
+  slug: string
   description: string
   start_date: string
   end_date: string
-  discount_percentage: number
-  status: 'active' | 'inactive'
+  status: 'active' | 'inactive' | 'scheduled'
+  is_featured: boolean
+  priority: number
   created_at: string
   updated_at: string
-  products?: Product[]
-  products_count?: number
+  sale_products?: SaleProduct[]
+}
+
+export interface SaleProduct {
+  id: number
+  product_id: number
+  sale_campaign_id: number
+  original_price: number
+  sale_price: number
+  discount_percentage: number
+  max_quantity?: number
+  created_at: string
+  updated_at: string
+  product?: Product
+  sale_campaign?: SaleCampaign
+}
+
+export interface ProductWithSale extends Product {
+  current_sale?: SaleProduct & {
+    sale_campaign: Pick<SaleCampaign, 'id' | 'name' | 'end_date'>
+  }
 }
 
 export interface Contact {
@@ -278,16 +299,18 @@ export interface ProductFilters {
 export interface AuthResponse {
   success: boolean
   message: string
-  user: User
-  authorization: {
+  data: {
+    access_token: string
+    token_type: string
+    expires_in: number
+    user: User
+  }
+  // Legacy support for older API format
+  authorization?: {
     token: string
     type: string
     expires_in: number
   }
-  // Legacy support for older API format
-  access_token?: string
-  token_type?: string
-  expires_in?: number
 }
 
 export interface RolesResponse {

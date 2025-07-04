@@ -220,7 +220,7 @@ const handleRegister = async () => {
     // Show success toast
     showSuccess(
       'Đăng ký thành công!',
-      `Chào mừng ${response.user.name} đến với BaloZone!`
+      `Chào mừng ${response.data.user.name} đến với BaloZone!`
     )
     
     // Redirect to home
