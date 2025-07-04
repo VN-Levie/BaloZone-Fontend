@@ -1,16 +1,19 @@
 # 15. Quản lý người dùng (Admin Users)
 
+> **Lưu ý**: Các endpoint quản lý người dùng sử dụng `/api/dashboard/users/*` nhưng chỉ dành cho Admin (role: admin).  
+> Contributor không có quyền truy cập vào các endpoint này.
+
 ## Lấy danh sách người dùng (Admin)
 
-### GET /api/admin/users
+### GET /api/dashboard/users
 
 **Mô tả**: Lấy danh sách tất cả người dùng trong hệ thống
 
 **Phương thức**: GET
 
-**URL**: `/api/admin/users`
+**URL**: `/api/dashboard/users`
 
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
+**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin (admin only)
 
 **Headers**:
 
@@ -54,12 +57,12 @@ Authorization: Bearer {token}
         "updated_at": "2024-01-01T00:00:00.000000Z"
       }
     ],
-    "first_page_url": "http://example.com/api/admin/users?page=1",
+    "first_page_url": "http://example.com/api/dashboard/users?page=1",
     "from": 1,
     "last_page": 15,
-    "last_page_url": "http://example.com/api/admin/users?page=15",
-    "next_page_url": "http://example.com/api/admin/users?page=2",
-    "path": "http://example.com/api/admin/users",
+    "last_page_url": "http://example.com/api/dashboard/users?page=15",
+    "next_page_url": "http://example.com/api/dashboard/users?page=2",
+    "path": "http://example.com/api/dashboard/users",
     "per_page": 10,
     "prev_page_url": null,
     "to": 10,
@@ -71,13 +74,13 @@ Authorization: Bearer {token}
 
 ## Lấy chi tiết người dùng (Admin)
 
-### GET /api/admin/users/{id}
+### GET /api/dashboard/users/{id}
 
 **Mô tả**: Lấy chi tiết một người dùng
 
 **Phương thức**: GET
 
-**URL**: `/api/admin/users/{id}`
+**URL**: `/api/dashboard/users/{id}`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -137,13 +140,13 @@ Authorization: Bearer {token}
 
 ## Cập nhật thông tin người dùng (Admin)
 
-### PUT /api/admin/users/{user}
+### PUT /api/dashboard/users/{user}
 
 **Mô tả**: Cập nhật thông tin người dùng
 
 **Phương thức**: PUT
 
-**URL**: `/api/admin/users/{user}`
+**URL**: `/api/dashboard/users/{user}`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -218,13 +221,13 @@ Content-Type: application/json
 
 ## Xóa người dùng (Admin)
 
-### DELETE /api/admin/users/{user}
+### DELETE /api/dashboard/users/{user}
 
 **Mô tả**: Xóa người dùng
 
 **Phương thức**: DELETE
 
-**URL**: `/api/admin/users/{user}`
+**URL**: `/api/dashboard/users/{user}`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -267,13 +270,13 @@ Authorization: Bearer {token}
 
 ## Chuyển đổi trạng thái người dùng (Admin)
 
-### POST /api/admin/users/{user}/toggle-status
+### POST /api/dashboard/users/{user}/toggle-status
 
 **Mô tả**: Chuyển đổi trạng thái người dùng (active ↔ inactive)
 
 **Phương thức**: POST
 
-**URL**: `/api/admin/users/{user}/toggle-status`
+**URL**: `/api/dashboard/users/{user}/toggle-status`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 

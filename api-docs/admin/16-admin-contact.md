@@ -1,14 +1,19 @@
 # 16. Quản lý liên hệ (Admin Contact)
 
+> **Lưu ý**: Các endpoint quản lý liên hệ sử dụng prefix `/api/dashboard/*` và có thể truy cập bởi:
+>
+> - Admin (role: admin) - toàn quyền
+> - Contributor (role: contributor) - có quyền quản lý liên hệ
+
 ## Lấy danh sách liên hệ (Admin)
 
-### GET /api/admin/contacts
+### GET /api/dashboard/contacts
 
 **Mô tả**: Lấy danh sách tất cả liên hệ trong hệ thống
 
 **Phương thức**: GET
 
-**URL**: `/api/admin/contacts`
+**URL**: `/api/dashboard/contacts`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -68,12 +73,12 @@ Authorization: Bearer {token}
         "updated_at": "2024-01-01T09:00:00.000000Z"
       }
     ],
-    "first_page_url": "http://example.com/api/admin/contacts?page=1",
+    "first_page_url": "http://example.com/api/dashboard/contacts?page=1",
     "from": 1,
     "last_page": 5,
-    "last_page_url": "http://example.com/api/admin/contacts?page=5",
-    "next_page_url": "http://example.com/api/admin/contacts?page=2",
-    "path": "http://example.com/api/admin/contacts",
+    "last_page_url": "http://example.com/api/dashboard/contacts?page=5",
+    "next_page_url": "http://example.com/api/dashboard/contacts?page=2",
+    "path": "http://example.com/api/dashboard/contacts",
     "per_page": 10,
     "prev_page_url": null,
     "to": 10,
@@ -85,13 +90,13 @@ Authorization: Bearer {token}
 
 ## Lấy chi tiết liên hệ (Admin)
 
-### GET /api/admin/contacts/{id}
+### GET /api/dashboard/contacts/{id}
 
 **Mô tả**: Lấy chi tiết một liên hệ
 
 **Phương thức**: GET
 
-**URL**: `/api/admin/contacts/{id}`
+**URL**: `/api/dashboard/contacts/{id}`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -144,13 +149,13 @@ Authorization: Bearer {token}
 
 ## Cập nhật trạng thái liên hệ
 
-### PUT /api/admin/contacts/{id}/status
+### PUT /api/dashboard/contacts/{id}/status
 
 **Mô tả**: Cập nhật trạng thái liên hệ
 
 **Phương thức**: PUT
 
-**URL**: `/api/admin/contacts/{id}/status`
+**URL**: `/api/dashboard/contacts/{id}/status`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -205,13 +210,13 @@ Content-Type: application/json
 
 ## Trả lời liên hệ
 
-### POST /api/admin/contacts/{id}/reply
+### POST /api/dashboard/contacts/{id}/reply
 
 **Mô tả**: Trả lời liên hệ của khách hàng
 
 **Phương thức**: POST
 
-**URL**: `/api/admin/contacts/{id}/reply`
+**URL**: `/api/dashboard/contacts/{id}/reply`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -262,13 +267,13 @@ Content-Type: application/json
 
 ## Thống kê liên hệ (Admin)
 
-### GET /api/admin/contacts/statistics
+### GET /api/dashboard/contacts/statistics
 
 **Mô tả**: Lấy thống kê liên hệ cho admin
 
 **Phương thức**: GET
 
-**URL**: `/api/admin/contacts/statistics`
+**URL**: `/api/dashboard/contacts/statistics`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 

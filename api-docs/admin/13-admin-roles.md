@@ -1,14 +1,17 @@
 # 13. Quản lý vai trò (Admin Roles)
 
+> **Lưu ý**: Các endpoint quản lý vai trò sử dụng `/api/dashboard/roles/*` nhưng chỉ dành cho Admin (role: admin).  
+> Contributor không có quyền truy cập vào các endpoint này.
+
 ## Lấy danh sách vai trò
 
-### GET /api/roles
+### GET /api/dashboard/roles
 
 **Mô tả**: Lấy danh sách tất cả vai trò trong hệ thống
 
 **Phương thức**: GET
 
-**URL**: `/api/roles`
+**URL**: `/api/dashboard/roles`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -81,13 +84,13 @@ Authorization: Bearer {token}
 
 ## Phân quyền vai trò cho người dùng
 
-### POST /api/roles/assign
+### POST /api/dashboard/roles/assign
 
 **Mô tả**: Phân quyền vai trò cho người dùng
 
 **Phương thức**: POST
 
-**URL**: `/api/roles/assign`
+**URL**: `/api/dashboard/roles/assign`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -158,13 +161,13 @@ Content-Type: application/json
 
 ## Xóa vai trò của người dùng
 
-### POST /api/roles/remove
+### POST /api/dashboard/roles/remove
 
 **Mô tả**: Xóa vai trò của người dùng
 
 **Phương thức**: POST
 
-**URL**: `/api/roles/remove`
+**URL**: `/api/dashboard/roles/remove`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -204,13 +207,13 @@ Content-Type: application/json
 
 ## Lấy danh sách người dùng theo vai trò
 
-### GET /api/roles/{id}/users
+### GET /api/dashboard/roles/{id}/users
 
 **Mô tả**: Lấy danh sách người dùng có vai trò cụ thể
 
 **Phương thức**: GET
 
-**URL**: `/api/roles/{id}/users`
+**URL**: `/api/dashboard/roles/{id}/users`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
 
@@ -253,12 +256,12 @@ Authorization: Bearer {token}
           "updated_at": "2024-01-01T00:00:00.000000Z"
         }
       ],
-      "first_page_url": "http://example.com/api/roles/2/users?page=1",
+      "first_page_url": "http://example.com/api/dashboard/roles/2/users?page=1",
       "from": 1,
       "last_page": 1,
-      "last_page_url": "http://example.com/api/roles/2/users?page=1",
+      "last_page_url": "http://example.com/api/dashboard/roles/2/users?page=1",
       "next_page_url": null,
-      "path": "http://example.com/api/roles/2/users",
+      "path": "http://example.com/api/dashboard/roles/2/users",
       "per_page": 10,
       "prev_page_url": null,
       "to": 5,
