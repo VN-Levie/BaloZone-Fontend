@@ -475,13 +475,13 @@ export interface CreateProductRequest {
   category_id: number
   brand_id?: number
   name: string
+  slug: string
   description?: string
   price: number
   discount_price?: number
   stock: number
-  image?: string
-  gallery?: string[]
   color?: string
+  // Note: image and gallery are now handled as files in the API call
 }
 
 export interface UpdateProductRequest extends CreateProductRequest {

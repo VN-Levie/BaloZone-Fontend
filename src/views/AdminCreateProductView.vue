@@ -38,8 +38,32 @@
                 :class="{ 'is-invalid': errors.name }"
                 placeholder="Nhập tên sản phẩm"
                 required
+                @input="generateSlug"
               />
               <div v-if="errors.name" class="invalid-feedback">{{ errors.name[0] }}</div>
+            </div>
+
+            <div class="form-group">
+              <label for="slug" class="form-label required">Slug (URL)</label>
+              <input
+                id="slug"
+                v-model="form.slug"
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.slug }"
+                placeholder="ten-san-pham-url"
+                required
+                @blur="validateSlug"
+              />
+              <div v-if="errors.slug" class="invalid-feedback">{{ errors.slug[0] }}</div>
+              <div v-else-if="!form.slug.trim() && form.name.trim()" class="form-text text-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Slug không được để trống. Nhấn vào đây để tự động tạo.
+                <button type="button" class="btn-link ml-2" @click="generateSlug">Tạo slug</button>
+              </div>
+              <small class="form-text text-muted">
+                Slug sẽ được tự động tạo từ tên sản phẩm. Bạn có thể chỉnh sửa nếu cần.
+              </small>
             </div>
 
             <div class="form-group">
@@ -177,53 +201,67 @@
             
             <div class="form-group">
               <label for="image" class="form-label">Ảnh chính</label>
-              <input
-                id="image"
-                v-model="form.image"
-                type="url"
-                class="form-control"
-                :class="{ 'is-invalid': errors.image }"
-                placeholder="https://example.com/image.jpg"
-              />
-              <div v-if="errors.image" class="invalid-feedback">{{ errors.image[0] }}</div>
-              <div v-if="form.image" class="image-preview mt-2">
-                <img :src="form.image" alt="Preview" class="preview-img" />
+              <div class="file-upload-container">
+                <input
+                  id="image"
+                  type="file"
+                  class="file-input"
+                  accept="image/*"
+                  @change="handleImageChange"
+                />
+                <label for="image" class="file-upload-btn">
+                  <i class="fas fa-upload"></i>
+                  Chọn ảnh chính
+                </label>
+                <div v-if="errors.image" class="invalid-feedback">{{ errors.image[0] }}</div>
+              </div>
+              <div v-if="imagePreview" class="image-preview mt-2">
+                <img :src="imagePreview" alt="Preview" class="preview-img" />
+                <button 
+                  type="button" 
+                  class="remove-image-btn"
+                  @click="removeMainImage"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label">Thư viện ảnh</label>
-              <div class="gallery-input">
-                <div
-                  v-for="(url, index) in (form.gallery || [''])"
-                  :key="index"
-                  class="gallery-item"
-                >
-                  <input
-                    v-model="form.gallery![index]"
-                    type="url"
-                    class="form-control"
-                    :placeholder="`URL ảnh ${index + 1}`"
-                  />
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-danger"
-                    @click="removeGalleryImage(index)"
+              <div class="gallery-upload">
+                <div class="gallery-grid">
+                  <div
+                    v-for="(preview, index) in galleryPreviews"
+                    :key="index"
+                    class="gallery-item"
                   >
-                    <i class="fas fa-trash"></i>
-                  </button>
-                  <div v-if="url" class="image-preview mt-1">
-                    <img :src="url" alt="Gallery preview" class="preview-img-small" />
+                    <div class="gallery-image-container">
+                      <img :src="preview" alt="Gallery preview" class="gallery-preview-img" />
+                      <button
+                        type="button"
+                        class="remove-gallery-btn"
+                        @click="removeGalleryImage(index)"
+                      >
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="add-gallery-item">
+                    <input
+                      type="file"
+                      class="file-input"
+                      accept="image/*"
+                      multiple
+                      @change="handleGalleryChange"
+                      :id="`gallery-${galleryPreviews.length}`"
+                    />
+                    <label :for="`gallery-${galleryPreviews.length}`" class="add-gallery-btn">
+                      <i class="fas fa-plus"></i>
+                      <span>Thêm ảnh</span>
+                    </label>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  class="btn btn-outline btn-sm"
-                  @click="addGalleryImage"
-                >
-                  <i class="fas fa-plus"></i>
-                  Thêm ảnh
-                </button>
               </div>
             </div>
           </div>
@@ -271,14 +309,39 @@ const form = reactive<CreateProductRequest>({
   category_id: 0,
   brand_id: undefined,
   name: '',
+  slug: '',
   description: '',
   price: 0,
   discount_price: undefined,
   stock: 0,
-  image: '',
-  gallery: [''],
   color: ''
 })
+
+// Reset form function
+const resetForm = () => {
+  Object.assign(form, {
+    category_id: 0,
+    brand_id: undefined,
+    name: '',
+    slug: '',
+    description: '',
+    price: 0,
+    discount_price: undefined,
+    stock: 0,
+    color: ''
+  })
+  mainImageFile.value = null
+  galleryFiles.value = []
+  imagePreview.value = ''
+  galleryPreviews.value = []
+  errors.value = {}
+}
+
+// File handling
+const mainImageFile = ref<File | null>(null)
+const galleryFiles = ref<File[]>([])
+const imagePreview = ref<string>('')
+const galleryPreviews = ref<string[]>([])
 
 // Form state
 const loading = ref(false)
@@ -291,6 +354,7 @@ const brands = ref<Brand[]>([])
 // Computed
 const isFormValid = computed(() => {
   return form.name.trim() !== '' && 
+         form.slug.trim() !== '' &&
          form.category_id > 0 && 
          form.price > 0 && 
          form.stock >= 0 &&
@@ -298,6 +362,30 @@ const isFormValid = computed(() => {
 })
 
 // Methods
+const generateSlug = () => {
+  if (form.name) {
+    // Convert Vietnamese characters to ASCII
+    let slug = form.name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D')
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+    
+    form.slug = slug
+    console.log('Generated slug:', slug) // Debug log
+  }
+}
+
+const validateSlug = () => {
+  if (!form.slug.trim() && form.name.trim()) {
+    generateSlug()
+  }
+}
 const loadCategories = async () => {
   try {
     const response = await categoriesApi.getCategories()
@@ -319,18 +407,58 @@ const loadBrands = async () => {
 }
 
 const addGalleryImage = () => {
-  if (form.gallery) {
-    form.gallery.push('')
-  }
+  // This method is no longer needed as we use file input
 }
 
 const removeGalleryImage = (index: number) => {
-  if (form.gallery) {
-    form.gallery.splice(index, 1)
-    if (form.gallery.length === 0) {
-      form.gallery.push('')
+  galleryFiles.value.splice(index, 1)
+  galleryPreviews.value.splice(index, 1)
+}
+
+// File handling methods
+const handleImageChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  
+  if (file) {
+    mainImageFile.value = file
+    
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target?.result as string
     }
+    reader.readAsDataURL(file)
   }
+}
+
+const removeMainImage = () => {
+  mainImageFile.value = null
+  imagePreview.value = ''
+  // Clear the file input
+  const fileInput = document.getElementById('image') as HTMLInputElement
+  if (fileInput) {
+    fileInput.value = ''
+  }
+}
+
+const handleGalleryChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const files = Array.from(target.files || [])
+  
+  files.forEach(file => {
+    galleryFiles.value.push(file)
+    
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      galleryPreviews.value.push(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+  })
+  
+  // Clear the input for next selection
+  target.value = ''
 }
 
 const handleSubmit = async () => {
@@ -339,23 +467,42 @@ const handleSubmit = async () => {
     return
   }
 
+  // Ensure slug is generated if empty
+  if (!form.slug.trim()) {
+    generateSlug()
+  }
+
   loading.value = true
   errors.value = {}
 
   try {
-    // Filter out empty gallery URLs
+    // Prepare product data
     const productData = {
       ...form,
-      gallery: form.gallery ? form.gallery.filter(url => url.trim() !== '') : [],
       brand_id: form.brand_id || undefined,
-      discount_price: form.discount_price || undefined
+      discount_price: form.discount_price || undefined,
+      slug: form.slug.trim() // Ensure slug is trimmed
     }
 
-    const response = await adminProductsApi.createProduct(productData)
+    // Debug: Log the product data to check what's being sent
+    console.log('Submitting product data:', productData)
+
+    // Prepare files
+    const files: { image?: File, gallery?: File[] } = {}
+    if (mainImageFile.value) {
+      files.image = mainImageFile.value
+    }
+    if (galleryFiles.value.length > 0) {
+      files.gallery = galleryFiles.value
+    }
+
+    console.log('Submitting files:', files)
+
+    const response = await adminProductsApi.createProduct(productData, files)
     
     if (response.success) {
       showSuccess('Thành công', 'Tạo sản phẩm thành công!')
-      router.push('/admin/products') // Will create this route
+      router.push('/admin/products')
     } else {
       showError('Lỗi', 'Có lỗi xảy ra khi tạo sản phẩm')
     }
@@ -366,14 +513,22 @@ const handleSubmit = async () => {
     if (error.message.includes('422')) {
       try {
         const errorData = JSON.parse(error.message.split(': ')[1])
+        console.log('Validation errors received:', errorData)
         if (errorData.errors) {
           errors.value = errorData.errors
+          
+          // Show specific error message for slug if present
+          if (errorData.errors.slug) {
+            showError('Lỗi Slug', errorData.errors.slug[0])
+          } else {
+            showError('Lỗi Validation', 'Có lỗi validation trong form. Vui lòng kiểm tra lại.')
+          }
         }
       } catch (parseError) {
         showError('Lỗi', 'Có lỗi xảy ra khi tạo sản phẩm')
       }
     } else {
-      showError('Lỗi', 'Có lỗi xảy ra khi tạo sản phẩm')
+      showError('Lỗi', error.message || 'Có lỗi xảy ra khi tạo sản phẩm')
     }
   } finally {
     loading.value = false
@@ -503,6 +658,174 @@ onMounted(() => {
 
 .text-danger {
   color: #dc3545;
+}
+
+.text-warning {
+  color: #856404;
+  background: #fff3cd;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ffeaa7;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.btn-link:hover {
+  color: #0056b3;
+}
+
+.ml-2 {
+  margin-left: 8px;
+}
+
+.file-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-weight: 500;
+}
+
+.file-upload-btn:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.3s ease;
+}
+
+.remove-image-btn:hover {
+  background: #dc3545;
+}
+
+.gallery-upload {
+  width: 100%;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.gallery-item {
+  position: relative;
+}
+
+.gallery-image-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.gallery-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-gallery-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  transition: background 0.3s ease;
+}
+
+.remove-gallery-btn:hover {
+  background: #dc3545;
+}
+
+.add-gallery-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+}
+
+.add-gallery-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.add-gallery-btn:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+.add-gallery-btn i {
+  font-size: 20px;
+}
+
+.image-preview {
+  position: relative;
 }
 
 .gallery-input {

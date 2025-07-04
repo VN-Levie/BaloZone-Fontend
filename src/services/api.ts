@@ -48,8 +48,12 @@ const makeRequest = async <T>(
   const token = getAuthToken()
   
   const defaultHeaders: HeadersInit = {
-    'Content-Type': 'application/json',
     'Accept': 'application/json',
+  }
+  
+  // Only add Content-Type for non-FormData requests
+  if (!(options.body instanceof FormData)) {
+    defaultHeaders['Content-Type'] = 'application/json'
   }
   
   if (token) {
@@ -717,19 +721,75 @@ export const adminProductsApi = {
   getProduct: (id: number): Promise<AdminProductResponse> =>
     makeRequest(`/dashboard/products/${id}`),
 
-  // Create new product
-  createProduct: (productData: CreateProductRequest): Promise<AdminProductResponse> =>
-    makeRequest('/dashboard/products', {
+  // Create new product with file upload
+  createProduct: (productData: CreateProductRequest, files?: { image?: File, gallery?: File[] }): Promise<AdminProductResponse> => {
+    const formData = new FormData()
+    
+    // Add product data
+    Object.entries(productData).forEach(([key, value]) => {
+      if (key === 'gallery') return // Handle gallery separately
+      if (value !== undefined && value !== null) {
+        formData.append(key, value.toString())
+      }
+    })
+    
+    // Add main image file
+    if (files?.image) {
+      formData.append('image', files.image)
+    }
+    
+    // Add gallery files
+    if (files?.gallery && files.gallery.length > 0) {
+      files.gallery.forEach((file, index) => {
+        formData.append(`gallery[${index}]`, file)
+      })
+    }
+    
+    return makeRequest('/dashboard/products', {
       method: 'POST',
-      body: JSON.stringify(productData),
-    }),
+      body: formData,
+      headers: {
+        'Accept': 'application/json',
+        // Don't set Content-Type, let browser set it with boundary for FormData
+      } as HeadersInit,
+    })
+  },
 
-  // Update product
-  updateProduct: (id: number, productData: UpdateProductRequest): Promise<AdminProductResponse> =>
-    makeRequest(`/dashboard/products/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(productData),
-    }),
+  // Update product with file upload
+  updateProduct: (id: number, productData: UpdateProductRequest, files?: { image?: File, gallery?: File[] }): Promise<AdminProductResponse> => {
+    const formData = new FormData()
+    
+    // Add _method for Laravel PUT request via POST
+    formData.append('_method', 'PUT')
+    
+    // Add product data
+    Object.entries(productData).forEach(([key, value]) => {
+      if (key === 'gallery') return // Handle gallery separately
+      if (value !== undefined && value !== null) {
+        formData.append(key, value.toString())
+      }
+    })
+    
+    // Add main image file
+    if (files?.image) {
+      formData.append('image', files.image)
+    }
+    
+    // Add gallery files
+    if (files?.gallery && files.gallery.length > 0) {
+      files.gallery.forEach((file, index) => {
+        formData.append(`gallery[${index}]`, file)
+      })
+    }
+    
+    return makeRequest(`/dashboard/products/${id}`, {
+      method: 'POST', // Laravel expects POST with _method=PUT for file uploads
+      body: formData,
+      headers: {
+        'Accept': 'application/json',
+      } as HeadersInit,
+    })
+  },
 
   // Delete product
   deleteProduct: (id: number): Promise<ApiResponse<null>> =>

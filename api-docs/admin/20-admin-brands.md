@@ -21,32 +21,39 @@
 
 ```http
 Authorization: Bearer {token}
-Content-Type: application/json
+Content-Type: multipart/form-data
 ```
 
-**Body**:
+**Body** (Form Data):
 
-```json
-{
-  "name": "Nike Premium",
-  "description": "Thương hiệu thể thao cao cấp từ Mỹ",
-  "slug": "nike-premium",
-  "logo": "https://example.com/nike-logo.png",
-  "status": "active"
-}
+- `name` (string, required): Tên thương hiệu
+- `description` (string, optional): Mô tả thương hiệu  
+- `slug` (string, required): Slug URL-friendly
+- `logo` (file, optional): File logo thương hiệu (jpeg, png, jpg, gif, svg, max: 2MB)
+- `status` (string, required): Trạng thái (active, inactive)
+
+**Ví dụ Form Data**:
+
+```
+name: Nike Premium
+description: Thương hiệu thể thao cao cấp từ Mỹ
+slug: nike-premium
+logo: [FILE] nike-logo.png
+status: active
 ```
 
 **Response thành công (201)**:
 
 ```json
 {
+  "success": true,
   "message": "Brand created successfully",
   "data": {
     "id": 1,
     "name": "Nike Premium",
     "description": "Thương hiệu thể thao cao cấp từ Mỹ",
     "slug": "nike-premium",
-    "logo": "https://example.com/nike-logo.png",
+    "logo": "brands/logos/nike-logo-12345.png",
     "status": "active",
     "created_at": "2025-07-04T12:00:00.000000Z",
     "updated_at": "2025-07-04T12:00:00.000000Z"
@@ -72,7 +79,7 @@ Content-Type: application/json
 - `name` (string, required, max:255): Tên thương hiệu
 - `description` (string, optional): Mô tả thương hiệu
 - `slug` (string, required, max:255, unique): Slug URL-friendly
-- `logo` (string, optional, max:255): URL logo thương hiệu
+- `logo` (file, optional): File logo thương hiệu (jpeg, png, jpg, gif, svg, max: 2MB)
 - `status` (string, required): Trạng thái (active, inactive)
 
 ---
@@ -93,36 +100,43 @@ Content-Type: application/json
 
 ```http
 Authorization: Bearer {token}
-Content-Type: application/json
+Content-Type: multipart/form-data
 ```
 
 **Tham số URL**:
 
 - `brand` (integer, required): ID thương hiệu
 
-**Body**:
+**Body** (Form Data):
 
-```json
-{
-  "name": "Nike Premium Updated",
-  "description": "Thương hiệu thể thao cao cấp từ Mỹ - Đã cập nhật",
-  "slug": "nike-premium-updated",
-  "logo": "https://example.com/nike-logo-new.png",
-  "status": "active"
-}
+- `name` (string, required): Tên thương hiệu
+- `description` (string, optional): Mô tả thương hiệu  
+- `slug` (string, required): Slug URL-friendly
+- `logo` (file, optional): File logo thương hiệu mới (jpeg, png, jpg, gif, svg, max: 2MB) - nếu có sẽ thay thế logo cũ
+- `status` (string, required): Trạng thái (active, inactive)
+
+**Ví dụ Form Data**:
+
+```
+name: Nike Premium Updated
+description: Thương hiệu thể thao cao cấp từ Mỹ - Đã cập nhật
+slug: nike-premium-updated
+logo: [FILE] nike-logo-new.png
+status: active
 ```
 
 **Response thành công (200)**:
 
 ```json
 {
+  "success": true,
   "message": "Brand updated successfully",
   "data": {
     "id": 1,
     "name": "Nike Premium Updated",
     "description": "Thương hiệu thể thao cao cấp từ Mỹ - Đã cập nhật",
     "slug": "nike-premium-updated",
-    "logo": "https://example.com/nike-logo-new.png",
+    "logo": "brands/logos/nike-logo-new-67890.png",
     "status": "active",
     "created_at": "2025-07-04T12:00:00.000000Z",
     "updated_at": "2025-07-04T13:30:00.000000Z"

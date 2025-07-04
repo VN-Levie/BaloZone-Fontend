@@ -19,29 +19,40 @@
 
 **Headers**:
 
-```
+```http
 Authorization: Bearer {token}
-Content-Type: application/json
+Content-Type: multipart/form-data
 ```
 
-**Body**:
+**Body** (Form Data):
 
-```json
-{
-  "category_id": 1,
-  "brand_id": 2,
-  "name": "Balo Nike Air Max Premium",
-  "description": "Balo thể thao cao cấp với thiết kế hiện đại, chất liệu bền bỉ",
-  "price": 1200000,
-  "discount_price": 1000000,
-  "stock": 50,
-  "image": "https://example.com/product.jpg",
-  "gallery": [
-    "https://example.com/gallery1.jpg",
-    "https://example.com/gallery2.jpg"
-  ],
-  "color": "Đen"
-}
+- `category_id` (integer, required): ID danh mục sản phẩm
+- `brand_id` (integer, optional): ID thương hiệu
+- `name` (string, required): Tên sản phẩm
+- `description` (string, optional): Mô tả sản phẩm
+- `price` (number, required): Giá gốc
+- `discount_price` (number, optional): Giá khuyến mại (nhỏ hơn giá gốc)
+- `stock` (integer, required): Số lượng trong kho
+- `image` (file, optional): File ảnh chính sản phẩm (jpeg, png, jpg, gif, svg, max: 2MB)
+- `gallery[]` (files, optional): Mảng files ảnh gallery (jpeg, png, jpg, gif, svg, max: 2MB/file)
+- `color` (string, optional): Màu sắc sản phẩm
+- `slug` (string, required): Slug URL-friendly
+
+**Ví dụ Form Data**:
+
+```
+category_id: 1
+brand_id: 2
+name: Balo Nike Air Max Premium
+description: Balo thể thao cao cấp với thiết kế hiện đại, chất liệu bền bỉ
+price: 1200000
+discount_price: 1000000
+stock: 50
+image: [FILE] product-main.jpg
+gallery[]: [FILE] gallery1.jpg
+gallery[]: [FILE] gallery2.jpg
+color: Đen
+slug: balo-nike-air-max-premium
 ```
 
 **Response thành công (201)**:
@@ -57,10 +68,10 @@ Content-Type: application/json
     "description": "Balo thể thao cao cấp với thiết kế hiện đại, chất liệu bền bỉ",
     "price": 1200000,
     "discount_price": 1000000,
-    "image": "https://example.com/product.jpg",
+    "image": "products/images/product-main-12345.jpg",
     "gallery": [
-      "https://example.com/gallery1.jpg",
-      "https://example.com/gallery2.jpg"
+      "products/gallery/gallery1-67890.jpg",
+      "products/gallery/gallery2-54321.jpg"
     ],
     "stock": 50,
     "color": "Đen",
@@ -96,7 +107,17 @@ Content-Type: application/json
 
 **Validation rules**:
 
-- `category_id` (integer, required): ID danh mục sản phẩm
+- `category_id` (integer, required): ID danh mục sản phẩm, phải tồn tại trong bảng categories
+- `brand_id` (integer, optional): ID thương hiệu, phải tồn tại trong bảng brands
+- `name` (string, required, max:255): Tên sản phẩm
+- `description` (string, optional): Mô tả sản phẩm
+- `price` (number, required, min:0): Giá gốc sản phẩm
+- `discount_price` (number, optional, min:0): Giá khuyến mại, phải nhỏ hơn giá gốc
+- `stock` (integer, required, min:0): Số lượng trong kho
+- `image` (file, optional): File ảnh chính (jpeg, png, jpg, gif, svg, max: 2MB)
+- `gallery` (files array, optional): Mảng files ảnh gallery (jpeg, png, jpg, gif, svg, max: 2MB/file)
+- `color` (string, optional, max:100): Màu sắc sản phẩm
+- `slug` (string, required, max:255, unique): Slug URL-friendly, chỉ chứa chữ cái thường, số và dấu gạch ngang
 - `brand_id` (integer, optional): ID thương hiệu
 - `name` (string, required, max:255): Tên sản phẩm
 - `description` (string, optional): Mô tả sản phẩm

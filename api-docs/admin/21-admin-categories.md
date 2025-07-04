@@ -21,31 +21,37 @@
 
 ```http
 Authorization: Bearer {token}
-Content-Type: application/json
+Content-Type: multipart/form-data
 ```
 
-**Body**:
+**Body** (Form Data):
 
-```json
-{
-  "name": "Balo Du Lịch Premium",
-  "description": "Các loại balo chuyên dụng cho việc du lịch xa",
-  "slug": "balo-du-lich-premium",
-  "image": "https://example.com/category-travel.jpg"
-}
+- `name` (string, required): Tên danh mục
+- `description` (string, optional): Mô tả danh mục
+- `slug` (string, required): Slug URL-friendly
+- `image` (file, optional): File hình ảnh danh mục (jpeg, png, jpg, gif, svg, max: 2MB)
+
+**Ví dụ Form Data**:
+
+```
+name: Balo Du Lịch Premium
+description: Các loại balo chuyên dụng cho việc du lịch xa
+slug: balo-du-lich-premium
+image: [FILE] category-travel.jpg
 ```
 
 **Response thành công (201)**:
 
 ```json
 {
+  "success": true,
   "message": "Category created successfully",
   "data": {
     "id": 1,
     "name": "Balo Du Lịch Premium",
     "description": "Các loại balo chuyên dụng cho việc du lịch xa",
     "slug": "balo-du-lich-premium",
-    "image": "https://example.com/category-travel.jpg",
+    "image": "categories/images/category-travel-12345.jpg",
     "created_at": "2025-07-04T12:00:00.000000Z",
     "updated_at": "2025-07-04T12:00:00.000000Z"
   }
@@ -69,8 +75,8 @@ Content-Type: application/json
 
 - `name` (string, required, max:255): Tên danh mục
 - `description` (string, optional): Mô tả danh mục
-- `slug` (string, required, max:255, unique): Slug URL-friendly
-- `image` (string, optional, max:255): URL hình ảnh danh mục
+- `slug` (string, required, max:255, unique): Slug URL-friendly, chỉ chứa chữ cái thường, số và dấu gạch ngang
+- `image` (file, optional): File hình ảnh danh mục (jpeg, png, jpg, gif, svg, max: 2MB)
 
 ---
 
