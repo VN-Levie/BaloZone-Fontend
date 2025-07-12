@@ -191,6 +191,31 @@ const router = createRouter({
       component: () => import('../views/AdminBrandsTrashedView.vue'),
       meta: { requiresAuth: true }
     },
+    // Sale Campaigns Admin Routes
+    {
+      path: '/admin/sale-campaigns',
+      name: 'admin-sale-campaigns',
+      component: () => import('../views/AdminSaleCampaignsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/sale-campaigns/create',
+      name: 'admin-create-sale-campaign',
+      component: () => import('../views/AdminCreateSaleCampaignView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/sale-campaigns/:id/edit',
+      name: 'admin-edit-sale-campaign',
+      component: () => import('../views/AdminEditSaleCampaignView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/sale-campaigns/:id/products',
+      name: 'admin-sale-campaign-products',
+      component: () => import('../views/AdminSaleCampaignProductsView.vue'),
+      meta: { requiresAuth: true }
+    },
     {
       path: '/api-tester',
       name: 'api-tester',

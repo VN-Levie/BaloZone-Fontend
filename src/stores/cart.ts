@@ -13,14 +13,14 @@ export const useCartStore = defineStore('cart', () => {
   const items = ref<CartItem[]>([])
 
   // Getters
-  const cartItemsCount = computed(() => 
+  const cartItemsCount = computed(() =>
     items.value.reduce((total, item) => total + item.quantity, 0)
   )
 
   const totalAmount = computed(() =>
     items.value.reduce((total, item) => {
       const price = item.product.originalPrice || item.product.price
-      return total + (price * item.quantity)
+      return total + (Number(price) * item.quantity)
     }, 0)
   )
 
@@ -28,7 +28,7 @@ export const useCartStore = defineStore('cart', () => {
 
   // Actions
   const addToCart = (product: Product, quantity: number = 1, options?: { size?: string }) => {
-    const existingItemIndex = items.value.findIndex(item => 
+    const existingItemIndex = items.value.findIndex(item =>
       item.product.id === product.id &&
       item.selectedSize === options?.size
     )
@@ -48,11 +48,11 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   const removeFromCart = (productId: number, size?: string) => {
-    const index = items.value.findIndex(item => 
+    const index = items.value.findIndex(item =>
       item.product.id === productId &&
       item.selectedSize === size
     )
-    
+
     if (index > -1) {
       items.value.splice(index, 1)
       saveToStorage()
@@ -60,11 +60,11 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   const updateQuantity = (productId: number, quantity: number, size?: string) => {
-    const item = items.value.find(item => 
+    const item = items.value.find(item =>
       item.product.id === productId &&
       item.selectedSize === size
     )
-    
+
     if (item) {
       if (quantity <= 0) {
         removeFromCart(productId, size)
@@ -81,14 +81,14 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   const isInCart = (productId: number, size?: string) => {
-    return items.value.some(item => 
+    return items.value.some(item =>
       item.product.id === productId &&
       item.selectedSize === size
     )
   }
 
   const getCartItem = (productId: number, size?: string) => {
-    return items.value.find(item => 
+    return items.value.find(item =>
       item.product.id === productId &&
       item.selectedSize === size
     )
@@ -116,12 +116,12 @@ export const useCartStore = defineStore('cart', () => {
   return {
     // State
     items: computed(() => items.value),
-    
+
     // Getters
     cartItemsCount,
     totalAmount,
     isEmpty,
-    
+
     // Actions
     addToCart,
     removeFromCart,

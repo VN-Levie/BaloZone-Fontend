@@ -863,22 +863,41 @@ export const contactApi = {
 // Sale Campaigns API
 export const saleCampaignsApi = {
   // Get all sale campaigns
-  getSaleCampaigns: (): Promise<PaginatedResponse<any>> => makeRequest('/sale-campaigns'),
+  getSaleCampaigns: (params?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value)
+        }
+        return acc
+      }, {} as Record<string, string>)
+    ).toString() : ''
+    return makeRequest(`/sale-campaigns${queryString}`)
+  },
 
   // Get single sale campaign
-  getSaleCampaign: (id: number): Promise<ApiResponse<any>> => makeRequest(`/sale-campaigns/${id}`),
+  getSaleCampaign: (id: number | string): Promise<ApiResponse<any>> => makeRequest(`/sale-campaigns/${id}`),
 
-  // Get active sale campaigns
-  getActiveSaleCampaigns: (): Promise<ApiResponse<any[]>> =>
-    makeRequest('/sale-campaigns-active'),
+  // Get active sale campaigns (using query parameter)
+  getActiveSaleCampaigns: (): Promise<PaginatedResponse<any>> =>
+    makeRequest('/sale-campaigns?active_only=true'),
 
-  // Get featured sale campaigns
-  getFeaturedSaleCampaigns: (): Promise<ApiResponse<any[]>> =>
-    makeRequest('/sale-campaigns-featured'),
+  // Get featured sale campaigns (using query parameter) 
+  getFeaturedSaleCampaigns: (): Promise<PaginatedResponse<any>> =>
+    makeRequest('/sale-campaigns?featured_only=true'),
 
   // Get products in a sale campaign
-  getSaleCampaignProducts: (id: number): Promise<PaginatedResponse<Product>> =>
-    makeRequest(`/sale-campaigns/${id}/products`),
+  getSaleCampaignProducts: (id: number | string, params?: any): Promise<PaginatedResponse<Product>> => {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value)
+        }
+        return acc
+      }, {} as Record<string, string>)
+    ).toString() : ''
+    return makeRequest(`/sale-campaigns/${id}/products${queryString}`)
+  },
 
   // Admin/Contributor only methods
   createSaleCampaign: (campaignData: any): Promise<ApiResponse<any>> =>

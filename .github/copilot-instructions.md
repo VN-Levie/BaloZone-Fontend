@@ -114,7 +114,7 @@ API được chia thành 3 nhóm chính:
 
 ### 3.5. Kiểu dữ liệu (TypeScript)
 
-- Tất cả các kiểu dữ liệu cho API response và các model (Product, User, Order, ...) nên được định nghĩa trong `src/types.ts`.
+- Tất cả các kiểu dữ liệu cho API response và các model (Product, User, Order, ...) nên được định nghĩa trong `/src/types/index.ts`.
 - Luôn sử dụng các kiểu đã định nghĩa để đảm bảo type safety.
 
 ## 4. Ví dụ và Tóm tắt quy tắc

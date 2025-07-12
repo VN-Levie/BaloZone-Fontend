@@ -7,7 +7,8 @@ export function useSaleCampaigns() {
   const activeCampaigns = ref<SaleCampaign[]>([])
   const featuredCampaigns = ref<SaleCampaign[]>([])
   const currentCampaign = ref<SaleCampaign | null>(null)
-  const campaignProducts = ref<ProductWithSale[]>([])
+  const campaignProducts = ref<any[]>([])
+  const pagination = ref<any>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -20,8 +21,14 @@ export function useSaleCampaigns() {
     isLoading.value = true
     error.value = null
     try {
-      const response = await saleCampaignsApi.getSaleCampaigns()
+      const response = await saleCampaignsApi.getSaleCampaigns(filters)
       saleCampaigns.value = response.data
+      pagination.value = {
+        current_page: response.current_page,
+        last_page: response.last_page,
+        total: response.total,
+        per_page: response.per_page
+      }
     } catch (err) {
       error.value = 'Failed to fetch sale campaigns'
       console.error('Error fetching sale campaigns:', err)
@@ -58,7 +65,7 @@ export function useSaleCampaigns() {
     }
   }
 
-  const fetchSaleCampaign = async (id: number) => {
+  const fetchSaleCampaign = async (id: number | string) => {
     isLoading.value = true
     error.value = null
     try {
@@ -74,11 +81,11 @@ export function useSaleCampaigns() {
     }
   }
 
-  const fetchCampaignProducts = async (campaignId: number, filters?: any) => {
+  const fetchCampaignProducts = async (campaignId: number | string, filters?: any) => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await saleCampaignsApi.getSaleCampaignProducts(campaignId)
+      const response = await saleCampaignsApi.getSaleCampaignProducts(campaignId, filters)
       campaignProducts.value = response.data
       return response
     } catch (err) {
@@ -179,6 +186,7 @@ export function useSaleCampaigns() {
     featuredCampaigns: computed(() => featuredCampaigns.value),
     currentCampaign: computed(() => currentCampaign.value),
     campaignProducts: computed(() => campaignProducts.value),
+    pagination: computed(() => pagination.value),
     isLoading: computed(() => isLoading.value),
     error: computed(() => error.value),
 

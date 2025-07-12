@@ -136,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSaleCampaigns } from '@/composables/useSaleCampaigns'
 
@@ -183,7 +183,7 @@ const debouncedSearch = debounce(() => {
   fetchCampaigns()
 }, 500)
 
-const goToCampaign = (campaignId: number) => {
+const goToCampaign = (campaignId: number | string) => {
   router.push(`/sale-campaigns/${campaignId}`)
 }
 

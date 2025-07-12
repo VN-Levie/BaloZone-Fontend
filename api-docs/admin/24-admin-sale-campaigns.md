@@ -45,23 +45,24 @@ Content-Type: application/json
 
 ```json
 {
-  "success": true,
   "message": "Sale campaign created successfully",
   "data": {
-    "id": 1,
-    "name": "Flash Sale Tết 2025",
-    "description": "Giảm giá sốc lên đến 50% cho tất cả sản phẩm",
-    "discount_type": "percentage",
-    "discount_value": 30,
-    "max_discount": 500000,
-    "start_date": "2025-02-01T00:00:00.000000Z",
-    "end_date": "2025-02-15T23:59:59.000000Z",
-    "is_active": true,
+    "name": "Test Sale Campaign",
+    "slug": "test-sale-campaign",
+    "description": "Test campaign tạo từ API",
+    "banner_image": "https://placehold.co/600x400?text=test-campaign.jpg",
+    "start_date": "2025-07-13T00:00:00.000000Z",
+    "end_date": "2025-07-20T23:59:59.000000Z",
+    "status": "active",
     "is_featured": true,
-    "priority": 1,
-    "products_count": 0,
-    "created_at": "2025-01-01T12:00:00.000000Z",
-    "updated_at": "2025-01-01T12:00:00.000000Z"
+    "priority": 50,
+    "metadata": {
+      "color": "#ff0000",
+      "tags": ["test", "api"]
+    },
+    "updated_at": "2025-07-12T19:27:08.000000Z",
+    "created_at": "2025-07-12T19:27:08.000000Z",
+    "id": 5
   }
 }
 ```
@@ -133,23 +134,25 @@ Content-Type: application/json
 
 ```json
 {
-  "success": true,
   "message": "Sale campaign updated successfully",
   "data": {
-    "id": 1,
-    "name": "Flash Sale Tết 2025 - Gia hạn",
-    "description": "Giảm giá sốc lên đến 50% cho tất cả sản phẩm",
-    "discount_type": "percentage",
-    "discount_value": 35,
-    "max_discount": 500000,
-    "start_date": "2025-02-01T00:00:00.000000Z",
-    "end_date": "2025-02-28T23:59:59.000000Z",
-    "is_active": true,
+    "id": 5,
+    "name": "Test Sale Campaign - Updated",
+    "slug": "test-sale-campaign-updated",
+    "description": "Test campaign đã được cập nhật",
+    "banner_image": "https://placehold.co/600x400?text=test-campaign-updated.jpg",
+    "start_date": "2025-07-13T00:00:00.000000Z",
+    "end_date": "2025-07-20T23:59:59.000000Z",
+    "status": "active",
     "is_featured": false,
-    "priority": 1,
-    "products_count": 25,
-    "created_at": "2025-01-01T12:00:00.000000Z",
-    "updated_at": "2025-01-01T15:30:00.000000Z"
+    "priority": 25,
+    "metadata": {
+      "color": "#00ff00",
+      "tags": ["test", "api", "updated"]
+    },
+    "created_at": "2025-07-12T19:27:08.000000Z",
+    "updated_at": "2025-07-12T19:27:28.000000Z",
+    "deleted_at": null
   }
 }
 ```
@@ -180,7 +183,6 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "success": true,
   "message": "Sale campaign deleted successfully"
 }
 ```
@@ -221,7 +223,20 @@ Content-Type: application/json
 
 ```json
 {
-  "product_ids": [1, 2, 3, 4, 5]
+  "products": [
+    {
+      "product_id": 1,
+      "sale_price": 674250,
+      "discount_type": "percentage",
+      "max_quantity": 50
+    },
+    {
+      "product_id": 2,
+      "sale_price": 900000,
+      "discount_type": "percentage",
+      "max_quantity": 30
+    }
+  ]
 }
 ```
 
@@ -229,28 +244,7 @@ Content-Type: application/json
 
 ```json
 {
-  "success": true,
-  "message": "Products added to sale campaign successfully",
-  "data": {
-    "campaign_id": 1,
-    "added_products": 5,
-    "products": [
-      {
-        "id": 1,
-        "name": "Túi xách da cao cấp",
-        "price": 1200000,
-        "sale_price": 840000,
-        "discount_percentage": 30
-      },
-      {
-        "id": 2,
-        "name": "Ba lô laptop thời trang",
-        "price": 800000,
-        "sale_price": 560000,
-        "discount_percentage": 30
-      }
-    ]
-  }
+  "message": "Products added to sale campaign successfully"
 }
 ```
 
@@ -281,7 +275,6 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "success": true,
   "message": "Product removed from sale campaign successfully"
 }
 ```
@@ -329,9 +322,75 @@ curl -X DELETE http://localhost:8000/api/dashboard/sale-campaigns/1/products/5 \
 **Lưu ý**:
 
 - Tất cả các endpoint đều yêu cầu authentication + role admin hoặc contributor
-- Discount type: `percentage` (phần trăm) hoặc `fixed_amount` (số tiền cố định)
-- `max_discount` chỉ áp dụng cho type `percentage`
-- Chiến dịch chỉ hoạt động khi `is_active = true` và trong khoảng thời gian start_date - end_date
+- Response format không có `success` field ở cấp root như documentation cũ
+- Khi thêm sản phẩm, cần sử dụng array `products` với object chi tiết cho mỗi sản phẩm
+- `sale_price` phải được tính sẵn và truyền vào, không tự động tính từ discount_percentage
+- `discount_percentage` và `discount_amount` sẽ được tính tự động dựa trên original_price và sale_price
+- Chiến dịch chỉ hoạt động khi `status = "active"` và trong khoảng thời gian start_date - end_date
 - `priority` quyết định thứ tự hiển thị (số càng nhỏ càng ưu tiên)
-- Không thể xóa chiến dịch đang hoạt động hoặc có sản phẩm đang tham gia
-- Khi thêm sản phẩm vào chiến dịch, giá sale sẽ được tính tự động
+- Có thể xóa chiến dịch active và có sản phẩm đang tham gia
+- Khi thêm sản phẩm vào chiến dịch, tất cả thông tin sale được lưu trong pivot table
+
+**Test với cURL**:
+
+```bash
+# Login để lấy admin token
+curl -X POST "http://localhost:8000/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@balozone.com","password":"admin123"}' | jq -r '.authorization.token'
+
+# Lấy danh sách chiến dịch (admin view)
+curl -X GET "http://localhost:8000/api/dashboard/sale-campaigns" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json" | jq .
+
+# Tạo chiến dịch mới
+curl -X POST "http://localhost:8000/api/dashboard/sale-campaigns" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Sale Campaign",
+    "slug": "test-sale-campaign",
+    "description": "Test campaign",
+    "banner_image": "https://placehold.co/600x400?text=test.jpg",
+    "start_date": "2025-07-13T00:00:00.000000Z",
+    "end_date": "2025-07-20T23:59:59.000000Z",
+    "status": "active",
+    "is_featured": true,
+    "priority": 50,
+    "metadata": {"tags": ["test"], "color": "#ff0000"}
+  }' | jq .
+
+# Cập nhật chiến dịch
+curl -X PUT "http://localhost:8000/api/dashboard/sale-campaigns/5" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Campaign",
+    "description": "Updated description",
+    "priority": 25
+  }' | jq .
+
+# Thêm sản phẩm vào chiến dịch
+curl -X POST "http://localhost:8000/api/dashboard/sale-campaigns/5/products" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "products": [
+      {
+        "product_id": 1,
+        "sale_price": 674250,
+        "discount_type": "percentage",
+        "max_quantity": 50
+      }
+    ]
+  }' | jq .
+
+# Xóa sản phẩm khỏi chiến dịch
+curl -X DELETE "http://localhost:8000/api/dashboard/sale-campaigns/5/products/1" \
+  -H "Authorization: Bearer YOUR_TOKEN" | jq .
+
+# Xóa chiến dịch
+curl -X DELETE "http://localhost:8000/api/dashboard/sale-campaigns/5" \
+  -H "Authorization: Bearer YOUR_TOKEN" | jq .
+```

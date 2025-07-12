@@ -2,8 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAppData } from '@/composables/useAppData'
 import { useSaleCampaigns } from '@/composables/useSaleCampaigns'
-import { formatPrice, getImageUrl, calculateDiscount } from '@/utils'
+import { getImageUrl } from '@/utils'
 import SaleBadge from '@/components/SaleBadge.vue'
+import ProductCard from '@/components/ProductCard.vue'
 import type { Category, Product } from '@/types'
 
 // Use the app data composable
@@ -14,7 +15,6 @@ const { activeCampaigns, isLoading: saleCampaignsLoading, fetchActiveCampaigns }
 
 // Local state
 const selectedCategory = ref<string>('all')
-const isAddingToCart = ref<{ [key: number]: boolean }>({})
 
 // Computed properties
 const displayProducts = computed(() => {
@@ -51,28 +51,6 @@ const categoryTabs = computed(() => {
 // Methods
 const selectCategory = (categoryId: string) => {
   selectedCategory.value = categoryId
-}
-
-const addToCart = async (productId: number) => {
-  isAddingToCart.value[productId] = true
-  // Mock API call
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  console.log(`Added product ${productId} to cart.`)
-  isAddingToCart.value[productId] = false
-}
-
-const getProductImage = (product: Product) => {
-  return getImageUrl(product.image)
-}
-
-const getProductDiscount = (product: Product) => {
-  // API does not seem to provide originalPrice, so discount cannot be calculated.
-  // Returning a mock value.
-  return product.discount || 25
-}
-
-const getRating = (product: Product) => {
-  return product.rating || 4.5
 }
 
 const getMaxDiscount = (campaign: any) => {
@@ -295,43 +273,7 @@ onMounted(() => {
               :key="product.id" 
               class="col-xl-2-4 col-lg-3 col-md-4 col-sm-6 mb-4"
             >
-              <div class="product-card">
-                <div class="product-image-container">
-                  <router-link :to="`/product/${product.id}`" class="product-link">
-                    <img :src="getProductImage(product)" :alt="product.name" class="product-image" />
-                  </router-link>
-                  <div v-if="getProductDiscount(product) > 0" class="discount-badge-product">
-                    -{{ getProductDiscount(product) }}%
-                  </div>
-                  <div class="product-actions">
-                    <button class="action-btn" title="Thêm vào yêu thích">❤️</button>
-                    <button class="action-btn" @click="$router.push(`/product/${product.id}`)" title="Xem chi tiết">👁️</button>
-                  </div>
-                </div>
-                <div class="product-info">
-                  <router-link :to="`/product/${product.id}`" class="product-name-link">
-                    <h6 class="product-name">{{ product.name }}</h6>
-                  </router-link>
-                  <div class="product-rating">
-                    <span class="stars">⭐⭐⭐⭐⭐</span>
-                    <span class="rating-score">({{ getRating(product) }})</span>
-                  </div>                  
-                  <div class="product-pricing">
-                    <span class="current-price">{{ formatPrice(product.price) }}</span>
-                    <span v-if="product.originalPrice" class="original-price">
-                      {{ formatPrice(product.originalPrice) }}
-                    </span>
-                  </div>
-                  <button 
-                    class="add-to-cart-btn"
-                    @click="addToCart(product.id)"
-                    :disabled="isAddingToCart[product.id]"
-                  >
-                    <span v-if="isAddingToCart[product.id]" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                    {{ isAddingToCart[product.id] ? 'ĐANG THÊM...' : 'THÊM VÀO GIỎ' }}
-                  </button>
-                </div>
-              </div>
+              <ProductCard :product="product" />
             </div>
           </div>
           
@@ -377,6 +319,62 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Grid layout for ProductCard components */
+.product-grid-section {
+  padding: 40px 0;
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  margin: 30px 0;
+  border-radius: 20px;
+}
+
+.product-grid-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.product-grid-section .section-title {
+  color: #ff6b35;
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(255, 107, 53, 0.2);
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  background: white;
+  border: 2px solid #ff6b35;
+  color: #ff6b35;
+  padding: 8px 16px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
+}
+
+.filter-tab:hover,
+.filter-tab.active {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+}
+
+.product-grid {
+  margin-top: 20px;
+}
+
+
 /* Featured Sale Campaigns Section */
 .featured-campaigns-section {
   padding: 40px 0;
@@ -582,6 +580,19 @@ onMounted(() => {
   .preview-image {
     width: 50px;
     height: 50px;
+  }
+  
+  .filter-tabs {
+    justify-content: center;
+  }
+  
+  .filter-tab {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+  
+  .product-grid-section .section-title {
+    font-size: 1.5rem;
   }
 }
 </style>
