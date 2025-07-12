@@ -289,9 +289,14 @@ export const categoriesApi = {
   getCategory: (id: number): Promise<ApiResponse<Category>> =>
     makeRequest(`/categories/${id}`),
 
-  // Get single category by slug
-  getCategoryBySlug: (slug: string): Promise<CategoryWithProductsResponse> =>
-    makeRequest(`/categories/slug/${slug}`),
+  // Get single category by slug with optional pagination
+  getCategoryBySlug: (slug: string, params?: { page?: number; per_page?: number }): Promise<CategoryWithProductsResponse> => {
+    const searchParams = new URLSearchParams()
+    if (params?.page) searchParams.append('page', params.page.toString())
+    if (params?.per_page) searchParams.append('per_page', params.per_page.toString())
+    const query = searchParams.toString()
+    return makeRequest(`/categories/slug/${slug}${query ? `?${query}` : ''}`)
+  },
 
   // Admin/Contributor only methods
   createCategory: (categoryData: any): Promise<ApiResponse<Category>> =>

@@ -9,11 +9,15 @@ export interface Product {
   price: number | string
   originalPrice: number | string
   discount_price?: number | string
+  stock: number
   quantity: number
   image?: string
+  gallery?: string[]
   slug: string
+  color?: string
   created_at: string
   updated_at: string
+  deleted_at?: string
   category?: Category
   brand?: Brand
   comments?: Comment[]

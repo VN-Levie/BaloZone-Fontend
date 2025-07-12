@@ -34,13 +34,13 @@ const updateMetaTags = () => {
   }
 }
 
-const fetchCategoryAndProducts = async (slug: string) => {
+const fetchCategoryAndProducts = async (slug: string, page: number = 1, perPage: number = 12) => {
   loading.value = true
 
   try {
-    // Fetch category info and products together from single endpoint
-    console.log(`Fetching category and products for slug: ${slug}`)
-    const response = await categoriesApi.getCategoryBySlug(slug)
+    // Fetch category info and products together from single endpoint with pagination
+    console.log(`Fetching category and products for slug: ${slug}, page: ${page}, per_page: ${perPage}`)
+    const response = await categoriesApi.getCategoryBySlug(slug, { page, per_page: perPage })
     console.log('!Category and Products API Response:', response)
     
     // Set category data
@@ -65,13 +65,29 @@ const fetchCategoryAndProducts = async (slug: string) => {
       }
     }
     
-    // Set products data
+    // Set products data (already paginated by backend)
     if (response.products?.data) {
       products.value = response.products.data
-      console.log('Products set successfully:', products.value.length, 'products')
+      
+      // Update pagination info from backend response
+      currentPage.value = response.products.current_page
+      totalPages.value = response.products.last_page
+      totalProducts.value = response.products.total
+      itemsPerPage.value = response.products.per_page
+      
+      console.log('Products and pagination set successfully:', {
+        productsCount: response.products.data.length,
+        currentPage: currentPage.value,
+        totalPages: totalPages.value,
+        totalProducts: totalProducts.value,
+        perPage: itemsPerPage.value
+      })
     } else {
       console.warn('No products data received from API')
       products.value = []
+      currentPage.value = 1
+      totalPages.value = 1
+      totalProducts.value = 0
     }
     
   } catch (error) {
@@ -88,6 +104,9 @@ const fetchCategoryAndProducts = async (slug: string) => {
       updated_at: ''
     }
     products.value = []
+    currentPage.value = 1
+    totalPages.value = 1
+    totalProducts.value = 0
   } finally {
     loading.value = false
   }
@@ -103,7 +122,7 @@ const fetchBrands = async () => {
 
 onMounted(() => {
   if (categorySlug.value) {
-    fetchCategoryAndProducts(categorySlug.value)
+    fetchCategoryAndProducts(categorySlug.value, 1, itemsPerPage.value)
   }
   fetchBrands()
 
@@ -118,7 +137,7 @@ onMounted(() => {
 
 watch(categorySlug, (newSlug) => {
   if (newSlug) {
-    fetchCategoryAndProducts(newSlug)
+    fetchCategoryAndProducts(newSlug, 1, itemsPerPage.value)
   }
 })
 
@@ -134,22 +153,15 @@ const toggleViewMode = (mode: 'grid' | 'list') => {
   viewMode.value = mode
 }
 
-// Pagination
+// Pagination - now handled by backend
 const currentPage = ref(1)
 const itemsPerPage = ref(12)
-const totalPages = computed(() =>
-  Math.ceil(categoryProducts.value.length / itemsPerPage.value)
-)
-
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return categoryProducts.value.slice(start, end)
-})
+const totalPages = ref(1)
+const totalProducts = ref(0)
 
 const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
+  if (page >= 1 && page <= totalPages.value && categorySlug.value) {
+    fetchCategoryAndProducts(categorySlug.value, page, itemsPerPage.value)
     // Smooth scroll to top of products section
     nextTick(() => {
       const productsSection = document.querySelector('.products-section')
@@ -172,27 +184,47 @@ watch(categorySlug, () => {
 })
 
 const getPaginationPages = computed(() => {
-  const pages = []
+  const pages: (number | string)[] = []
   const total = totalPages.value
   const current = currentPage.value
 
+  // Don't show pagination if only one page or less
+  if (total <= 1) {
+    return []
+  }
+
+  // If total pages is 7 or less, show all pages
   if (total <= 7) {
     for (let i = 1; i <= total; i++) {
       pages.push(i)
     }
   } else {
+    // Always show first page
+    pages.push(1)
+    
     if (current <= 4) {
-      for (let i = 1; i <= 5; i++) pages.push(i)
-      pages.push('...')
-      pages.push(total)
+      // Show first 5 pages, then ellipsis, then last page
+      for (let i = 2; i <= 5; i++) {
+        pages.push(i)
+      }
+      if (total > 6) {
+        pages.push('...')
+        pages.push(total)
+      }
     } else if (current >= total - 3) {
-      pages.push(1)
-      pages.push('...')
-      for (let i = total - 4; i <= total; i++) pages.push(i)
+      // Show first page, ellipsis, then last 5 pages
+      if (total > 6) {
+        pages.push('...')
+      }
+      for (let i = Math.max(2, total - 4); i <= total; i++) {
+        pages.push(i)
+      }
     } else {
-      pages.push(1)
+      // Show first page, ellipsis, current-1, current, current+1, ellipsis, last page
       pages.push('...')
-      for (let i = current - 1; i <= current + 1; i++) pages.push(i)
+      for (let i = current - 1; i <= current + 1; i++) {
+        pages.push(i)
+      }
       pages.push('...')
       pages.push(total)
     }
@@ -207,11 +239,20 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
 })
 
 // Reset pagination when items per page changes
-watch(itemsPerPage, () => {
-  currentPage.value = 1
+watch(itemsPerPage, (newPerPage) => {
+  if (categorySlug.value) {
+    fetchCategoryAndProducts(categorySlug.value, 1, newPerPage)
+  }
 })
 
-// Computed properties for filtered and sorted products
+// Reset pagination when category changes
+watch(categorySlug, (newSlug) => {
+  if (newSlug) {
+    fetchCategoryAndProducts(newSlug, 1, itemsPerPage.value)
+  }
+})
+
+// Computed properties for filtered and sorted products (now applied locally on current page)
 const categoryProducts = computed(() => {
   let filtered = [...products.value]
 
@@ -249,6 +290,12 @@ const categoryProducts = computed(() => {
   return filtered
 })
 
+// For now, we'll show products from current page (backend paginated)
+// In future, we might want to move filtering to backend as well
+const displayedProducts = computed(() => {
+  return categoryProducts.value
+})
+
 const brands = computed(() => {
   return allBrands.value
 })
@@ -277,10 +324,6 @@ const categoryImage = computed(() => {
   return category.value?.image || ''
 })
 
-const totalProducts = computed(() => {
-  return category.value?.products_count || categoryProducts.value.length
-})
-
 const breadcrumbs = computed(() => [
   { name: 'Trang chủ', path: '/' },
   { name: categoryTitle.value, path: `/category/${categorySlug.value}` }
@@ -305,7 +348,13 @@ let filterTimeout: number | null = null
 const debouncedApplyFilters = () => {
   if (filterTimeout) clearTimeout(filterTimeout)
   filterTimeout = setTimeout(() => {
-    currentPage.value = 1
+    // For now, filters are applied on client side to current page
+    // In the future, we might want to send filter params to backend
+    console.log('Filters applied:', {
+      sort: selectedSort.value,
+      priceRange: selectedPriceRange.value,
+      brand: selectedBrand.value
+    })
   }, 300)
 }
 
@@ -320,6 +369,16 @@ watch(viewMode, (newMode) => {
     localStorage.setItem('categoryViewMode', newMode)
   }
 })
+
+// Watch for category products changes to log info (now mostly for debugging)
+watch(categoryProducts, (newProducts) => {
+  console.log('Filtered products changed:', {
+    filteredCount: newProducts.length,
+    totalProducts: totalProducts.value,
+    currentPage: currentPage.value,
+    itemsPerPage: itemsPerPage.value
+  })
+}, { immediate: true })
 </script>
 <template>
   <div class="category-page">
@@ -459,7 +518,7 @@ watch(viewMode, (newMode) => {
               <div class="results-info">
                 <LoadingSpinner v-if="productsLoading" size="sm" text="" />
                 <span v-else>
-                  Hiển thị {{ paginatedProducts.length }} / {{ totalProducts }} sản phẩm
+                  Hiển thị {{ displayedProducts.length }} / {{ totalProducts }} sản phẩm
                 </span>
               </div>
               <div class="header-controls">
@@ -484,7 +543,7 @@ watch(viewMode, (newMode) => {
 
             <div class="products-grid">
               <LoadingSpinner v-if="loading || productsLoading" text="Đang tải sản phẩm..." size="lg" />
-              <div v-else-if="paginatedProducts.length === 0" class="empty-state">
+              <div v-else-if="displayedProducts.length === 0" class="empty-state">
                 <div class="text-center py-5">
                   <i class="bi bi-box-seam" style="font-size: 4rem; color: #ddd;"></i>
                   <h4 class="mt-3 text-muted">Chưa có sản phẩm</h4>
@@ -494,35 +553,59 @@ watch(viewMode, (newMode) => {
 
               <!-- Grid View -->
               <div v-else-if="viewMode === 'grid'" class="row g-3">
-                <div v-for="product in paginatedProducts" :key="product.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
+                <div v-for="product in displayedProducts" :key="product.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
                   <ProductCard :product="product" />
                 </div>
               </div>
 
               <!-- List View -->
               <div v-else class="products-list">
-                <div v-for="product in paginatedProducts" :key="product.id" class="product-list-item mb-3">
+                <div v-for="product in displayedProducts" :key="product.id" class="product-list-item mb-3">
                   <ProductCard :product="product" :listView="true" />
                 </div>
               </div>
             </div>
 
             <!-- Pagination -->
-            <div class="pagination-section">
+            <div v-if="totalPages > 1" class="pagination-section">
               <nav class="pagination-nav">
-                <button class="page-btn" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
+                <button 
+                  class="page-btn" 
+                  @click="goToPage(currentPage - 1)" 
+                  :disabled="currentPage === 1"
+                  title="Trang trước"
+                >
                   <i class="bi bi-chevron-left"></i>
                 </button>
-                <button v-for="page in getPaginationPages" :key="page" class="page-btn" @click="typeof page === 'number' && goToPage(page)" :class="{ active: page === currentPage }">
+                
+                <button 
+                  v-for="page in getPaginationPages" 
+                  :key="`page-${page}`" 
+                  class="page-btn" 
+                  @click="typeof page === 'number' ? goToPage(page) : null" 
+                  :class="{ 
+                    active: page === currentPage,
+                    disabled: typeof page !== 'number'
+                  }"
+                  :disabled="typeof page !== 'number'"
+                  :title="typeof page === 'number' ? `Trang ${page}` : ''"
+                >
                   {{ page }}
                 </button>
-                <button class="page-btn" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">
+                
+                <button 
+                  class="page-btn" 
+                  @click="goToPage(currentPage + 1)" 
+                  :disabled="currentPage === totalPages"
+                  title="Trang sau"
+                >
                   <i class="bi bi-chevron-right"></i>
                 </button>
               </nav>
 
               <div class="pagination-info">
-                Trang {{ currentPage }} / {{ totalPages }}
+                Trang {{ currentPage }} / {{ totalPages }} 
+                <span class="text-muted">({{ totalProducts }} sản phẩm)</span>
               </div>
             </div>
           </div>
@@ -766,6 +849,8 @@ watch(viewMode, (newMode) => {
   padding: 15px 20px;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .page-btn {
@@ -776,28 +861,41 @@ watch(viewMode, (newMode) => {
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
+  min-width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #2c3e50;
 }
 
-.page-btn:hover:not(:disabled) {
-  background: #f8f9fa;
+.page-btn:hover:not(:disabled):not(.disabled) {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: #ff6b35;
+  color: #ff6b35;
+  transform: translateY(-2px);
 }
 
 .page-btn.active {
   background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: white;
   border-color: #ff6b35;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
-.page-btn:disabled {
+.page-btn:disabled,
+.page-btn.disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
-.page-dots {
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
+.page-btn.disabled {
+  border: none;
+  background: transparent;
   color: #6c757d;
+  font-weight: normal;
 }
 
 .pagination-info {
@@ -805,6 +903,12 @@ watch(viewMode, (newMode) => {
   margin-top: 15px;
   color: #6c757d;
   font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.pagination-info .text-muted {
+  font-size: 0.85rem;
+  margin-left: 8px;
 }
 
 /* Responsive Design */
@@ -844,6 +948,22 @@ watch(viewMode, (newMode) => {
   .filter-card {
     margin-bottom: 20px;
   }
+
+  .pagination-nav {
+    padding: 10px 15px;
+    gap: 6px;
+  }
+
+  .page-btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .pagination-info {
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -870,6 +990,30 @@ watch(viewMode, (newMode) => {
 
   .product-list-item {
     margin-bottom: 0.5rem;
+  }
+
+  .pagination-nav {
+    padding: 8px 12px;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .page-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  .pagination-info {
+    font-size: 0.8rem;
+    margin-top: 10px;
+  }
+
+  .pagination-info .text-muted {
+    display: block;
+    margin-left: 0;
+    margin-top: 4px;
   }
 }
 </style>

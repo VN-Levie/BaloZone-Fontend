@@ -143,9 +143,17 @@ API được chia thành 3 nhóm chính:
   ```
 
 - **Tóm tắt các quy tắc quan trọng:**
-  1.  **Sử dụng `src/api.ts`:** Không bao giờ gọi API trực tiếp.
+  1.  **Sử dụng `src/sevices/api.ts`:** Không bao giờ gọi API trực tiếp.
   2.  **Sử dụng Pinia:** Quản lý state toàn cục bằng `useAuthStore` và các store khác.
   3.  **Sử dụng Bootstrap:** Dùng class và component của Bootstrap/Bootstrap-Vue-Next.
   4.  **Sử dụng `<script setup lang="ts">`:** Viết code theo Composition API.
   5.  **Sử dụng Types:** Tận dụng các kiểu dữ liệu trong `src/types.ts`.
   6.  **Kiểm tra quyền:** Chú ý đến phân quyền khi tạo các tính năng cho trang quản trị.
+
+
+- **Chú ý quan trọng:**
+  - Luôn kiểm tra tài liệu API để biết endpoint nào yêu cầu xác thực và phân quyền.
+  - Luôn kiểm tra tài liệu cùa từng endpoint liên quan trong thư mục `api-doc` để đảm báo cấu trúc dữ liệu chính xác.
+  - Nếu các class định nghĩa trong `/src/types/index.ts` sai so với tài liệu api hãy sửa lại chúng cho khớp với tài liệu api
+  - Đảm bảo code được viết rõ ràng, dễ hiểu và tuân thủ các quy tắc đã đề ra.
+  - Nếu có bất kỳ câu hỏi nào, hãy tham khảo tài liệu hoặc hỏi người quản lý dự án.
