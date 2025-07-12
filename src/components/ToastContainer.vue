@@ -15,9 +15,14 @@
             <div class="toast-title">{{ toast.title }}</div>
             <div class="toast-message">{{ toast.message }}</div>
           </div>
-          <button class="toast-close" @click="removeToast(toast.id)">
+          <!-- <button 
+            type="button"
+            class="toast-close" 
+            @click.stop="removeToast(toast.id)"
+            aria-label="Đóng thông báo"
+          >
             <i class="bi bi-x"></i>
-          </button>
+          </button> -->
         </div>
       </transition-group>
     </div>
@@ -134,14 +139,22 @@ const getIconClass = (type: string) => {
   border: none;
   color: #6c757d;
   cursor: pointer;
-  padding: 4px;
+  padding: 8px;
   border-radius: 4px;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  position: relative;
+  z-index: 10;
 }
 
 .toast-close:hover {
   background: #f8f9fa;
   color: #2c3e50;
+  transform: scale(1.1);
 }
 
 .toast-close i {
