@@ -56,9 +56,24 @@
 
             <!-- Price -->
             <div class="product-price mb-4">
-              <div class="current-price h3 text-danger fw-bold mb-1">
-                {{ formatPrice(product.price) }}
-              </div>
+              <!-- Check for discount_price from new backend structure -->
+              <template v-if="product.discount_price && Number(product.discount_price) < Number(product.price)">
+                <div class="current-price h3 text-danger fw-bold mb-1">
+                  {{ formatPrice(Number(product.discount_price)) }}
+                </div>
+                <div class="original-price text-muted text-decoration-line-through">
+                  {{ formatPrice(Number(product.price)) }}
+                </div>
+                <div class="save-amount text-success">
+                  Tiết kiệm {{ formatPrice(Number(product.price) - Number(product.discount_price)) }}
+                </div>
+              </template>
+              <!-- Regular pricing -->
+              <template v-else>
+                <div class="current-price h3 text-danger fw-bold mb-1">
+                  {{ formatPrice(Number(product.price)) }}
+                </div>
+              </template>
             </div>
 
             <!-- Product options -->
@@ -70,8 +85,8 @@
                   <button class="btn btn-outline-secondary btn-sm" @click="decreaseQuantity" :disabled="quantity <= 1">
                     <i class="bi bi-dash"></i>
                   </button>
-                  <input type="number" v-model="quantity" class="form-control quantity-input mx-2 text-center" min="1" :max="product.quantity" />
-                  <button class="btn btn-outline-secondary btn-sm" @click="increaseQuantity" :disabled="quantity >= product.quantity">
+                  <input type="number" v-model="quantity" class="form-control quantity-input mx-2 text-center" min="1" :max="product.stock" />
+                  <button class="btn btn-outline-secondary btn-sm" @click="increaseQuantity" :disabled="quantity >= product.stock">
                     <i class="bi bi-plus"></i>
                   </button>
                 </div>
@@ -80,8 +95,8 @@
 
             <!-- Stock status -->
             <div class="stock-status mb-3">
-              <span class="badge" :class="product.quantity > 0 ? 'bg-success' : 'bg-danger'">
-                {{ product.quantity > 0 ? `Còn ${product.quantity} sản phẩm` : 'Hết hàng' }}
+              <span class="badge" :class="product.stock > 0 ? 'bg-success' : 'bg-danger'">
+                {{ product.stock > 0 ? `Còn ${product.stock} sản phẩm` : 'Hết hàng' }}
               </span>
             </div>
 
@@ -90,7 +105,7 @@
               <button 
                 class="btn btn-primary btn-lg me-3 mb-2" 
                 @click="addToCart" 
-                :disabled="product.quantity === 0 || isAddingToCart"
+                :disabled="product.stock === 0 || isAddingToCart"
               >
                 <span v-if="isAddingToCart" class="spinner-border spinner-border-sm me-2" role="status"></span>
                 <i v-else class="bi bi-cart-plus me-2"></i>
@@ -177,7 +192,14 @@
                 <div class="card-body">
                   <h6 class="card-title">{{ relatedProd.name }}</h6>
                   <div class="price">
-                    <span class="current-price text-danger fw-bold">{{ formatPrice(relatedProd.price) }}</span>
+                    <!-- Handle discount pricing -->
+                    <template v-if="relatedProd.discount_price && Number(relatedProd.discount_price) < Number(relatedProd.price)">
+                      <span class="current-price text-danger fw-bold">{{ formatPrice(Number(relatedProd.discount_price)) }}</span>
+                      <span class="original-price text-muted text-decoration-line-through ms-2">{{ formatPrice(Number(relatedProd.price)) }}</span>
+                    </template>
+                    <template v-else>
+                      <span class="current-price text-danger fw-bold">{{ formatPrice(Number(relatedProd.price)) }}</span>
+                    </template>
                   </div>
                 </div>
               </router-link>
@@ -239,11 +261,10 @@ const fetchProduct = async (id: number) => {
     const response = await productsApi.getProduct(id)
     product.value = response.data
 
-    if (product.value.category?.slug) {
-      const relatedResponse = await productsApi.getProductsByCategory(product.value.category.slug)
+    // Fetch related products using new API
+    if (product.value?.id) {
+      const relatedResponse = await productsApi.getRelatedProducts(product.value.id, 4)
       relatedProducts.value = relatedResponse.data
-        .filter((p) => p.id !== product.value?.id)
-        .slice(0, 4)
     }
   } catch (error) {
     console.error('Failed to load product details:', error)
@@ -259,11 +280,10 @@ const fetchProductBySlug = async (slug: string) => {
     const response = await productsApi.getProductBySlug(slug)
     product.value = response.data
 
-    if (product.value.category?.slug) {
-      const relatedResponse = await productsApi.getProductsByCategory(product.value.category.slug)
+    // Fetch related products using new API
+    if (product.value?.id) {
+      const relatedResponse = await productsApi.getRelatedProducts(product.value.id, 4)
       relatedProducts.value = relatedResponse.data
-        .filter((p) => p.id !== product.value?.id)
-        .slice(0, 4)
     }
   } catch (error) {
     console.error('Failed to load product details by slug:', error)
@@ -276,14 +296,22 @@ const fetchProductBySlug = async (slug: string) => {
 const productImages = computed(() => {
   if (!product.value) return []
   
-  // Main product image
-  const images = [getImageUrl(product.value.image)]
+  const images: string[] = []
   
-  // Add some sample gallery images for demo purposes
-  // In a real app, these would come from product.gallery or similar
+  // Main product image
   if (product.value.image) {
-    // Generate some additional sample images (placeholder for demo)
-    const baseImage = getImageUrl(product.value.image)
+    images.push(getImageUrl(product.value.image))
+  }
+  
+  // Gallery images from API
+  if (product.value.gallery && Array.isArray(product.value.gallery)) {
+    product.value.gallery.forEach(galleryImage => {
+      images.push(getImageUrl(galleryImage))
+    })
+  }
+  
+  // If no gallery images, add some placeholder images for demo
+  if (images.length === 1 && product.value.image) {
     images.push(
       'https://via.placeholder.com/600x600.png/00aa55?text=Gallery+Image+2',
       'https://via.placeholder.com/600x600.png/aa0055?text=Gallery+Image+3',
@@ -301,7 +329,7 @@ const isInWishlistComputed = computed(() => {
 
 // Methods
 const increaseQuantity = () => {
-  if (product.value && quantity.value < product.value.quantity) {
+  if (product.value && quantity.value < product.value.stock) {
     quantity.value++
   }
 }

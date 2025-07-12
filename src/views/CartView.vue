@@ -59,7 +59,7 @@
                   >
                     <div class="item-image">
                       <img :src="getImageUrl(item.product.image)" :alt="item.product.name" />
-                      <div class="item-badge" v-if="item.product.originalPrice && item.product.originalPrice < item.product.price">
+                      <div class="item-badge" v-if="(item.product.discount_price && Number(item.product.discount_price) < Number(item.product.price)) || (item.product.originalPrice && Number(item.product.originalPrice) < Number(item.product.price))">
                         <span class="badge bg-danger">Sale</span>
                       </div>
                     </div>
@@ -75,8 +75,12 @@
                           <span class="size-badge">Size: {{ item.selectedSize }}</span>
                         </div>
                         <div class="item-price-section">
-                          <span class="item-price">{{ formatPrice(item.product.originalPrice || item.product.price) }}</span>
-                          <span v-if="item.product.originalPrice && item.product.originalPrice < item.product.price" 
+                          <span class="item-price">{{ formatPrice(item.product.discount_price || item.product.originalPrice || item.product.price) }}</span>
+                          <span v-if="item.product.discount_price && Number(item.product.discount_price) < Number(item.product.price)" 
+                                class="item-original-price">
+                            {{ formatPrice(item.product.price) }}
+                          </span>
+                          <span v-else-if="item.product.originalPrice && Number(item.product.originalPrice) < Number(item.product.price)" 
                                 class="item-original-price">
                             {{ formatPrice(item.product.price) }}
                           </span>
@@ -113,7 +117,7 @@
                         
                         <div class="item-total-section">
                           <span class="item-total-label">Thành tiền:</span>
-                          <span class="item-total">{{ formatPrice(Number(item.product.originalPrice || item.product.price) * item.quantity) }}</span>
+                          <span class="item-total">{{ formatPrice(Number(item.product.discount_price || item.product.originalPrice || item.product.price) * item.quantity) }}</span>
                         </div>
                         
                         <button 

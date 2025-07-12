@@ -83,9 +83,8 @@
         <span class="sale-end">{{ saleEndTime }}</span>
       </div>
       
-      <!-- Product metadata -->
+      <!-- Stock status -->
       <div class="product-meta">
-        <!-- Stock status -->
         <div v-if="product.stock !== undefined" class="stock-info">
           <span 
             :class="{

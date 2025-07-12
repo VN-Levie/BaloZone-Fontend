@@ -1,10 +1,10 @@
-import type { 
-  ApiResponse, 
-  PaginatedResponse, 
-  Product, 
-  Category, 
-  Brand, 
-  News, 
+import type {
+  ApiResponse,
+  PaginatedResponse,
+  Product,
+  Category,
+  Brand,
+  News,
   Voucher,
   ProductFilters,
   AuthResponse,
@@ -103,18 +103,18 @@ const refreshAuthToken = async (): Promise<string | null> => {
     } catch (error) {
       console.error('Token refresh error:', error)
       clearTokens()
-      
+
       // Redirect to login if in browser environment
       if (typeof window !== 'undefined') {
         // Dispatch custom event for auth failure
         window.dispatchEvent(new CustomEvent('auth:expired'))
-        
+
         // Optional: Auto redirect to login page
         if (window.location.pathname !== '/login') {
           window.location.href = '/login'
         }
       }
-      
+
       return null
     } finally {
       isRefreshing = false
@@ -127,26 +127,26 @@ const refreshAuthToken = async (): Promise<string | null> => {
 
 // Utility function to make authenticated requests with auto token refresh
 const makeRequest = async <T>(
-  endpoint: string, 
+  endpoint: string,
   options: RequestInit = {},
   retryCount = 0
 ): Promise<T> => {
   const url = `${API_BASE_URL}${endpoint}`
   const token = getAuthToken()
-  
+
   const defaultHeaders: HeadersInit = {
     'Accept': 'application/json',
   }
-  
+
   // Only add Content-Type for non-FormData requests
   if (!(options.body instanceof FormData)) {
     defaultHeaders['Content-Type'] = 'application/json'
   }
-  
+
   if (token) {
     defaultHeaders['Authorization'] = `Bearer ${token}`
   }
-  
+
   const config: RequestInit = {
     ...options,
     headers: {
@@ -154,26 +154,26 @@ const makeRequest = async <T>(
       ...options.headers,
     },
   }
-  
+
   try {
     const response = await fetch(url, config)
-    
+
     // Handle 401 Unauthorized - token might be expired
     if (response.status === 401 && retryCount === 0) {
       // Don't retry if it's the auth endpoints to avoid infinite loops
       const isAuthEndpoint = endpoint.includes('/auth/') || endpoint.includes('/login') || endpoint.includes('/register')
-      
+
       if (!isAuthEndpoint) {
         console.log('Token expired, attempting to refresh...')
         const newToken = await refreshAuthToken()
-        
+
         if (newToken) {
           // Retry the request with new token
           return makeRequest<T>(endpoint, options, retryCount + 1)
         }
       }
     }
-    
+
     if (!response.ok) {
       let errorData: any = {}
       try {
@@ -181,7 +181,7 @@ const makeRequest = async <T>(
       } catch {
         errorData = { message: await response.text() }
       }
-      
+
       // Create a structured error object
       const apiError = {
         status: response.status,
@@ -189,10 +189,10 @@ const makeRequest = async <T>(
         errors: errorData.errors || {},
         data: errorData
       }
-      
+
       throw apiError
     }
-    
+
     const data = await response.json()
     return data
   } catch (error) {
@@ -223,7 +223,7 @@ export const productsApi = {
     per_page?: number
   }): Promise<PaginatedResponse<Product>> => {
     const queryString = new URLSearchParams()
-    
+
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
@@ -231,56 +231,35 @@ export const productsApi = {
         }
       })
     }
-    
+
     const queryStr = queryString.toString()
     return makeRequest(`/products${queryStr ? '?' + queryStr : ''}`)
   },
-  
+
   // Get featured products
   getFeaturedProducts: (): Promise<ApiResponse<Product[]>> =>
     makeRequest('/products/featured'),
-  
+
   // Get latest products
   getLatestProducts: (limit?: number): Promise<ApiResponse<Product[]>> =>
     makeRequest(`/products/latest${limit ? '?limit=' + limit : ''}`),
-  
+
   // Get single product
   getProduct: (id: number): Promise<ApiResponse<Product>> =>
     makeRequest(`/products/${id}`),
-  
+
   // Get product by slug
   getProductBySlug: (slug: string): Promise<ApiResponse<Product>> =>
     makeRequest(`/products/slug/${slug}`),
-  
+
   // Get related products
   getRelatedProducts: (id: number, limit?: number): Promise<ApiResponse<Product[]>> =>
     makeRequest(`/products/${id}/related${limit ? '?limit=' + limit : ''}`),
 
-  // DEPRECATED: Use getProducts with category_id filter instead
-  getProductsByCategory: (categorySlug: string): Promise<PaginatedResponse<Product>> =>
-    makeRequest(`/products/category/${categorySlug}`),
-
-  // DEPRECATED: Use getProducts with brand_id filter instead  
-  getProductsByBrand: (brandSlug: string): Promise<PaginatedResponse<Product>> =>
-    makeRequest(`/products/brand/${brandSlug}`),
-
-  // DEPRECATED: Use getProducts with search filter instead
-  searchProducts: (params: any): Promise<PaginatedResponse<Product>> => {
-    const queryString = new URLSearchParams(
-      Object.entries(params).reduce((acc, [key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          acc[key] = String(value)
-        }
-        return acc
-      }, {} as Record<string, string>)
-    ).toString()
-    return makeRequest(`/products-search?${queryString}`)
-  },
-
   // Get on-sale products
   getOnSaleProducts: (): Promise<ApiResponse<Product[]>> =>
     makeRequest('/products-on-sale'),
-  
+
   // Get sale campaigns for a product
   getProductSaleCampaigns: (productId: number): Promise<ApiResponse<any[]>> =>
     makeRequest(`/products/${productId}/sale-campaigns`),
@@ -309,11 +288,11 @@ export const categoriesApi = {
   // Get all categories
   getCategories: (): Promise<PaginatedResponse<Category>> =>
     makeRequest('/categories'),
-  
+
   // Get categories with products (for homepage)
   getCategoriesWithProducts: (): Promise<ApiResponse<Category[]>> =>
     makeRequest('/categories-with-products'),
-  
+
   // Get single category
   getCategory: (id: number): Promise<ApiResponse<Category>> =>
     makeRequest(`/categories/${id}`),
@@ -352,7 +331,7 @@ export const brandsApi = {
   getBrands: (): Promise<PaginatedResponse<Brand>> => makeRequest('/brands'),
 
   // Get active brands
-  getActiveBrands: (): Promise<ApiResponse<Brand[]>> => makeRequest('/brands-active'),
+  getActiveBrands: (): Promise<ApiResponse<Brand[]>> => makeRequest('/brands/active'),
 
   // Get single brand
   getBrand: (id: number): Promise<ApiResponse<Brand>> => makeRequest(`/brands/${id}`),
@@ -555,7 +534,7 @@ export const adminBrandsApi = {
 
   // Get quick stats
   getQuickStats: (): Promise<ApiResponse<any>> =>
-    makeRequest('/dashboard/brands/quick-stats'),
+    makeRequest('/dashboard/brands/quick/stats'),
 }
 
 // Auth API
@@ -565,13 +544,13 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(credentials),
     }),
-  
+
   register: (data: RegisterData): Promise<AuthResponse> =>
     makeRequest('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  
+
   logout: async (): Promise<ApiResponse<any>> => {
     try {
       const response = await makeRequest<ApiResponse<any>>('/auth/logout', { method: 'POST' })
@@ -584,10 +563,10 @@ export const authApi = {
       throw error
     }
   },
-  
+
   refresh: (): Promise<AuthResponse> =>
     makeRequest('/auth/refresh', { method: 'POST' }),
-  
+
   getMe: (): Promise<User> => makeRequest('/auth/me'),
 
   // Helper methods for token management
@@ -613,7 +592,7 @@ export const authApi = {
 export const rolesApi = {
   // Get all roles (Admin only)
   getRoles: (): Promise<RolesResponse> => makeRequest('/dashboard/roles'),
-  
+
   // Get single role (Admin only)
   getRole: (id: number): Promise<ApiResponse<Role>> => makeRequest(`/dashboard/roles/${id}`),
 
@@ -669,9 +648,9 @@ export const userApi = {
       method: 'POST',
       body: JSON.stringify(passwordData),
     }),
-  
+
   // Get user stats
-  getUserStats: (): Promise<ApiResponse<any>> => makeRequest('/dashboard/user-stats'),
+  getUserStats: (): Promise<ApiResponse<any>> => makeRequest('/dashboard/user/stats'),
 
   // Delete account
   deleteAccount: (): Promise<ApiResponse<any>> =>
@@ -719,7 +698,7 @@ export const addressBookApi = {
   getAddresses: (): Promise<ApiResponse<Address[]>> => makeRequest('/address-books'),
 
   // Get single address
-  getAddress: (id: number): Promise<ApiResponse<Address>> => 
+  getAddress: (id: number): Promise<ApiResponse<Address>> =>
     makeRequest(`/address-books/${id}`),
 
   // Create a new address
@@ -767,7 +746,7 @@ export const newsApi = {
   },
 
   // Get latest news
-  getLatestNews: (): Promise<ApiResponse<News[]>> => makeRequest('/news-latest'),
+  getLatestNews: (): Promise<ApiResponse<News[]>> => makeRequest('/news/latest'),
 
   // Get single news item by ID
   getNewsById: (id: number): Promise<ApiResponse<News>> => makeRequest(`/news/${id}`),
@@ -992,7 +971,7 @@ export const ordersApi = {
 
   // Get order stats for current user
   getOrderStats: (): Promise<ApiResponse<any>> =>
-    makeRequest('/dashboard/orders-stats'),
+    makeRequest('/dashboard/orders/stats'),
 
   // Admin/Contributor only methods
   getAdminOrders: (params?: any): Promise<PaginatedResponse<Order>> => {
@@ -1053,11 +1032,11 @@ export const paymentMethodsApi = {
   // Get all payment methods
   getPaymentMethods: (): Promise<ApiResponse<PaymentMethod[]>> =>
     makeRequest('/payment-methods'),
-  
+
   // Get active payment methods only
   getActivePaymentMethods: (): Promise<ApiResponse<PaymentMethod[]>> =>
-    makeRequest('/payment-methods-active'),
-  
+    makeRequest('/payment-methods/active'),
+
   // Get single payment method
   getPaymentMethod: (id: number): Promise<ApiResponse<PaymentMethod>> =>
     makeRequest(`/payment-methods/${id}`),
@@ -1120,7 +1099,7 @@ export const adminProductsApi = {
   // Create new product with file upload
   createProduct: (productData: CreateProductRequest, files?: { image?: File, gallery?: File[] }): Promise<AdminProductResponse> => {
     const formData = new FormData()
-    
+
     // Add product data
     Object.entries(productData).forEach(([key, value]) => {
       if (key === 'gallery') return // Handle gallery separately
@@ -1128,19 +1107,19 @@ export const adminProductsApi = {
         formData.append(key, value.toString())
       }
     })
-    
+
     // Add main image file
     if (files?.image) {
       formData.append('image', files.image)
     }
-    
+
     // Add gallery files
     if (files?.gallery && files.gallery.length > 0) {
       files.gallery.forEach((file, index) => {
         formData.append(`gallery[${index}]`, file)
       })
     }
-    
+
     return makeRequest('/dashboard/products', {
       method: 'POST',
       body: formData,
@@ -1154,10 +1133,10 @@ export const adminProductsApi = {
   // Update product with file upload
   updateProduct: (id: number, productData: UpdateProductRequest, files?: { image?: File, gallery?: File[] }): Promise<AdminProductResponse> => {
     const formData = new FormData()
-    
+
     // Add _method for Laravel PUT request via POST
     formData.append('_method', 'PUT')
-    
+
     // Add product data
     Object.entries(productData).forEach(([key, value]) => {
       if (key === 'gallery') return // Handle gallery separately
@@ -1165,19 +1144,19 @@ export const adminProductsApi = {
         formData.append(key, value.toString())
       }
     })
-    
+
     // Add main image file
     if (files?.image) {
       formData.append('image', files.image)
     }
-    
+
     // Add gallery files
     if (files?.gallery && files.gallery.length > 0) {
       files.gallery.forEach((file, index) => {
         formData.append(`gallery[${index}]`, file)
       })
     }
-    
+
     return makeRequest(`/dashboard/products/${id}`, {
       method: 'POST', // Laravel expects POST with _method=PUT for file uploads
       body: formData,

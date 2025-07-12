@@ -72,7 +72,7 @@ export function useAdvancedSearch() {
 
   const priceRange = computed(() => {
     if (searchResults.value.length === 0) return { min: 0, max: 0 }
-    const prices = searchResults.value.map(p => p.price)
+    const prices = searchResults.value.map(p => Number(p.price))
     return {
       min: Math.min(...prices),
       max: Math.max(...prices)
@@ -183,33 +183,37 @@ export function useAdvancedSearch() {
     currentPage.value = page
 
     try {
-      // Build search params
-      const searchParams = {
+      // Build search params using the new unified API
+      const searchParams: any = {
         search: searchTerm,
         page,
-        per_page: itemsPerPage.value,
-        category: filters.value.category,
-        brand: filters.value.brand,
-        min_price: filters.value.minPrice,
-        max_price: filters.value.maxPrice,
-        min_rating: filters.value.minRating,
-        sort_by: filters.value.sortBy,
-        sort_order: filters.value.sortOrder
+        per_page: itemsPerPage.value
       }
 
-      // Remove undefined values
-      Object.keys(searchParams).forEach(key => {
-        if (searchParams[key as keyof typeof searchParams] === undefined) {
-          delete searchParams[key as keyof typeof searchParams]
-        }
-      })
+      // Apply filters
+      if (filters.value.category) {
+        const categoryId = categories.value.find(c => c.slug === filters.value.category)?.id
+        if (categoryId) searchParams.category_id = categoryId
+      }
+      
+      if (filters.value.brand) {
+        const brandId = brands.value.find(b => b.slug === filters.value.brand)?.id
+        if (brandId) searchParams.brand_id = brandId
+      }
+      
+      if (filters.value.minPrice) searchParams.min_price = filters.value.minPrice
+      if (filters.value.maxPrice) searchParams.max_price = filters.value.maxPrice
+      if (filters.value.sortBy) searchParams.sort_by = filters.value.sortBy
+      if (filters.value.sortOrder) searchParams.sort_order = filters.value.sortOrder
 
-      const response = await productsApi.searchProducts(searchParams)
-      searchResults.value = response.data
-      totalItems.value = response.total || response.data.length
-      totalPages.value = Math.ceil(totalItems.value / itemsPerPage.value)
+      // Use the unified products API
+      const response = await productsApi.getProducts(searchParams)
+      
+      searchResults.value = response.data || []
+      totalPages.value = response.last_page || 1
+      totalItems.value = response.total || 0
 
-      // Save to search history
+      // Save search to history
       saveToHistory(searchTerm)
 
       // Update URL
@@ -225,13 +229,15 @@ export function useAdvancedSearch() {
       })
 
     } catch (error: any) {
-      showError('Lỗi', 'Không thể thực hiện tìm kiếm. Vui lòng thử lại.')
       console.error('Search error:', error)
+      showError('Lỗi', 'Có lỗi xảy ra khi tìm kiếm')
+      searchResults.value = []
     } finally {
       isLoading.value = false
       showSuggestions.value = false
     }
   }
+     
 
   // Apply filters
   const applyFilters = (newFilters: Partial<SearchFilters>) => {

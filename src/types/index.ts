@@ -7,10 +7,8 @@ export interface Product {
   name: string
   description?: string
   price: number | string
-  originalPrice: number | string
   discount_price?: number | string
   stock: number
-  quantity: number
   image?: string
   gallery?: string[]
   slug: string
@@ -21,6 +19,9 @@ export interface Product {
   category?: Category
   brand?: Brand
   comments?: Comment[]
+  // Legacy fields for backward compatibility
+  originalPrice?: number | string
+  quantity?: number
   discount?: number
   rating?: number
   reviews?: number

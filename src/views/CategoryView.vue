@@ -63,11 +63,15 @@ const fetchCategoryAndProducts = async (slug: string, page: number = 1, perPage:
     console.log(`Fetching products for category: ${category.value?.id}, page: ${page}, per_page: ${perPage}`)
     
     const filters: any = {
-      category_id: category.value?.id,
       page: page,
       per_page: perPage,
       sort_by: getSortField(selectedSort.value),
       sort_order: getSortOrder(selectedSort.value)
+    }
+    
+    // Add category filter if we have valid category ID
+    if (category.value && category.value.id > 0) {
+      filters.category_id = category.value.id
     }
     
     // Apply additional filters
