@@ -138,8 +138,8 @@ export interface Voucher {
 export interface Address {
   id: number
   user_id: number
-  name: string // recipient_name in API
-  phone: string
+  recipient_name: string // recipient_name in API
+  recipient_phone: string
   address: string // street_address in API  
   ward: string
   district: string

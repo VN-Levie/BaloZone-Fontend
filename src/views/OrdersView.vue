@@ -1,306 +1,402 @@
 <template>
-  <div class="orders-view">
-    <div class="container mt-4">
-      <Breadcrumb :items="breadcrumbItems" />
+  <div class="orders-page" style="background:linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); min-height:100vh; padding: 2rem 0;">
+    <div class="container-fluid px-4">
+      <Breadcrumb :items="breadcrumbItems" class="mb-4" />
+      
+      <div class="page-header mb-4">
+        <h1 class="page-title">
+          <i class="bi bi-box-seam me-3"></i>
+          Đơn hàng của tôi
+        </h1>
+        <p class="page-subtitle">Theo dõi và quản lý tất cả đơn hàng của bạn</p>
+      </div>
       
       <div class="row">
-        <div class="col-12">
-          <h1 class="mb-4">Đơn hàng của tôi</h1>
-          
-          <LoadingSpinner v-if="loading" />
-          
-          <div v-else-if="error" class="alert alert-danger">
-            <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 col-md-4 mb-4">
+          <div class="filters-card">
+            <div class="filters-header">
+              <h5 class="filters-title">
+                <i class="bi bi-funnel me-2"></i>
+                Bộ lọc
+              </h5>
+            </div>
+            <div class="filters-body">
+              <div class="filter-group">
+                <label class="filter-label">
+                  <i class="bi bi-clipboard-check me-2"></i>
+                  Trạng thái đơn hàng
+                </label>
+                <select v-model="selectedStatus" class="filter-select">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="pending">Chờ xử lý</option>
+                  <option value="confirmed">Đã xác nhận</option>
+                  <option value="shipped">Đang vận chuyển</option>
+                  <option value="delivered">Đã giao hàng</option>
+                  <option value="cancelled">Đã hủy</option>
+                </select>
+              </div>
+              
+              <div class="filter-group">
+                <label class="filter-label">
+                  <i class="bi bi-calendar-range me-2"></i>
+                  Khoảng thời gian
+                </label>
+                <select v-model="selectedDateRange" class="filter-select">
+                  <option value="">Tất cả thời gian</option>
+                  <option value="7">7 ngày qua</option>
+                  <option value="30">30 ngày qua</option>
+                  <option value="90">3 tháng qua</option>
+                </select>
+              </div>
+              
+              <button 
+                v-if="selectedStatus || selectedDateRange"
+                @click="clearFilters"
+                class="btn-clear-filters"
+              >
+                <i class="bi bi-x-circle me-2"></i>
+                Xóa bộ lọc
+              </button>
+            </div>
           </div>
-          
-          <div v-else>
-            <!-- Always show filters -->
-            <div class="row">
-              <div class="col-md-3 mb-4">
-                <div class="card">
-                  <div class="card-body">
-                    <h6 class="card-title">
-                      <i class="fas fa-filter me-2"></i>Lọc đơn hàng
+        </div>
+        
+        <!-- Orders Content -->
+        <div class="col-lg-9 col-md-8">
+          <div class="orders-content">
+            <!-- Loading State -->
+            <div v-if="loading" class="loading-state">
+              <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Đang tải đơn hàng...</p>
+              </div>
+            </div>
+            
+            <!-- Error State -->
+            <div v-else-if="error" class="error-state">
+              <div class="error-content">
+                <i class="bi bi-exclamation-triangle"></i>
+                <h5>Có lỗi xảy ra</h5>
+                <p>{{ error }}</p>
+                <button @click="fetchOrders" class="btn-retry">
+                  <i class="bi bi-arrow-clockwise me-2"></i>
+                  Thử lại
+                </button>
+              </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div v-else-if="orders.length === 0" class="empty-state">
+              <div class="empty-content">
+                <div class="empty-icon">
+                  <i class="bi bi-box-seam"></i>
+                </div>
+                <h4 class="empty-title">
+                  <span v-if="selectedStatus || selectedDateRange">
+                    Không tìm thấy đơn hàng
+                  </span>
+                  <span v-else>
+                    Chưa có đơn hàng nào
+                  </span>
+                </h4>
+                <p class="empty-message">
+                  <span v-if="selectedStatus || selectedDateRange">
+                    Không có đơn hàng nào phù hợp với điều kiện lọc của bạn.
+                  </span>
+                  <span v-else>
+                    Bạn chưa đặt đơn hàng nào. Hãy bắt đầu mua sắm ngay!
+                  </span>
+                </p>
+                
+                <div class="empty-actions">
+                  <button 
+                    v-if="selectedStatus || selectedDateRange"
+                    @click="clearFilters"
+                    class="btn btn-secondary me-3"
+                  >
+                    <i class="bi bi-x-circle me-2"></i>
+                    Xóa bộ lọc
+                  </button>
+                  <router-link to="/" class="btn btn-primary">
+                    <i class="bi bi-shop me-2"></i>
+                    {{ (selectedStatus || selectedDateRange) ? 'Tiếp tục mua sắm' : 'Bắt đầu mua sắm' }}
+                  </router-link>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Orders List -->
+            <div v-else class="orders-grid">
+              <div v-for="order in validOrders" :key="order.id" class="order-card">
+                <div class="order-header">
+                  <div class="order-info">
+                    <h6 class="order-number">
+                      <i class="bi bi-receipt me-2"></i>
+                      {{ order.order_number || `#${order.id}` }}
                     </h6>
-                    <div class="mb-3">
-                      <label class="form-label">Trạng thái</label>
-                      <select v-model="selectedStatus" class="form-select">
-                        <option value="">Tất cả</option>
-                        <option value="pending">Chờ xử lý</option>
-                        <option value="confirmed">Đã xác nhận</option>
-                        <option value="shipped">Đang vận chuyển</option>
-                        <option value="delivered">Đã giao hàng</option>
-                        <option value="cancelled">Đã hủy</option>
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Thời gian</label>
-                      <select v-model="selectedDateRange" class="form-select">
-                        <option value="">Tất cả thời gian</option>
-                        <option value="7">7 ngày qua</option>
-                        <option value="30">30 ngày qua</option>
-                        <option value="90">3 tháng qua</option>
-                      </select>
+                    <p class="order-date">
+                      <i class="bi bi-calendar3 me-1"></i>
+                      {{ formatDate(order.created_at) }}
+                    </p>
+                  </div>
+                  <div class="order-status">
+                    <span class="status-badge" :class="getStatusClass(order.status)">
+                      <i :class="getStatusIcon(order.status)" class="me-1"></i>
+                      {{ getStatusText(order.status) }}
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="order-body">
+                  <div class="order-items">
+                    <div v-for="item in order.items?.slice(0, 2)" :key="item.id" class="order-item">
+                      <div class="item-image">
+                        <img :src="item.product_image || '/placeholder.jpg'" :alt="item.product_name" />
+                      </div>
+                      <div class="item-details">
+                        <h6 class="item-name">{{ item.product_name }}</h6>
+                        <p class="item-info">
+                          SL: {{ item.quantity }} × {{ formatPrice(item.price) }}
+                        </p>
+                      </div>
                     </div>
                     
-                    <!-- Clear filters button -->
-                    <button 
-                      v-if="selectedStatus || selectedDateRange"
-                      @click="clearFilters"
-                      class="btn btn-outline-secondary btn-sm w-100"
+                    <div v-if="order.items && order.items.length > 2" class="more-items">
+                      <span class="more-text">
+                        +{{ order.items.length - 2 }} sản phẩm khác
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="order-footer">
+                  <div class="order-total">
+                    <span class="total-label">Tổng cộng:</span>
+                    <span class="total-amount">{{ formatPrice(order.total_amount) }}</span>
+                  </div>
+                  <div class="order-actions">
+                    <router-link 
+                      :to="`/order/${order.id}`" 
+                      class="btn btn-outline-primary btn-sm"
                     >
-                      <i class="fas fa-times me-2"></i>Xóa bộ lọc
+                      <i class="bi bi-eye me-1"></i>
+                      Chi tiết
+                    </router-link>
+                    <button 
+                      v-if="canCancelOrder(order.status)"
+                      @click="showCancelModal(order)"
+                      class="btn btn-outline-danger btn-sm"
+                    >
+                      <i class="bi bi-x-circle me-1"></i>
+                      Hủy đơn
                     </button>
                   </div>
                 </div>
               </div>
-              
-              <div class="col-md-9">
-                <!-- Empty state when no orders found -->
-                <div v-if="orders.length === 0" class="text-center py-5">
-                  <div class="empty-state">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h4>Không tìm thấy đơn hàng nào</h4>
-                    <p class="text-muted mb-3">
-                      <span v-if="selectedStatus || selectedDateRange">
-                        Không có đơn hàng nào phù hợp với điều kiện lọc của bạn.
-                      </span>
-                      <span v-else>
-                        Bạn chưa đặt đơn hàng nào. Hãy bắt đầu mua sắm ngay!
-                      </span>
-                    </p>
-                    
-                    <!-- Show different actions based on filter state -->
-                    <div v-if="selectedStatus || selectedDateRange">
-                      <button 
-                        @click="clearFilters"
-                        class="btn btn-outline-primary me-2"
-                      >
-                        <i class="fas fa-times me-2"></i>Xóa bộ lọc
-                      </button>
-                      <router-link to="/" class="btn btn-primary">
-                        <i class="fas fa-shopping-cart me-2"></i>Tiếp tục mua sắm
-                      </router-link>
-                    </div>
-                    <div v-else>
-                      <router-link to="/" class="btn btn-primary">
-                        <i class="fas fa-shopping-cart me-2"></i>Bắt đầu mua sắm
-                      </router-link>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Orders list when data exists -->
-                <div v-else class="order-list">
-                  <template v-for="order in validOrders" :key="order.id">
-                    <div class="card mb-3">
-                      <div class="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                          <h6 class="mb-0">{{ order.order_number || `Đơn hàng #${order.id}` }}</h6>
-                          <small class="text-muted">
-                            <i class="far fa-calendar-alt me-1"></i>{{ formatDate(order.created_at) }}
-                          </small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                          <span :class="getStatusBadgeClass(order.status)">
-                            {{ getStatusText(order.status) }}
-                          </span>
-                          <span :class="getPaymentStatusBadgeClass(order.payment_status)" class="ms-2">
-                            {{ getPaymentStatusText(order.payment_status) }}
-                          </span>
-                        </div>
-                    </div>
-                    
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-md-8">
-                          <div class="order-items">
-                            <div 
-                              v-for="item in order.items" 
-                              :key="item.id"
-                              class="d-flex align-items-center mb-2"
-                            >
-                              <img 
-                                :src="item.product_image || '/placeholder-image.jpg'"
-                                :alt="item.product_name"
-                                class="order-item-image me-3"
-                              >
-                              <div class="flex-grow-1">
-                                <h6 class="mb-1">{{ item.product_name }}</h6>
-                                <small class="text-muted">
-                                  Số lượng: {{ item.quantity }} × {{ formatPrice(Number(item.price)) }}
-                                </small>
-                              </div>
-                              <div class="text-end">
-                                <strong>{{ formatPrice(item.total) }}</strong>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                          <div class="order-summary">
-                            <div class="d-flex justify-content-between mb-2">
-                              <span>Tạm tính:</span>
-                              <span>{{ formatPrice(Number(order.total_amount)) }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                              <span>Phí vận chuyển:</span>
-                              <span>{{ formatPrice(Number(order.shipping_fee)) }}</span>
-                            </div>
-                            <div v-if="Number(order.voucher_discount) > 0" class="d-flex justify-content-between mb-2 text-success">
-                              <span>Giảm giá:</span>
-                              <span>-{{ formatPrice(Number(order.voucher_discount)) }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between border-top pt-2">
-                              <strong>Tổng cộng:</strong>
-                              <strong class="text-primary">{{ formatPrice(Number(order.final_amount)) }}</strong>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div class="row mt-3">
-                        <div class="col-md-6">
-                          <h6>Địa chỉ giao hàng</h6>
-                          <div class="address-info">
-                            <p class="mb-1" v-if="order.shipping_address?.recipient_name">
-                              <strong>{{ order.shipping_address.recipient_name }}</strong>
-                            </p>
-                            <p class="mb-1" v-if="order.shipping_address?.recipient_phone">
-                              <i class="fas fa-phone text-muted me-2"></i>{{ order.shipping_address.recipient_phone }}
-                            </p>
-                            <p class="mb-0">
-                              <i class="fas fa-map-marker-alt text-muted me-2"></i>
-                              {{ order.shipping_address?.address }}
-                            </p>
-                            <p class="mb-0 text-muted">
-                              {{ order.shipping_address?.ward }}, {{ order.shipping_address?.district }}
-                            </p>
-                            <p class="mb-0 text-muted">{{ order.shipping_address?.province }}</p>
-                          </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                          <h6>Thao tác</h6>
-                          <div class="btn-group-vertical w-100">
-                            <button 
-                              v-if="order.payment_status === 'pending'"
-                              @click="cancelOrder(order.id)"
-                              class="btn btn-outline-danger btn-sm"
-                            >
-                              <i class="fas fa-times me-2"></i>Hủy đơn hàng
-                            </button>
-                            <button 
-                              @click="viewOrderDetail(order.id)"
-                              class="btn btn-outline-primary btn-sm"
-                            >
-                              <i class="fas fa-eye me-2"></i>Xem chi tiết
-                            </button>
-                            <button 
-                              v-if="order.payment_status === 'paid'"
-                              @click="reorderItems(order.id)"
-                              class="btn btn-outline-success btn-sm"
-                            >
-                              <i class="fas fa-redo me-2"></i>Đặt lại
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    </div>
-                  </template>
-                </div>
-                
-                <!-- Pagination -->
-                <nav v-if="totalPages > 1" aria-label="Orders pagination">
-                  <ul class="pagination justify-content-center">
-                    <li :class="['page-item', { disabled: currentPage <= 1 }]">
-                      <button 
-                        @click="changePage(currentPage - 1)"
-                        class="page-link"
-                        :disabled="currentPage <= 1"
-                      >
-                        Trước
-                      </button>
-                    </li>
-                    
-                    <li 
-                      v-for="page in visiblePages" 
-                      :key="page"
-                      :class="['page-item', { active: page === currentPage }]"
-                    >
-                      <button @click="changePage(page)" class="page-link">
-                        {{ page }}
-                      </button>
-                    </li>
-                    
-                    <li :class="['page-item', { disabled: currentPage >= totalPages }]">
-                      <button 
-                        @click="changePage(currentPage + 1)"
-                        class="page-link"
-                        :disabled="currentPage >= totalPages"
-                      >
-                        Sau
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div v-if="orders.length > 0 && pagination.last_page > 1" class="pagination-wrapper">
+              <nav class="pagination-nav">
+                <ul class="pagination">
+                  <li class="page-item" :class="{ disabled: pagination.current_page === 1 }">
+                    <button class="page-link" @click="changePage(pagination.current_page - 1)">
+                      <i class="bi bi-chevron-left"></i>
+                    </button>
+                  </li>
+                  
+                  <li v-for="page in visiblePages" :key="page" class="page-item" :class="{ active: page === pagination.current_page }">
+                    <button class="page-link" @click="changePage(page)">{{ page }}</button>
+                  </li>
+                  
+                  <li class="page-item" :class="{ disabled: pagination.current_page === pagination.last_page }">
+                    <button class="page-link" @click="changePage(pagination.current_page + 1)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
             </div>
           </div>
         </div>
       </div>
     </div>
+    
+    <!-- Cancel Order Modal -->
+    <div v-if="showCancelOrderModal" class="modal-overlay" @click="hideCancelModal">
+      <div class="cancel-modal" @click.stop>
+        <div class="modal-header">
+          <div class="modal-icon">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+          <h4 class="modal-title">Xác nhận hủy đơn hàng</h4>
+        </div>
+        <div class="modal-body">
+          <p class="modal-message">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
+          <div v-if="orderToCancel" class="order-preview">
+            <div class="preview-header">
+              <i class="bi bi-receipt me-2"></i>
+              {{ orderToCancel.order_number || `#${orderToCancel.id}` }}
+            </div>
+            <div class="preview-info">
+              Tổng giá trị: {{ formatPrice(orderToCancel.total_amount) }}
+            </div>
+          </div>
+          <p class="warning-text">
+            <i class="bi bi-info-circle me-2"></i>
+            Hành động này không thể hoàn tác
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-cancel" @click="hideCancelModal">
+            <i class="bi bi-x-circle me-2"></i>
+            Giữ đơn hàng
+          </button>
+          <button class="btn btn-confirm-cancel" @click="confirmCancelOrder" :disabled="cancelling">
+            <span v-if="cancelling" class="spinner-border spinner-border-sm me-2"></span>
+            <i v-else class="bi bi-trash me-2"></i>
+            {{ cancelling ? 'Đang hủy...' : 'Xác nhận hủy' }}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <ToastContainer />
   </div>
 </template>
-
+                           
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ordersApi } from '../services/api'
-import type { Order } from '../types'
+import type { Order, PaginatedResponse } from '../types'
 import { formatPrice, formatDate } from '../utils'
-import { useCart } from '../composables/useCart'
-import LoadingSpinner from '../components/LoadingSpinner.vue'
+import { useToast } from '../composables/useToast'
 import Breadcrumb from '../components/Breadcrumb.vue'
+import ToastContainer from '../components/ToastContainer.vue'
 
 const router = useRouter()
-const { addToCart } = useCart()
+const { showToast } = useToast()
 
+// State
 const orders = ref<Order[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-const currentPage = ref(1)
-const totalPages = ref(1)
 const selectedStatus = ref('')
 const selectedDateRange = ref('')
 
-// Reset pagination when filters change
-watch([selectedStatus, selectedDateRange], () => {
-  currentPage.value = 1
-  fetchOrders()
+// Pagination
+const pagination = ref({
+  current_page: 1,
+  last_page: 1,
+  per_page: 10,
+  total: 0
 })
 
-// Filter out null/undefined orders
-const validOrders = computed(() => {
-  return orders.value.filter(order => order && order.id)
-})
+// Cancel modal
+const showCancelOrderModal = ref(false)
+const orderToCancel = ref<Order | null>(null)
+const cancelling = ref(false)
 
+// Breadcrumb
 const breadcrumbItems = [
   { name: 'Trang chủ', path: '/' },
   { name: 'Đơn hàng của tôi', path: '/orders' }
 ]
 
-const getStatusBadgeClass = (status: string) => {
-  const classes = {
-    pending: 'badge bg-warning text-dark',
-    confirmed: 'badge bg-info text-dark', 
-    shipped: 'badge bg-primary',
-    delivered: 'badge bg-success',
-    cancelled: 'badge bg-danger'
+// Computed
+const validOrders = computed(() => {
+  return orders.value.filter(order => order && order.id)
+})
+
+const visiblePages = computed(() => {
+  const current = pagination.value.current_page
+  const last = pagination.value.last_page
+  const range = 2
+  const start = Math.max(1, current - range)
+  const end = Math.min(last, current + range)
+  
+  const pages = []
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
   }
-  return classes[status as keyof typeof classes] || 'badge bg-secondary'
+  return pages
+})
+
+// Watchers
+watch([selectedStatus, selectedDateRange], () => {
+  pagination.value.current_page = 1
+  fetchOrders()
+})
+
+// Methods
+const fetchOrders = async () => {
+  try {
+    loading.value = true
+    error.value = null
+    
+    const params = {
+      page: pagination.value.current_page,
+      status: selectedStatus.value || undefined,
+      days: selectedDateRange.value ? parseInt(selectedDateRange.value) : undefined
+    }
+    
+    const response = await ordersApi.getUserOrders(params.page, params.status, params.days)
+    const paginatedData = response.data as PaginatedResponse<Order>
+    
+    orders.value = Array.isArray(paginatedData.data) 
+      ? paginatedData.data.filter(order => order && order.id)
+      : []
+    
+    pagination.value = {
+      current_page: paginatedData.current_page,
+      last_page: paginatedData.last_page,
+      per_page: paginatedData.per_page,
+      total: paginatedData.total
+    }
+  } catch (err: any) {
+    console.error('Failed to load orders:', err)
+    error.value = err.response?.data?.message || 'Không thể tải danh sách đơn hàng'
+    orders.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+const changePage = (page: number) => {
+  if (page >= 1 && page <= pagination.value.last_page) {
+    pagination.value.current_page = page
+    fetchOrders()
+  }
+}
+
+const clearFilters = () => {
+  selectedStatus.value = ''
+  selectedDateRange.value = ''
+}
+
+// Status helpers
+const getStatusClass = (status: string) => {
+  const classes = {
+    pending: 'status-pending',
+    confirmed: 'status-confirmed',
+    shipped: 'status-shipped',
+    delivered: 'status-delivered',
+    cancelled: 'status-cancelled'
+  }
+  return classes[status as keyof typeof classes] || 'status-default'
+}
+
+const getStatusIcon = (status: string) => {
+  const icons = {
+    pending: 'bi-clock',
+    confirmed: 'bi-check-circle',
+    shipped: 'bi-truck',
+    delivered: 'bi-check-circle-fill',
+    cancelled: 'bi-x-circle'
+  }
+  return icons[status as keyof typeof icons] || 'bi-circle'
 }
 
 const getStatusText = (status: string) => {
@@ -314,134 +410,34 @@ const getStatusText = (status: string) => {
   return texts[status as keyof typeof texts] || status
 }
 
-const getPaymentStatusBadgeClass = (paymentStatus: string) => {
-  const classes = {
-    pending: 'badge bg-warning text-dark',
-    paid: 'badge bg-success',
-    failed: 'badge bg-danger',
-    refunded: 'badge bg-secondary'
-  }
-  return classes[paymentStatus as keyof typeof classes] || 'badge bg-secondary'
+const canCancelOrder = (status: string) => {
+  return ['pending', 'confirmed'].includes(status)
 }
 
-const getPaymentStatusText = (paymentStatus: string) => {
-  const texts = {
-    pending: 'Chờ thanh toán',
-    paid: 'Đã thanh toán',
-    failed: 'Thanh toán thất bại',
-    refunded: 'Đã hoàn tiền'
-  }
-  return texts[paymentStatus as keyof typeof texts] || paymentStatus
+// Cancel order
+const showCancelModal = (order: Order) => {
+  orderToCancel.value = order
+  showCancelOrderModal.value = true
 }
 
-const visiblePages = computed(() => {
-  const range = 2
-  const start = Math.max(1, currentPage.value - range)
-  const end = Math.min(totalPages.value, currentPage.value + range)
+const hideCancelModal = () => {
+  orderToCancel.value = null
+  showCancelOrderModal.value = false
+}
+
+const confirmCancelOrder = async () => {
+  if (!orderToCancel.value) return
   
-  const pages = []
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-  return pages
-})
-
-const clearFilters = () => {
-  selectedStatus.value = ''
-  selectedDateRange.value = ''
-  // fetchOrders will be called automatically by watchers
-}
-
-const fetchOrders = async () => {
   try {
-    loading.value = true
-    error.value = null
-    
-    const params = {
-      page: currentPage.value,
-      status: selectedStatus.value || undefined,
-      days: selectedDateRange.value ? parseInt(selectedDateRange.value) : undefined
-    }
-    
-    // Pass all filter parameters to the API
-    const response = await ordersApi.getUserOrders(params.page, params.status, params.days)
-    
-    // response.data is PaginatedResponse<Order>, response.data.data is Order[]
-    const paginatedData = response.data
-    const ordersData = paginatedData?.data || []
-    
-    // Ensure we have a valid array and filter out null/undefined items
-    orders.value = Array.isArray(ordersData) 
-      ? ordersData.filter(order => order && order.id) 
-      : []
-    
-    // Get pagination info
-    totalPages.value = paginatedData?.last_page || 1
-    
-    console.log('Orders loaded:', orders.value)
-    console.log('Total pages:', totalPages.value)
+    cancelling.value = true
+    await ordersApi.cancelOrder(orderToCancel.value.id)
+    showToast('Đơn hàng đã được hủy thành công', 'success')
+    hideCancelModal()
+    await fetchOrders()
   } catch (err: any) {
-    console.error('Failed to load orders:', err)
-    error.value = err.response?.data?.message || 'Failed to load orders'
-    orders.value = [] // Reset to empty array on error
+    showToast(err.response?.data?.message || 'Không thể hủy đơn hàng', 'error')
   } finally {
-    loading.value = false
-  }
-}
-
-const changePage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-    fetchOrders()
-  }
-}
-
-const cancelOrder = async (orderId: number) => {
-  if (!confirm('Are you sure you want to cancel this order?')) {
-    return
-  }
-  
-  try {
-    await ordersApi.cancelOrder(orderId)
-    await fetchOrders() // Refresh the list
-  } catch (err: any) {
-    alert(err.response?.data?.message || 'Failed to cancel order')
-  }
-}
-
-const viewOrderDetail = (orderId: number) => {
-  router.push(`/order/${orderId}`)
-}
-
-const reorderItems = async (orderId: number) => {
-  try {
-    const order = orders.value.find(o => o.id === orderId)
-    if (!order || !order.items) return
-    
-    for (const item of order.items) {
-      if (item.product_name && item.product_image) {
-        // Create a product-like object from order item data
-        const product = {
-          id: item.product_id || 0,
-          name: item.product_name,
-          price: item.price,
-          originalPrice: item.price,
-          quantity: 1, // Product quantity field (different from order item quantity)
-          image: item.product_image,
-          slug: `product-${item.product_id}`,
-          description: '',
-          brand_id: 0,
-          category_id: 0,
-          created_at: '',
-          updated_at: ''
-        }
-        await addToCart(product, item.quantity)
-      }
-    }
-    
-    router.push('/cart')
-  } catch (err: any) {
-    alert('Failed to add items to cart')
+    cancelling.value = false
   }
 }
 
@@ -451,210 +447,695 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.orders-view {
+/* Page Layout */
+.orders-page {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   min-height: 100vh;
-  background-color: #f8f9fa;
+  padding: 2rem 0;
 }
 
-.order-item-image {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
+.page-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 2rem;
 }
 
-.order-summary {
-  background-color: #f8f9fa;
-  padding: 1.25rem;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+.page-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* Filters Card */
+.filters-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+.filters-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.filters-header {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  padding: 1.5rem;
+  color: white;
+}
+
+.filters-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.filters-body {
+  padding: 1.5rem;
+}
+
+.filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.filter-label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  background: white;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.btn-clear-filters {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-clear-filters:hover {
   transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
 }
 
-.card-header {
-  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-  border-bottom: 1px solid #e9ecef;
-  padding: 1.25rem;
+/* Orders Content */
+.orders-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
 }
 
-.card-body {
+/* Loading State */
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  flex-direction: column;
+}
+
+.loading-spinner .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #ff6b35;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Error State */
+.error-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.error-content {
+  text-align: center;
+  color: #dc3545;
+}
+
+.error-content i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.error-content h5 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.btn-retry {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-retry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.empty-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.empty-icon i {
+  font-size: 4rem;
+  color: #dee2e6;
+  margin-bottom: 1.5rem;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  color: #495057;
+  margin-bottom: 1rem;
+}
+
+.empty-message {
+  color: #6c757d;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.empty-actions .btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.empty-actions .btn-primary {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  border: none;
+}
+
+.empty-actions .btn-secondary {
+  background: #6c757d;
+  border: none;
+}
+
+.empty-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Orders Grid */
+.orders-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.order-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+.order-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+/* Order Header */
+.order-header {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.order-info .order-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.order-info .order-date {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #ffc107, #ffb300);
+  color: #000;
+}
+
+.status-confirmed {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+}
+
+.status-shipped {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+}
+
+.status-delivered {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: white;
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+/* Order Body */
+.order-body {
   padding: 1.5rem;
 }
 
 .order-items {
-  max-height: 200px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.order-items::-webkit-scrollbar {
-  width: 4px;
-}
-
-.order-items::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.order-items::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.order-items::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-.btn-group-vertical .btn {
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.btn-group-vertical .btn:last-child {
-  margin-bottom: 0;
-}
-
-.btn-outline-primary:hover {
-  transform: translateY(-1px);
-}
-
-.badge {
-  font-size: 0.75rem;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-weight: 600;
-}
-
-.form-select {
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-  transition: all 0.2s ease;
-}
-
-.form-select:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.pagination .page-link {
-  border-radius: 8px;
-  margin: 0 2px;
-  border: 1px solid #e9ecef;
-  color: #6c757d;
-  transition: all 0.2s ease;
-}
-
-.pagination .page-link:hover {
-  background-color: #f8f9fa;
-  border-color: #0d6efd;
-  color: #0d6efd;
-  transform: translateY(-1px);
-}
-
-.pagination .page-item.active .page-link {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
-}
-
-.address-info {
-  background-color: #f8f9fa;
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   padding: 1rem;
-  border-radius: 8px;
-  border-left: 4px solid #0d6efd;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
 }
 
-.address-info p {
-  margin-bottom: 0.5rem;
+.item-image {
+  flex-shrink: 0;
+}
+
+.item-image img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
   line-height: 1.4;
 }
 
-.address-info i {
-  width: 16px;
+.item-info {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.more-items {
+  text-align: center;
+  padding: 0.75rem;
+  background: #e9ecef;
+  border-radius: 8px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Order Footer */
+.order-footer {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.order-total {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.total-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.total-amount {
+  font-size: 1.3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.order-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.order-actions .btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 2px solid;
+}
+
+.order-actions .btn-outline-primary {
+  color: #ff6b35;
+  border-color: #ff6b35;
+  background: transparent;
+}
+
+.order-actions .btn-outline-primary:hover {
+  background: #ff6b35;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.order-actions .btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+  background: transparent;
+}
+
+.order-actions .btn-outline-danger:hover {
+  background: #dc3545;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Pagination */
+.pagination-wrapper {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination-nav .pagination {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.page-item .page-link {
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 2px solid #e9ecef;
+  color: #495057;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.page-item .page-link:hover:not(.disabled) {
+  background: #ff6b35;
+  border-color: #ff6b35;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.page-item.active .page-link {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  border-color: #ff6b35;
+  color: white;
+}
+
+.page-item.disabled .page-link {
+  background: #f8f9fa;
+  border-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Cancel Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cancel-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
+  padding: 2rem;
   text-align: center;
 }
 
-/* Empty state styling */
-.empty-state {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 16px;
-  padding: 3rem 2rem;
-  margin: 2rem 0;
-  border: 1px solid #e9ecef;
-}
-
-.empty-state i {
-  opacity: 0.6;
-}
-
-.empty-state h4 {
-  color: #495057;
-  font-weight: 600;
+.modal-icon i {
+  font-size: 3rem;
   margin-bottom: 1rem;
 }
 
-.empty-state p {
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.modal-message {
+  font-size: 1.1rem;
+  color: #495057;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.order-preview {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.preview-header {
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.preview-info {
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+.warning-text {
+  background: #fff3cd;
+  color: #856404;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ffeaa7;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0;
+}
+
+.modal-actions {
+  padding: 2rem;
+  background: #f8f9fa;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.modal-actions .btn {
+  padding: 0.75rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
   font-size: 1rem;
-  line-height: 1.6;
 }
 
-/* Filter card improvements */
-.card-title i {
-  color: #0d6efd;
-}
-
-.btn-outline-secondary:hover {
-  background-color: #6c757d;
-  border-color: #6c757d;
+.btn-cancel {
+  background: #6c757d;
   color: white;
-  transform: translateY(-1px);
 }
 
-/* Responsive design */
+.btn-cancel:hover {
+  background: #545b62;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+}
+
+.btn-confirm-cancel {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.btn-confirm-cancel:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+}
+
+.btn-confirm-cancel:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .order-item-image {
-    width: 50px;
-    height: 50px;
+  .orders-page {
+    padding: 1rem 0;
   }
   
-  .card-body .row > div {
-    margin-bottom: 1rem;
+  .page-title {
+    font-size: 2rem;
   }
   
-  .order-summary {
-    padding: 1rem;
+  .filters-card,
+  .orders-content {
+    border-radius: 15px;
   }
   
-  .btn-group-vertical .btn {
-    font-size: 0.875rem;
-    padding: 0.5rem 1rem;
+  .order-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .order-footer {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-actions .btn {
+    width: 100%;
   }
 }
 
 @media (max-width: 576px) {
-  .card-header {
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .filters-body,
+  .orders-content {
     padding: 1rem;
   }
   
-  .card-body {
-    padding: 1rem;
+  .order-item {
+    flex-direction: column;
+    text-align: center;
   }
   
-  .order-summary {
-    margin-top: 1rem;
+  .item-image img {
+    width: 80px;
+    height: 80px;
   }
 }
 </style>

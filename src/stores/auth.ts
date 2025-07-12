@@ -52,6 +52,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.login(credentials)
       // Handle new API response format: response.data.access_token and response.data.user
       const authToken = response.data?.access_token || response.authorization?.token
+      const refreshToken = (response.data as any)?.refresh_token || (response.authorization as any)?.refresh_token
       const userData = response.data?.user || (response as any).user
       
       if (!authToken || !userData) {
@@ -60,8 +61,11 @@ export const useAuthStore = defineStore('auth', () => {
       
       token.value = authToken
       user.value = userData
-      localStorage.setItem('auth_token', authToken)
+      
+      // Use the new token management utilities
+      authApi.saveTokens(authToken, refreshToken)
       localStorage.setItem('user', JSON.stringify(userData))
+      
       return response
     } catch (error) {
       throw error
@@ -76,6 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.register(data)
       // Handle new API response format: response.data.access_token and response.data.user
       const authToken = response.data?.access_token || response.authorization?.token
+      const refreshToken = (response.data as any)?.refresh_token || (response.authorization as any)?.refresh_token
       const userData = response.data?.user || (response as any).user
       
       if (!authToken || !userData) {
@@ -84,8 +89,11 @@ export const useAuthStore = defineStore('auth', () => {
       
       token.value = authToken
       user.value = userData
-      localStorage.setItem('auth_token', authToken)
+      
+      // Use the new token management utilities
+      authApi.saveTokens(authToken, refreshToken)
       localStorage.setItem('user', JSON.stringify(userData))
+      
       return response
     } catch (error) {
       throw error
@@ -109,7 +117,7 @@ export const useAuthStore = defineStore('auth', () => {
   const clearAuth = () => {
     token.value = null
     user.value = null
-    localStorage.removeItem('auth_token')
+    authApi.clearTokens()
     localStorage.removeItem('user')
   }
 

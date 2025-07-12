@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/stores/auth'
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import type { LoginCredentials, RegisterData } from '@/types'
+import { authApi } from '@/services/api'
 
 export const useAuth = () => {
   const authStore = useAuthStore()
@@ -18,6 +19,25 @@ export const useAuth = () => {
       phone 
     } as RegisterData)
   }
+
+  // Handle auth expiration events
+  const handleAuthExpired = () => {
+    console.log('Auth token expired, clearing auth state...')
+    authStore.clearAuth()
+  }
+
+  // Setup auth event listeners
+  onMounted(() => {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('auth:expired', handleAuthExpired)
+    }
+  })
+
+  onUnmounted(() => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('auth:expired', handleAuthExpired)
+    }
+  })
 
   return {
     // State from store - wrapped in computed to ensure reactivity
@@ -46,6 +66,10 @@ export const useAuth = () => {
     // Role utilities
     hasRole: authStore.hasRole,
     checkPermission: authStore.checkPermission,
-    getRoleDisplayName: authStore.getRoleDisplayName
+    getRoleDisplayName: authStore.getRoleDisplayName,
+
+    // Token management utilities
+    hasValidToken: authApi.hasValidToken,
+    refreshToken: authApi.refreshToken
   }
 }

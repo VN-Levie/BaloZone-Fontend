@@ -1,226 +1,252 @@
 <template>
-  <div class="order-detail-view">
-    <div class="container mt-4">
-      <Breadcrumb :items="breadcrumbItems" />
+  <div class="order-detail-page" style="background:linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); min-height:100vh; padding: 2rem 0;">
+    <div class="container-fluid px-4">
+      <Breadcrumb :items="breadcrumbItems" class="mb-4" />
       
-      <LoadingSpinner v-if="loading" />
-      
-      <div v-else-if="error" class="alert alert-danger">
-        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
-        <div class="mt-3">
-          <router-link to="/orders" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách đơn hàng
-          </router-link>
+      <!-- Loading State -->
+      <div v-if="loading" class="loading-state">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Đang tải chi tiết đơn hàng...</p>
         </div>
       </div>
       
-      <div v-else-if="order" class="order-detail">
-        <!-- Order Header -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <div class="row align-items-center">
-              <div class="col-md-8">
-                <h4 class="mb-1">{{ order.order_number || `Đơn hàng #${order.id}` }}</h4>
-                <p class="mb-0 text-muted">
-                  <i class="far fa-calendar-alt me-2"></i>{{ formatDate(order.created_at) }}
-                </p>
+      <!-- Error State -->
+      <div v-else-if="error" class="error-state">
+        <div class="error-content">
+          <i class="bi bi-exclamation-triangle"></i>
+          <h5>Có lỗi xảy ra</h5>
+          <p>{{ error }}</p>
+          <div class="error-actions">
+            <button @click="fetchOrderDetail" class="btn-retry">
+              <i class="bi bi-arrow-clockwise me-2"></i>
+              Thử lại
+            </button>
+            <router-link to="/orders" class="btn-back">
+              <i class="bi bi-arrow-left me-2"></i>
+              Quay lại danh sách
+            </router-link>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Order Detail Content -->
+      <div v-else-if="order" class="order-detail-content">
+        <!-- Order Header Card -->
+        <div class="order-header-card mb-4">
+          <div class="order-header-content">
+            <div class="order-info">
+              <div class="order-number">
+                <i class="bi bi-receipt-cutoff me-3"></i>
+                {{ order.order_number || `Đơn hàng #${order.id}` }}
               </div>
-              <div class="col-md-4 text-md-end">
-                <div class="order-status-badges">
-                  <span :class="getStatusBadgeClass(order.status)" class="me-2">
-                    {{ getStatusText(order.status) }}
-                  </span>
-                  <span :class="getPaymentStatusBadgeClass(order.payment_status)">
-                    {{ getPaymentStatusText(order.payment_status) }}
-                  </span>
-                </div>
+              <div class="order-meta">
+                <span class="order-date">
+                  <i class="bi bi-calendar3 me-2"></i>
+                  {{ formatDate(order.created_at) }}
+                </span>
               </div>
+            </div>
+            <div class="order-badges">
+              <span class="status-badge" :class="getStatusClass(order.status)">
+                <i :class="getStatusIcon(order.status)" class="me-2"></i>
+                {{ getStatusText(order.status) }}
+              </span>
+              <span class="payment-badge" :class="getPaymentStatusClass(order.payment_status)">
+                <i :class="getPaymentStatusIcon(order.payment_status)" class="me-2"></i>
+                {{ getPaymentStatusText(order.payment_status) }}
+              </span>
             </div>
           </div>
         </div>
 
-        <!-- Order Items -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <h5 class="mb-0">
-              <i class="fas fa-shopping-cart me-2"></i>Sản phẩm đã đặt
-            </h5>
-          </div>
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>Sản phẩm</th>
-                    <th class="text-center">Số lượng</th>
-                    <th class="text-end">Đơn giá</th>
-                    <th class="text-end">Thành tiền</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in order.items" :key="item.id" class="order-item-row">
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <img 
-                          :src="item.product_image || '/placeholder-image.jpg'"
-                          :alt="item.product_name"
-                          class="product-image me-3"
-                        >
-                        <div>
-                          <h6 class="mb-1">
-                            <router-link 
-                              :to="`/product/${item.product_id}`" 
-                              class="text-decoration-none product-link"
-                            >
-                              {{ item.product_name }}
-                            </router-link>
-                          </h6>
-                          <small class="text-muted">ID: {{ item.product_id }}</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="text-center">
-                      <span class="badge bg-light text-dark">{{ item.quantity }}</span>
-                    </td>
-                    <td class="text-end">{{ formatPrice(Number(item.price)) }}</td>
-                    <td class="text-end">
-                      <strong>{{ formatPrice(item.total) }}</strong>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Order Summary & Address -->
         <div class="row">
-          <div class="col-md-8">
-            <!-- Shipping Address -->
-            <div class="card mb-4">
+          <!-- Left Column -->
+          <div class="col-lg-8 mb-4">
+            <!-- Order Items Card -->
+            <div class="detail-card mb-4">
               <div class="card-header">
-                <h5 class="mb-0">
-                  <i class="fas fa-map-marker-alt me-2"></i>Địa chỉ giao hàng
+                <h5 class="card-title">
+                  <i class="bi bi-bag-check me-2"></i>
+                  Sản phẩm đã đặt
                 </h5>
               </div>
               <div class="card-body">
-                <div class="address-info">
-                  <div v-if="order.shipping_address?.recipient_name || order.shipping_address?.recipient_phone">
-                    <p class="mb-2" v-if="order.shipping_address?.recipient_name">
-                      <i class="fas fa-user text-muted me-2"></i>
-                      <strong>{{ order.shipping_address.recipient_name }}</strong>
-                    </p>
-                    <p class="mb-2" v-if="order.shipping_address?.recipient_phone">
-                      <i class="fas fa-phone text-muted me-2"></i>{{ order.shipping_address.recipient_phone }}
-                    </p>
+                <div class="order-items">
+                  <div v-for="item in order.items" :key="item.id" class="order-item">
+                    <div class="item-image">
+                      <img 
+                        :src="item.product_image || '/placeholder.jpg'"
+                        :alt="item.product_name"
+                      />
+                    </div>
+                    <div class="item-details">
+                      <h6 class="item-name">
+                        <router-link 
+                          :to="`/product/${item.product_id}`" 
+                          class="product-link"
+                        >
+                          {{ item.product_name }}
+                        </router-link>
+                      </h6>
+                      <p class="item-id">ID: {{ item.product_id }}</p>
+                    </div>
+                    <div class="item-quantity">
+                      <span class="quantity-badge">{{ item.quantity }}</span>
+                    </div>
+                    <div class="item-price">
+                      <div class="unit-price">{{ formatPrice(Number(item.price)) }}</div>
+                      <div class="total-price">{{ formatPrice(item.total) }}</div>
+                    </div>
                   </div>
-                  <p class="mb-1">
-                    <i class="fas fa-map-marker-alt text-muted me-2"></i>
-                    {{ order.shipping_address?.address }}
-                  </p>
-                  <p class="mb-0 text-muted">
-                    {{ order.shipping_address?.ward }}, {{ order.shipping_address?.district }}
-                  </p>
-                  <p class="mb-0 text-muted">{{ order.shipping_address?.province }}</p>
                 </div>
               </div>
             </div>
 
-            <!-- Order History -->
-            <div class="card mb-4">
+            <!-- Shipping Address Card -->
+            <div class="detail-card mb-4">
               <div class="card-header">
-                <h5 class="mb-0">
-                  <i class="fas fa-history me-2"></i>Lịch sử đơn hàng
+                <h5 class="card-title">
+                  <i class="bi bi-geo-alt me-2"></i>
+                  Địa chỉ giao hàng
                 </h5>
               </div>
               <div class="card-body">
-                <div v-if="order.order_history && order.order_history.length > 0" class="order-timeline">
+                <div class="address-card">
+                  <div class="address-header">
+                    <div v-if="order.shipping_address?.recipient_name" class="recipient-name">
+                      <i class="bi bi-person-fill me-2"></i>
+                      {{ order.shipping_address.recipient_name }}
+                    </div>
+                    <div v-if="order.shipping_address?.recipient_phone" class="recipient-phone">
+                      <i class="bi bi-telephone-fill me-2"></i>
+                      {{ order.shipping_address.recipient_phone }}
+                    </div>
+                  </div>
+                  <div class="address-details">
+                    <i class="bi bi-geo-alt-fill me-2"></i>
+                    <div class="address-text">
+                      <div>{{ order.shipping_address?.address }}</div>
+                      <div class="address-location">
+                        {{ order.shipping_address?.ward }}, {{ order.shipping_address?.district }}, {{ order.shipping_address?.province }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Timeline Card -->
+            <div class="detail-card">
+              <div class="card-header">
+                <h5 class="card-title">
+                  <i class="bi bi-clock-history me-2"></i>
+                  Lịch sử đơn hàng
+                </h5>
+              </div>
+              <div class="card-body">
+                <div v-if="order.order_history && order.order_history.length > 0" class="timeline">
                   <div 
                     v-for="(history, index) in order.order_history" 
                     :key="index"
                     class="timeline-item"
                   >
-                    <div class="timeline-marker"></div>
+                    <div class="timeline-marker">
+                      <i :class="getStatusIcon(history.status)"></i>
+                    </div>
                     <div class="timeline-content">
                       <div class="timeline-header">
                         <span class="timeline-status">{{ getStatusText(history.status) }}</span>
-                        <small class="timeline-date">{{ formatDate(history.created_at) }}</small>
+                        <span class="timeline-date">{{ formatDate(history.created_at) }}</span>
                       </div>
-                      <p class="timeline-note mb-0" v-if="history.note">{{ history.note }}</p>
+                      <p v-if="history.note" class="timeline-note">{{ history.note }}</p>
                     </div>
                   </div>
                 </div>
-                <div v-else class="text-center text-muted py-3">
-                  <i class="fas fa-clock fa-2x mb-2"></i>
-                  <p class="mb-0">Chưa có lịch sử cập nhật cho đơn hàng này</p>
+                <div v-else class="empty-timeline">
+                  <div class="empty-icon">
+                    <i class="bi bi-clock"></i>
+                  </div>
+                  <p>Chưa có lịch sử cập nhật cho đơn hàng này</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="col-md-4">
-            <!-- Order Summary -->
-            <div class="card mb-4">
+          <!-- Right Column -->
+          <div class="col-lg-4">
+            <!-- Order Summary Card -->
+            <div class="detail-card mb-4">
               <div class="card-header">
-                <h5 class="mb-0">
-                  <i class="fas fa-calculator me-2"></i>Tóm tắt đơn hàng
+                <h5 class="card-title">
+                  <i class="bi bi-calculator me-2"></i>
+                  Tóm tắt đơn hàng
                 </h5>
               </div>
               <div class="card-body">
-                <div class="order-summary">
-                  <div class="d-flex justify-content-between mb-2">
-                    <span>Tạm tính:</span>
-                    <span>{{ formatPrice(Number(order.total_amount)) }}</span>
+                <div class="summary-section">
+                  <div class="summary-row">
+                    <span class="summary-label">Tạm tính:</span>
+                    <span class="summary-value">{{ formatPrice(Number(order.total_amount)) }}</span>
                   </div>
-                  <div class="d-flex justify-content-between mb-2">
-                    <span>Phí vận chuyển:</span>
-                    <span>{{ formatPrice(Number(order.shipping_fee)) }}</span>
+                  <div class="summary-row">
+                    <span class="summary-label">Phí vận chuyển:</span>
+                    <span class="summary-value">{{ formatPrice(Number(order.shipping_fee)) }}</span>
                   </div>
-                  <div v-if="Number(order.voucher_discount) > 0" class="d-flex justify-content-between mb-2 text-success">
-                    <span>Giảm giá:</span>
-                    <span>-{{ formatPrice(Number(order.voucher_discount)) }}</span>
+                  <div v-if="Number(order.voucher_discount) > 0" class="summary-row discount">
+                    <span class="summary-label">
+                      <i class="bi bi-tag me-1"></i>Giảm giá:
+                    </span>
+                    <span class="summary-value">-{{ formatPrice(Number(order.voucher_discount)) }}</span>
                   </div>
-                  <hr>
-                  <div class="d-flex justify-content-between">
-                    <strong>Tổng cộng:</strong>
-                    <strong class="text-primary fs-5">{{ formatPrice(Number(order.final_amount)) }}</strong>
+                  <div class="summary-divider"></div>
+                  <div class="summary-total">
+                    <span class="total-label">Tổng cộng:</span>
+                    <span class="total-value">{{ formatPrice(Number(order.final_amount)) }}</span>
                   </div>
                 </div>
 
-                <div class="payment-info mt-3 pt-3 border-top">
-                  <div class="d-flex justify-content-between mb-2">
-                    <span>Phương thức thanh toán:</span>
-                    <span class="badge bg-info">{{ getPaymentMethodText(order.payment_method) }}</span>
+                <div class="payment-section">
+                  <div class="payment-method">
+                    <span class="payment-label">Phương thức thanh toán:</span>
+                    <span class="payment-value">
+                      <i :class="getPaymentMethodIcon(order.payment_method)" class="me-2"></i>
+                      {{ getPaymentMethodText(order.payment_method) }}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Actions -->
-            <div class="card">
+            <!-- Actions Card -->
+            <div class="detail-card">
               <div class="card-header">
-                <h5 class="mb-0">
-                  <i class="fas fa-tools me-2"></i>Thao tác
+                <h5 class="card-title">
+                  <i class="bi bi-gear me-2"></i>
+                  Thao tác
                 </h5>
               </div>
               <div class="card-body">
-                <div class="d-grid gap-2">
+                <div class="action-buttons">
                   <button 
-                    v-if="order.status === 'pending'"
-                    @click="cancelOrder"
-                    class="btn btn-outline-danger"
+                    v-if="canCancelOrder(order.status)"
+                    @click="showCancelModal"
+                    class="action-btn cancel-btn"
                   >
-                    <i class="fas fa-times me-2"></i>Hủy đơn hàng
+                    <i class="bi bi-x-circle me-2"></i>
+                    Hủy đơn hàng
                   </button>
                   <button 
                     v-if="order.payment_status === 'paid'"
                     @click="reorderItems"
-                    class="btn btn-outline-success"
+                    class="action-btn reorder-btn"
                   >
-                    <i class="fas fa-redo me-2"></i>Đặt lại
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Đặt lại
                   </button>
-                  <router-link to="/orders" class="btn btn-outline-primary">
-                    <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                  <router-link to="/orders" class="action-btn back-btn">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Quay lại danh sách
                   </router-link>
                 </div>
               </div>
@@ -229,6 +255,47 @@
         </div>
       </div>
     </div>
+
+    <!-- Cancel Order Modal -->
+    <div v-if="showCancelOrderModal" class="modal-overlay" @click="hideCancelModal">
+      <div class="cancel-modal" @click.stop>
+        <div class="modal-header">
+          <div class="modal-icon">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+          <h4 class="modal-title">Xác nhận hủy đơn hàng</h4>
+        </div>
+        <div class="modal-body">
+          <p class="modal-message">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
+          <div class="order-preview">
+            <div class="preview-header">
+              <i class="bi bi-receipt me-2"></i>
+              {{ order?.order_number || `#${order?.id}` }}
+            </div>
+            <div class="preview-info">
+              Tổng giá trị: {{ formatPrice(Number(order?.final_amount)) }}
+            </div>
+          </div>
+          <p class="warning-text">
+            <i class="bi bi-info-circle me-2"></i>
+            Hành động này không thể hoàn tác
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-cancel" @click="hideCancelModal">
+            <i class="bi bi-x-circle me-2"></i>
+            Giữ đơn hàng
+          </button>
+          <button class="btn btn-confirm-cancel" @click="confirmCancelOrder" :disabled="cancelling">
+            <span v-if="cancelling" class="spinner-border spinner-border-sm me-2"></span>
+            <i v-else class="bi bi-trash me-2"></i>
+            {{ cancelling ? 'Đang hủy...' : 'Xác nhận hủy' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ToastContainer />
   </div>
 </template>
 
@@ -239,16 +306,21 @@ import { ordersApi } from '../services/api'
 import type { Order } from '../types'
 import { formatPrice, formatDate } from '../utils'
 import { useCart } from '../composables/useCart'
-import LoadingSpinner from '../components/LoadingSpinner.vue'
+import { useToast } from '../composables/useToast'
 import Breadcrumb from '../components/Breadcrumb.vue'
+import ToastContainer from '../components/ToastContainer.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { addToCart } = useCart()
+const { showToast } = useToast()
 
+// State
 const order = ref<Order | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
+const showCancelOrderModal = ref(false)
+const cancelling = ref(false)
 
 const orderId = computed(() => {
   const id = route.params.id
@@ -261,22 +333,32 @@ const breadcrumbItems = computed(() => [
   { name: order.value?.order_number || `Đơn hàng #${orderId.value}`, path: '' }
 ])
 
-const getStatusBadgeClass = (status: string) => {
+// Status helpers
+const getStatusClass = (status: string) => {
   const classes = {
-    pending: 'badge bg-warning text-dark',
-    processing: 'badge bg-info text-dark',
-    confirmed: 'badge bg-info text-dark', 
-    shipped: 'badge bg-primary',
-    delivered: 'badge bg-success',
-    cancelled: 'badge bg-danger'
+    pending: 'status-pending',
+    confirmed: 'status-confirmed',
+    shipped: 'status-shipped',
+    delivered: 'status-delivered',
+    cancelled: 'status-cancelled'
   }
-  return classes[status as keyof typeof classes] || 'badge bg-secondary'
+  return classes[status as keyof typeof classes] || 'status-default'
+}
+
+const getStatusIcon = (status: string) => {
+  const icons = {
+    pending: 'bi-clock',
+    confirmed: 'bi-check-circle',
+    shipped: 'bi-truck',
+    delivered: 'bi-check-circle-fill',
+    cancelled: 'bi-x-circle'
+  }
+  return icons[status as keyof typeof icons] || 'bi-circle'
 }
 
 const getStatusText = (status: string) => {
   const texts = {
     pending: 'Chờ xử lý',
-    processing: 'Đang xử lý',
     confirmed: 'Đã xác nhận',
     shipped: 'Đang vận chuyển',
     delivered: 'Đã giao hàng',
@@ -285,14 +367,24 @@ const getStatusText = (status: string) => {
   return texts[status as keyof typeof texts] || status
 }
 
-const getPaymentStatusBadgeClass = (paymentStatus: string) => {
+const getPaymentStatusClass = (paymentStatus: string) => {
   const classes = {
-    pending: 'badge bg-warning text-dark',
-    paid: 'badge bg-success',
-    failed: 'badge bg-danger',
-    refunded: 'badge bg-secondary'
+    pending: 'payment-pending',
+    paid: 'payment-paid',
+    failed: 'payment-failed',
+    refunded: 'payment-refunded'
   }
-  return classes[paymentStatus as keyof typeof classes] || 'badge bg-secondary'
+  return classes[paymentStatus as keyof typeof classes] || 'payment-default'
+}
+
+const getPaymentStatusIcon = (paymentStatus: string) => {
+  const icons = {
+    pending: 'bi-clock',
+    paid: 'bi-check-circle-fill',
+    failed: 'bi-x-circle',
+    refunded: 'bi-arrow-clockwise'
+  }
+  return icons[paymentStatus as keyof typeof icons] || 'bi-circle'
 }
 
 const getPaymentStatusText = (paymentStatus: string) => {
@@ -305,6 +397,15 @@ const getPaymentStatusText = (paymentStatus: string) => {
   return texts[paymentStatus as keyof typeof texts] || paymentStatus
 }
 
+const getPaymentMethodIcon = (method: string) => {
+  const icons = {
+    cod: 'bi-cash',
+    vnpay: 'bi-credit-card',
+    momo: 'bi-phone'
+  }
+  return icons[method as keyof typeof icons] || 'bi-credit-card'
+}
+
 const getPaymentMethodText = (method: string) => {
   const methods = {
     cod: 'Thanh toán khi nhận hàng',
@@ -314,6 +415,11 @@ const getPaymentMethodText = (method: string) => {
   return methods[method as keyof typeof methods] || method
 }
 
+const canCancelOrder = (status: string) => {
+  return ['pending', 'confirmed'].includes(status)
+}
+
+// Methods
 const fetchOrderDetail = async () => {
   try {
     loading.value = true
@@ -321,8 +427,6 @@ const fetchOrderDetail = async () => {
     
     const response = await ordersApi.getOrder(orderId.value)
     order.value = response.data
-    
-    console.log('Order detail loaded:', order.value)
   } catch (err: any) {
     console.error('Failed to load order detail:', err)
     error.value = err.response?.data?.message || 'Không thể tải chi tiết đơn hàng'
@@ -331,17 +435,27 @@ const fetchOrderDetail = async () => {
   }
 }
 
-const cancelOrder = async () => {
-  if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-    return
-  }
+const showCancelModal = () => {
+  showCancelOrderModal.value = true
+}
+
+const hideCancelModal = () => {
+  showCancelOrderModal.value = false
+}
+
+const confirmCancelOrder = async () => {
+  if (!order.value) return
   
   try {
-    await ordersApi.cancelOrder(orderId.value)
-    // Refresh order detail
+    cancelling.value = true
+    await ordersApi.cancelOrder(order.value.id)
+    showToast('Đơn hàng đã được hủy thành công', 'success')
+    hideCancelModal()
     await fetchOrderDetail()
   } catch (err: any) {
-    alert(err.response?.data?.message || 'Không thể hủy đơn hàng')
+    showToast(err.response?.data?.message || 'Không thể hủy đơn hàng', 'error')
+  } finally {
+    cancelling.value = false
   }
 }
 
@@ -369,9 +483,10 @@ const reorderItems = async () => {
       }
     }
     
+    showToast('Đã thêm tất cả sản phẩm vào giỏ hàng', 'success')
     router.push('/cart')
   } catch (err: any) {
-    alert('Không thể thêm sản phẩm vào giỏ hàng')
+    showToast('Không thể thêm sản phẩm vào giỏ hàng', 'error')
   }
 }
 
@@ -381,64 +496,331 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.order-detail-view {
+/* Page Layout */
+.order-detail-page {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   min-height: 100vh;
-  background-color: #f8f9fa;
+  padding: 2rem 0;
 }
 
-.order-status-badges {
+/* Loading & Error States */
+.loading-state,
+.error-state {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px;
 }
 
-.product-image {
+.loading-spinner {
+  text-align: center;
+  color: white;
+}
+
+.loading-spinner .spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.error-content {
+  text-align: center;
+  color: white;
+  max-width: 400px;
+}
+
+.error-content i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.error-content h5 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.error-content p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-retry,
+.btn-back {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-retry {
+  background: rgba(255, 255, 255, 0.9);
+  color: #ff6b35;
+}
+
+.btn-back {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+}
+
+.btn-retry:hover,
+.btn-back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Order Header Card */
+.order-header-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.order-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.order-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.order-date {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.order-badges {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.status-badge,
+.payment-badge {
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pending { background: linear-gradient(135deg, #ffc107, #ffb300); color: #000; }
+.status-confirmed { background: linear-gradient(135deg, #17a2b8, #138496); color: white; }
+.status-shipped { background: linear-gradient(135deg, #007bff, #0056b3); color: white; }
+.status-delivered { background: linear-gradient(135deg, #28a745, #1e7e34); color: white; }
+.status-cancelled { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
+
+.payment-pending { background: linear-gradient(135deg, #ffc107, #ffb300); color: #000; }
+.payment-paid { background: linear-gradient(135deg, #28a745, #1e7e34); color: white; }
+.payment-failed { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
+.payment-refunded { background: linear-gradient(135deg, #6c757d, #495057); color: white; }
+
+/* Detail Cards */
+.detail-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.detail-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  padding: 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Order Items */
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.order-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.item-image {
+  flex-shrink: 0;
+}
+
+.item-image img {
   width: 80px;
   height: 80px;
   object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  border: 2px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.order-item-row:hover {
-  background-color: #f8f9fa;
+.item-details {
+  flex: 1;
 }
 
-.order-summary {
-  font-size: 0.95rem;
+.item-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
 }
 
-.order-summary hr {
-  margin: 1rem 0;
-  border-color: #e9ecef;
+.product-link {
+  color: #333;
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
-.address-info {
-  background-color: #f8f9fa;
-  padding: 1.25rem;
-  border-radius: 8px;
-  border-left: 4px solid #0d6efd;
+.product-link:hover {
+  color: #ff6b35;
 }
 
-.address-info p {
+.item-id {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.item-quantity {
+  flex-shrink: 0;
+  margin: 0 1rem;
+}
+
+.quantity-badge {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.item-price {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.unit-price {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.total-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Address Card */
+.address-card {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border-left: 4px solid #ff6b35;
+}
+
+.address-header {
+  margin-bottom: 1rem;
+}
+
+.recipient-name,
+.recipient-phone {
+  display: flex;
+  align-items: center;
   margin-bottom: 0.5rem;
-  line-height: 1.5;
+  font-weight: 600;
+  color: #333;
 }
 
-.address-info i {
-  width: 16px;
-  text-align: center;
+.address-details {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
-.order-timeline {
+.address-text {
+  flex: 1;
+}
+
+.address-location {
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
+/* Timeline */
+.timeline {
   position: relative;
   padding-left: 2rem;
 }
 
 .timeline-item {
   position: relative;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .timeline-item:last-child {
@@ -447,36 +829,37 @@ onMounted(() => {
 
 .timeline-marker {
   position: absolute;
-  left: -2rem;
-  top: 0.25rem;
-  width: 12px;
-  height: 12px;
-  background-color: #0d6efd;
+  left: -2.25rem;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
   border-radius: 50%;
-  border: 3px solid #fff;
-  box-shadow: 0 0 0 2px #0d6efd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
-.timeline-item:before {
+.timeline-item:not(:last-child)::before {
   content: '';
   position: absolute;
-  left: -1.75rem;
-  top: 1rem;
-  bottom: -1.5rem;
-  width: 2px;
-  background-color: #e9ecef;
-}
-
-.timeline-item:last-child:before {
-  display: none;
+  left: -2.05rem;
+  top: 40px;
+  bottom: -2rem;
+  width: 3px;
+  background: linear-gradient(to bottom, #ff6b35, #f7931e);
+  border-radius: 2px;
 }
 
 .timeline-content {
-  background-color: #fff;
-  padding: 1rem;
-  border-radius: 8px;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid #e9ecef;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .timeline-header {
@@ -487,108 +870,365 @@ onMounted(() => {
 }
 
 .timeline-status {
-  font-weight: 600;
-  color: #0d6efd;
+  font-weight: 700;
+  color: #ff6b35;
+  font-size: 1rem;
 }
 
 .timeline-date {
   color: #6c757d;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
 }
 
 .timeline-note {
   color: #495057;
-  line-height: 1.5;
+  margin: 0;
+  line-height: 1.6;
 }
 
-.card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+.empty-timeline {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6c757d;
 }
 
-.card-header {
-  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-  border-bottom: 1px solid #e9ecef;
-  padding: 1.25rem;
+.empty-icon i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
 }
 
-.card-body {
-  padding: 1.5rem;
+/* Summary Section */
+.summary-section {
+  margin-bottom: 1.5rem;
 }
 
-.badge {
-  font-size: 0.75rem;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-weight: 600;
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
 }
 
-.btn {
+.summary-row.discount {
+  color: #28a745;
+}
+
+.summary-label,
+.summary-value {
+  font-size: 1rem;
+}
+
+.summary-divider {
+  height: 2px;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  border-radius: 1px;
+  margin: 1rem 0;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  padding: 1rem 1.5rem;
 }
 
-.btn:hover {
-  transform: translateY(-1px);
+.total-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
 }
 
-.table th {
-  border-top: none;
+.total-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.payment-section {
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.payment-method {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-label {
   font-weight: 600;
   color: #495057;
-  background-color: #f8f9fa;
 }
 
-.payment-info {
-  font-size: 0.9rem;
+.payment-value {
+  color: #333;
+  font-weight: 500;
 }
 
-.product-link {
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.action-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.reorder-btn {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: white;
+}
+
+.back-btn {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cancel-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+}
+
+.modal-icon i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.modal-message {
+  font-size: 1.1rem;
   color: #495057;
-  transition: color 0.2s ease;
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
-.product-link:hover {
-  color: #0d6efd;
-  text-decoration: underline !important;
+.order-preview {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
 }
 
-/* Responsive design */
+.preview-header {
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.preview-info {
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+.warning-text {
+  background: #fff3cd;
+  color: #856404;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ffeaa7;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0;
+}
+
+.modal-actions {
+  padding: 2rem;
+  background: #f8f9fa;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.modal-actions .btn {
+  padding: 0.75rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.btn-cancel {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: #545b62;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+}
+
+.btn-confirm-cancel {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.btn-confirm-cancel:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+}
+
+.btn-confirm-cancel:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .order-header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .order-badges {
+    justify-content: center;
+  }
+}
+
 @media (max-width: 768px) {
-  .order-status-badges {
-    justify-content: flex-start;
-    margin-top: 1rem;
+  .order-detail-page {
+    padding: 1rem 0;
   }
   
-  .product-image {
-    width: 60px;
-    height: 60px;
+  .order-header-card,
+  .detail-card {
+    border-radius: 12px;
   }
   
-  .timeline-item {
-    padding-left: 0;
+  .order-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .item-image img {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .timeline {
+    padding-left: 1.5rem;
   }
   
   .timeline-marker {
-    left: -1.5rem;
+    left: -1.75rem;
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
   }
   
-  .timeline-item:before {
-    left: -1.25rem;
+  .timeline-item:not(:last-child)::before {
+    left: -1.6rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-actions .btn {
+    width: 100%;
   }
 }
 
 @media (max-width: 576px) {
-  .card-header,
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .order-header-card,
   .card-body {
     padding: 1rem;
   }
   
-  .table-responsive {
-    font-size: 0.875rem;
+  .order-number {
+    font-size: 1.4rem;
+  }
+  
+  .status-badge,
+  .payment-badge {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
   }
 }
 </style>

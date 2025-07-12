@@ -39,19 +39,6 @@
           </div>
         </div>
       </div>
-      <div class="form-section">
-        <h5 class="section-title">
-          <i class="bi bi-geo-alt me-2"></i>
-          Địa chỉ
-        </h5>
-        <div class="mb-3">
-          <label for="address" class="form-label">
-            <i class="bi bi-house me-1"></i>
-            Địa chỉ
-          </label>
-          <textarea id="address" v-model="form.address" class="form-control" rows="3" placeholder="Nhập địa chỉ chi tiết"></textarea>
-        </div>
-      </div>
       <div class="form-actions mt-3">
         <button type="submit" class="btn btn-primary" :disabled="updating">
           <i class="bi bi-check-circle me-2"></i>
@@ -80,7 +67,7 @@ const onReset = () => emit('reset')
   background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: #fff;
   border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   position: relative;
   overflow: hidden;
 }
@@ -113,14 +100,14 @@ const onReset = () => emit('reset')
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid rgba(255,255,255,0.2);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .profile-info-card .form-control,
 .profile-info-card textarea {
-  background: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.9);
   color: #333;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   padding: 0.75rem 1rem;
   transition: all 0.3s ease;
@@ -130,8 +117,8 @@ const onReset = () => emit('reset')
 .profile-info-card textarea:focus {
   background: #fff;
   color: #222;
-  border-color: rgba(255,255,255,0.8);
-  box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.3);
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
 
@@ -159,7 +146,7 @@ const onReset = () => emit('reset')
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
 }
 
@@ -171,7 +158,7 @@ const onReset = () => emit('reset')
   background: #fff;
   color: #ff6b35;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255,255,255,0.3);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
 }
 
 .btn-primary:disabled {
@@ -180,7 +167,7 @@ const onReset = () => emit('reset')
 }
 
 .btn-outline-secondary {
-  border-color: rgba(255,255,255,0.6);
+  border-color: rgba(255, 255, 255, 0.6);
   color: #fff;
   border-radius: 12px;
   padding: 0.75rem 1.5rem;
@@ -193,7 +180,7 @@ const onReset = () => emit('reset')
   color: #ff6b35;
   border-color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
 }
 
 .form-section {
@@ -205,7 +192,7 @@ const onReset = () => emit('reset')
 .form-actions {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 2px solid rgba(255,255,255,0.2);
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
   position: relative;
   z-index: 1;
 }
@@ -215,7 +202,7 @@ const onReset = () => emit('reset')
     border-radius: 14px;
     padding: 1.5rem;
   }
-  
+
   .btn-primary,
   .btn-outline-secondary {
     padding: 0.6rem 1.2rem;

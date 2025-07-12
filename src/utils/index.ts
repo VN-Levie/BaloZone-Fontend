@@ -1,6 +1,9 @@
 // Utility functions for formatting and common operations
 
-export const formatPrice = (price: number): string => {
+export const formatPrice = (price: number | string): string => {
+  if (typeof price === 'string') {
+    price = parseFloat(price.replace(/[^0-9.-]+/g, ''))
+  }
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND'
@@ -19,12 +22,12 @@ export const getImageUrl = (imagePath?: string): string => {
   if (!imagePath) {
     return 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop'
   }
-  
+
   // If it's already a full URL, return as is
   if (imagePath.startsWith('http')) {
     return imagePath
   }
-  
+
   // Assume it's a relative path from the API server
   return `http://127.0.0.1:8000/${imagePath}`
 }
@@ -74,12 +77,12 @@ export const debounce = <T extends (...args: any[]) => any>(
   wait: number
 ): ((...args: Parameters<T>) => void) => {
   let timeout: number | null = null
-  
+
   return (...args: Parameters<T>) => {
     if (timeout) {
       clearTimeout(timeout)
     }
-    
+
     timeout = setTimeout(() => {
       func(...args)
     }, wait)
@@ -118,7 +121,7 @@ export const storage = {
       console.error('Error saving to localStorage:', error)
     }
   },
-  
+
   get: <T>(key: string, defaultValue: T = null as T): T => {
     try {
       const item = localStorage.getItem(key)
@@ -128,7 +131,7 @@ export const storage = {
       return defaultValue
     }
   },
-  
+
   remove: (key: string): void => {
     try {
       localStorage.removeItem(key)
@@ -136,7 +139,7 @@ export const storage = {
       console.error('Error removing from localStorage:', error)
     }
   },
-  
+
   clear: (): void => {
     try {
       localStorage.clear()
@@ -152,20 +155,20 @@ export const validation = {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
   },
-  
+
   phone: (phone: string): boolean => {
     const phoneRegex = /^[0-9]{10,11}$/
     return phoneRegex.test(phone.replace(/[^\d]/g, ''))
   },
-  
+
   required: (value: any): boolean => {
     return value !== null && value !== undefined && value !== ''
   },
-  
+
   minLength: (value: string, length: number): boolean => {
     return (value && value.length >= length) || value === ''
   },
-  
+
   maxLength: (value: string, length: number): boolean => {
     return !value || value.length <= length
   }
@@ -189,19 +192,19 @@ export const dateHelpers = {
     const checkDate = typeof date === 'string' ? new Date(date) : date
     return checkDate.toDateString() === today.toDateString()
   },
-  
+
   isThisWeek: (date: string | Date): boolean => {
     const today = new Date()
     const checkDate = typeof date === 'string' ? new Date(date) : date
     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
     return checkDate >= weekAgo && checkDate <= today
   },
-  
+
   timeAgo: (date: string | Date): string => {
     const now = new Date()
     const checkDate = typeof date === 'string' ? new Date(date) : date
     const diffInSeconds = Math.floor((now.getTime() - checkDate.getTime()) / 1000)
-    
+
     if (diffInSeconds < 60) return 'Vừa xong'
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`
@@ -217,13 +220,13 @@ export const urlHelpers = {
     const urlParams = new URLSearchParams(window.location.search)
     return urlParams.get(param)
   },
-  
+
   setQueryParam: (param: string, value: string): void => {
     const url = new URL(window.location.href)
     url.searchParams.set(param, value)
     window.history.replaceState({}, '', url.toString())
   },
-  
+
   removeQueryParam: (param: string): void => {
     const url = new URL(window.location.href)
     url.searchParams.delete(param)

@@ -34,15 +34,102 @@ import type {
 
 const API_BASE_URL = 'http://localhost:8000/api'
 
+// Token refresh state
+let isRefreshing = false
+let refreshPromise: Promise<string | null> | null = null
+
 // Utility function to get auth token
 const getAuthToken = (): string | null => {
   return localStorage.getItem('auth_token')
 }
 
-// Utility function to make authenticated requests
+// Utility function to get refresh token
+const getRefreshToken = (): string | null => {
+  return localStorage.getItem('refresh_token')
+}
+
+// Utility function to save tokens
+const saveTokens = (authToken: string, refreshToken?: string): void => {
+  localStorage.setItem('auth_token', authToken)
+  if (refreshToken) {
+    localStorage.setItem('refresh_token', refreshToken)
+  }
+}
+
+// Utility function to clear tokens
+const clearTokens = (): void => {
+  localStorage.removeItem('auth_token')
+  localStorage.removeItem('refresh_token')
+}
+
+// Utility function to refresh token
+const refreshAuthToken = async (): Promise<string | null> => {
+  // If already refreshing, return the existing promise
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise
+  }
+
+  isRefreshing = true
+  refreshPromise = (async () => {
+    try {
+      const refreshToken = getRefreshToken()
+      if (!refreshToken) {
+        throw new Error('No refresh token available')
+      }
+
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${refreshToken}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Token refresh failed')
+      }
+
+      const data = await response.json()
+      const newToken = data.data?.token || data.token
+      const newRefreshToken = data.data?.refresh_token || data.refresh_token
+
+      if (newToken) {
+        saveTokens(newToken, newRefreshToken)
+        return newToken
+      }
+
+      throw new Error('No token received from refresh')
+    } catch (error) {
+      console.error('Token refresh error:', error)
+      clearTokens()
+      
+      // Redirect to login if in browser environment
+      if (typeof window !== 'undefined') {
+        // Dispatch custom event for auth failure
+        window.dispatchEvent(new CustomEvent('auth:expired'))
+        
+        // Optional: Auto redirect to login page
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+      }
+      
+      return null
+    } finally {
+      isRefreshing = false
+      refreshPromise = null
+    }
+  })()
+
+  return refreshPromise
+}
+
+// Utility function to make authenticated requests with auto token refresh
 const makeRequest = async <T>(
   endpoint: string, 
-  options: RequestInit = {}
+  options: RequestInit = {},
+  retryCount = 0
 ): Promise<T> => {
   const url = `${API_BASE_URL}${endpoint}`
   const token = getAuthToken()
@@ -71,6 +158,22 @@ const makeRequest = async <T>(
   try {
     const response = await fetch(url, config)
     
+    // Handle 401 Unauthorized - token might be expired
+    if (response.status === 401 && retryCount === 0) {
+      // Don't retry if it's the auth endpoints to avoid infinite loops
+      const isAuthEndpoint = endpoint.includes('/auth/') || endpoint.includes('/login') || endpoint.includes('/register')
+      
+      if (!isAuthEndpoint) {
+        console.log('Token expired, attempting to refresh...')
+        const newToken = await refreshAuthToken()
+        
+        if (newToken) {
+          // Retry the request with new token
+          return makeRequest<T>(endpoint, options, retryCount + 1)
+        }
+      }
+    }
+    
     if (!response.ok) {
       let errorData: any = {}
       try {
@@ -93,7 +196,12 @@ const makeRequest = async <T>(
     const data = await response.json()
     return data
   } catch (error) {
-    console.error(`API request failed for ${endpoint}:`, error)
+    // If it's our second attempt and still failing, don't retry again
+    if (retryCount > 0) {
+      console.error(`API request failed for ${endpoint} after retry:`, error)
+    } else {
+      console.error(`API request failed for ${endpoint}:`, error)
+    }
     throw error
   }
 }
@@ -423,16 +531,48 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(credentials),
     }),
+  
   register: (data: RegisterData): Promise<AuthResponse> =>
     makeRequest('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  logout: (): Promise<ApiResponse<any>> =>
-    makeRequest('/auth/logout', { method: 'POST' }),
+  
+  logout: async (): Promise<ApiResponse<any>> => {
+    try {
+      const response = await makeRequest<ApiResponse<any>>('/auth/logout', { method: 'POST' })
+      // Clear tokens after successful logout
+      clearTokens()
+      return response
+    } catch (error) {
+      // Clear tokens even if logout fails (network error, etc.)
+      clearTokens()
+      throw error
+    }
+  },
+  
   refresh: (): Promise<AuthResponse> =>
     makeRequest('/auth/refresh', { method: 'POST' }),
+  
   getMe: (): Promise<User> => makeRequest('/auth/me'),
+
+  // Helper methods for token management
+  saveTokens: (authToken: string, refreshToken?: string) => {
+    saveTokens(authToken, refreshToken)
+  },
+
+  clearTokens: () => {
+    clearTokens()
+  },
+
+  hasValidToken: (): boolean => {
+    return !!getAuthToken()
+  },
+
+  // Manual token refresh
+  refreshToken: async (): Promise<string | null> => {
+    return refreshAuthToken()
+  }
 }
 
 // Roles API

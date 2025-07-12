@@ -6,15 +6,15 @@
       <form @submit.prevent="onSubmit">
         <div class="mb-2">
           <label class="form-label">Họ và tên *</label>
-          <input v-model="form.name" class="form-control" :class="{'is-invalid': errors.name || backendErrors.name}" required />
-          <div v-if="errors.name" class="invalid-feedback">{{ errors.name }}</div>
-          <div v-else-if="backendErrors.name" class="invalid-feedback">{{ backendErrors.name }}</div>
+          <input v-model="form.recipient_name" class="form-control" :class="{'is-invalid': errors.recipient_name || backendErrors.recipient_name}" required />
+          <div v-if="errors.recipient_name" class="invalid-feedback">{{ errors.recipient_name }}</div>
+          <div v-else-if="backendErrors.recipient_name" class="invalid-feedback">{{ backendErrors.recipient_name }}</div>
         </div>
         <div class="mb-2">
           <label class="form-label">Số điện thoại *</label>
-          <input v-model="form.phone" class="form-control" :class="{'is-invalid': errors.phone || backendErrors.phone}" required />
-          <div v-if="errors.phone" class="invalid-feedback">{{ errors.phone }}</div>
-          <div v-else-if="backendErrors.phone" class="invalid-feedback">{{ backendErrors.phone }}</div>
+          <input v-model="form.recipient_phone" class="form-control" :class="{'is-invalid': errors.recipient_phone || backendErrors.recipient_phone}" required />
+          <div v-if="errors.recipient_phone" class="invalid-feedback">{{ errors.recipient_phone }}</div>
+          <div v-else-if="backendErrors.recipient_phone" class="invalid-feedback">{{ backendErrors.recipient_phone }}</div>
         </div>
         <div class="mb-2">
           <label class="form-label">Địa chỉ *</label>
@@ -77,8 +77,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'submit', 'cancel'])
 
 const form = reactive({
-  name: '',
-  phone: '',
+  recipient_name: '',
+  recipient_phone: '',
   address: '',
   ward: '',
   district: '',
@@ -87,18 +87,18 @@ const form = reactive({
 })
 
 const errors = reactive({
-  name: '',
-  phone: '',
+  recipient_name: '',
+  recipient_phone: '',
   address: '',
   ward: '',
   district: '',
   province: ''
 })
 
-type AddressField = 'name' | 'phone' | 'address' | 'ward' | 'district' | 'province'
+type AddressField = 'recipient_name' | 'recipient_phone' | 'address' | 'ward' | 'district' | 'province'
 const backendErrors: Record<AddressField, string> = reactive({
-  name: '',
-  phone: '',
+  recipient_name: '',
+  recipient_phone: '',
   address: '',
   ward: '',
   district: '',
@@ -176,32 +176,32 @@ watch(() => props.backendError, (val) => {
 
 function validate() {
   let valid = true
-  errors.name = ''
-  errors.phone = ''
+  errors.recipient_name = ''
+  errors.recipient_phone = ''
   errors.address = ''
   errors.province = ''
   errors.district = ''
   errors.ward = ''
 
-  if (!form.name) {
-    errors.name = 'Họ và tên không được để trống'
+  if (!form.recipient_name) {
+    errors.recipient_name = 'Họ và tên không được để trống'
     valid = false
-  } else if (form.name.length < 2) {
-    errors.name = 'Họ và tên phải có ít nhất 2 ký tự'
+  } else if (form.recipient_name.length < 2) {
+    errors.recipient_name = 'Họ và tên phải có ít nhất 2 ký tự'
     valid = false
-  } else if (form.name.length > 100) {
-    errors.name = 'Họ và tên không được vượt quá 100 ký tự'
+  } else if (form.recipient_name.length > 100) {
+    errors.recipient_name = 'Họ và tên không được vượt quá 100 ký tự'
     valid = false
   }
 
-  if (!form.phone) {
-    errors.phone = 'Số điện thoại không được để trống'
+  if (!form.recipient_phone) {
+    errors.recipient_phone = 'Số điện thoại không được để trống'
     valid = false
-  } else if (!/^[0-9+\-\s()]+$/.test(form.phone)) {
-    errors.phone = 'Số điện thoại không đúng định dạng'
+  } else if (!/^[0-9+\-\s()]+$/.test(form.recipient_phone)) {
+    errors.recipient_phone = 'Số điện thoại không đúng định dạng'
     valid = false
-  } else if (form.phone.length > 15) {
-    errors.phone = 'Số điện thoại không được vượt quá 15 ký tự'
+  } else if (form.recipient_phone.length > 15) {
+    errors.recipient_phone = 'Số điện thoại không được vượt quá 15 ký tự'
     valid = false
   }
 

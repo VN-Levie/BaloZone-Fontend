@@ -26,8 +26,7 @@ Authorization: Bearer {token}
   "data": [
     {
       "id": 1,
-      "user_id": 1,
-      "name": "Địa chỉ nhà riêng",
+      "user_id": 1,    
       "recipient_name": "Nguyễn Văn A",
       "recipient_phone": "0123456789",
       "address": "123 Đường ABC, Phường XYZ",
@@ -41,8 +40,7 @@ Authorization: Bearer {token}
     },
     {
       "id": 2,
-      "user_id": 1,
-      "name": "Địa chỉ công ty",
+      "user_id": 1,     
       "recipient_name": "Nguyễn Văn A",
       "recipient_phone": "0123456789",
       "address": "456 Đường DEF, Phường GHI",
@@ -88,8 +86,7 @@ Authorization: Bearer {token}
   "success": true,
   "data": {
     "id": 1,
-    "user_id": 1,
-    "name": "Địa chỉ nhà riêng",
+    "user_id": 1,    
     "recipient_name": "Nguyễn Văn A",
     "recipient_phone": "0123456789",
     "address": "123 Đường ABC, Phường XYZ",
@@ -137,7 +134,6 @@ Content-Type: application/json
 
 ```json
 {
-  "name": "Địa chỉ nhà riêng",
   "recipient_name": "Nguyễn Văn A",
   "recipient_phone": "0123456789",
   "address": "123 Đường ABC, Phường XYZ",
@@ -156,8 +152,7 @@ Content-Type: application/json
   "success": true,
   "data": {
     "id": 1,
-    "user_id": 1,
-    "name": "Địa chỉ nhà riêng",
+    "user_id": 1,   
     "recipient_name": "Nguyễn Văn A",
     "recipient_phone": "0123456789",
     "address": "123 Đường ABC, Phường XYZ",
@@ -179,8 +174,7 @@ Content-Type: application/json
 {
   "success": false,
   "message": "Dữ liệu không hợp lệ",
-  "errors": {
-    "name": ["Tên địa chỉ là bắt buộc"],
+  "errors": {   
     "recipient_name": ["Tên người nhận là bắt buộc"],
     "recipient_phone": ["Số điện thoại người nhận là bắt buộc"],
     "address": ["Địa chỉ là bắt buộc"],
@@ -193,7 +187,6 @@ Content-Type: application/json
 
 **Validation rules**:
 
-- `name` (string, required): Tên địa chỉ
 - `recipient_name` (string, required): Tên người nhận
 - `recipient_phone` (string, required): Số điện thoại người nhận
 - `address` (string, required): Địa chỉ chi tiết
@@ -236,7 +229,6 @@ Content-Type: application/json
   "data": {
     "id": 1,
     "user_id": 1,
-    "name": "Địa chỉ nhà riêng (đã cập nhật)",
     "recipient_name": "Nguyễn Văn A",
     "recipient_phone": "0123456789",
     "address": "123 Đường ABC, Phường XYZ",
