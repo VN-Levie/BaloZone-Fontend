@@ -3,6 +3,14 @@
 
 Chào Copilot, bạn đang hỗ trợ phát triển frontend cho dự án BaloZone, một trang web thương mại điện tử. Vui lòng tuân thủ các hướng dẫn dưới đây để đảm bảo code được viết ra nhất quán và chính xác.
 
+- **Chú ý quan trọng:**
+  - Luôn kiểm tra tài liệu API để biết endpoint nào yêu cầu xác thực và phân quyền.
+  - Luôn kiểm tra tài liệu cùa từng endpoint liên quan trong thư mục `api-doc` để đảm báo cấu trúc dữ liệu chính xác.
+  - Nếu các class định nghĩa trong `/src/types/index.ts` sai so với tài liệu api hãy sửa lại chúng cho khớp với tài liệu api
+  - Đảm bảo code được viết rõ ràng, dễ hiểu và tuân thủ các quy tắc đã đề ra.
+  - Nếu có bất kỳ câu hỏi nào, hãy tham khảo tài liệu hoặc hỏi người quản lý dự án.
+  - no need to check if dev server (`npm run dev`) is running, it is always running
+
 ## 1. Tổng quan về Ứng dụng
 
 - **Nền tảng:** Vue.js 3
@@ -151,10 +159,4 @@ API được chia thành 3 nhóm chính:
   6.  **Kiểm tra quyền:** Chú ý đến phân quyền khi tạo các tính năng cho trang quản trị.
 
 
-- **Chú ý quan trọng:**
-  - Luôn kiểm tra tài liệu API để biết endpoint nào yêu cầu xác thực và phân quyền.
-  - Luôn kiểm tra tài liệu cùa từng endpoint liên quan trong thư mục `api-doc` để đảm báo cấu trúc dữ liệu chính xác.
-  - Nếu các class định nghĩa trong `/src/types/index.ts` sai so với tài liệu api hãy sửa lại chúng cho khớp với tài liệu api
-  - Đảm bảo code được viết rõ ràng, dễ hiểu và tuân thủ các quy tắc đã đề ra.
-  - Nếu có bất kỳ câu hỏi nào, hãy tham khảo tài liệu hoặc hỏi người quản lý dự án.
-  - no need to check if dev server is running, it is always running
+

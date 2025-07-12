@@ -403,6 +403,7 @@ export interface Comment {
   created_at: string
   updated_at: string
   deleted_at?: string | null
+  has_purchased?: boolean // Badge "Đã mua hàng"
   user: {
     id: number
     name: string

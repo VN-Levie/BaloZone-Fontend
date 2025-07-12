@@ -42,6 +42,7 @@ curl -X GET "http://localhost:8000/api/comments" -H "Accept: application/json"
       "created_at": "2025-07-12T17:24:39.000000Z",
       "updated_at": "2025-07-12T17:24:39.000000Z",
       "deleted_at": null,
+      "has_purchased": true,
       "user": {
         "id": 1,
         "name": "Admin BaloZone"
@@ -52,21 +53,22 @@ curl -X GET "http://localhost:8000/api/comments" -H "Accept: application/json"
       }
     },
     {
-      "id": 88,
-      "product_id": 175,
-      "user_id": 13,
-      "content": "Chất liệu bền, thiết kế đẹp mắt.",
-      "rating": 3,
-      "created_at": "2025-07-12T17:24:39.000000Z",
-      "updated_at": "2025-07-12T17:24:39.000000Z",
+      "id": 101,
+      "product_id": 1,
+      "user_id": 2,
+      "content": "Bình luận từ người chưa mua hàng",
+      "rating": -1,
+      "created_at": "2025-07-12T22:15:44.000000Z",
+      "updated_at": "2025-07-12T22:15:44.000000Z",
       "deleted_at": null,
+      "has_purchased": false,
       "user": {
-        "id": 13,
-        "name": "Chesley Kuhn"
+        "id": 2,
+        "name": "Nguyễn Văn A"
       },
       "product": {
-        "id": 175,
-        "name": "Balo Gaming RGB in"
+        "id": 1,
+        "name": "Balo JanSport SuperBreak Classic"
       }
     }
   ],
@@ -132,6 +134,7 @@ curl -X GET "http://localhost:8000/api/comments/100" -H "Accept: application/jso
     "created_at": "2025-07-12T17:24:39.000000Z",
     "updated_at": "2025-07-12T17:24:39.000000Z",
     "deleted_at": null,
+    "has_purchased": true,
     "user": {
       "id": 1,
       "name": "Admin BaloZone"
@@ -492,14 +495,20 @@ curl -X GET "http://localhost:8000/api/comments/product/69/legacy" -H "Accept: a
 ## Lưu ý quan trọng
 
 ### Business Rules
-1. **Chỉ được bình luận sau khi mua**: User chỉ có thể bình luận về sản phẩm đã mua
-2. **Quyền sở hữu**: Chỉ người tạo bình luận mới có thể sửa/xóa
-3. **Soft delete**: Bình luận bị xóa sẽ được soft delete (không xóa vĩnh viễn)
-4. **Rating scale**: Đánh giá từ 1-5 sao (1 = rất tệ, 5 = rất tốt)
+1. **Bình luận tự do**: User có thể bình luận về bất kỳ sản phẩm nào mà không cần mua trước
+2. **Rating có điều kiện**: 
+   - Người đã mua hàng: có thể đánh giá 1-5 sao, rating này sẽ tính vào điểm trung bình của sản phẩm
+   - Người chưa mua hàng: rating tự động đặt là -1 và không tính vào điểm trung bình của sản phẩm
+3. **Badge "Đã mua hàng"**: Hiển thị trường `has_purchased` để phân biệt người đã mua và chưa mua
+4. **Quyền sở hữu**: Chỉ người tạo bình luận mới có thể sửa/xóa
+5. **Soft delete**: Bình luận bị xóa sẽ được soft delete (không xóa vĩnh viễn)
+6. **Một bình luận mỗi sản phẩm**: Mỗi user chỉ được bình luận một lần cho mỗi sản phẩm
 
 ### Data Structure
 - Bình luận hiển thị thông tin user (name, email trong một số endpoint)
 - Bình luận hiển thị thông tin product (name, slug, image)
+- **Trường `has_purchased`**: `true` nếu đã mua, `false` nếu chưa mua
+- **Rating**: Số từ 1-5 cho người đã mua, -1 cho người chưa mua
 - Support pagination cho tất cả list endpoints
 - Có timestamp cho created_at, updated_at, deleted_at
 
@@ -576,10 +585,16 @@ Content-Type: application/json
 ```
 
 **Validation rules**:
-
 - `product_id` (integer, required): ID sản phẩm
-- `content` (string, required): Nội dung bình luận
+- `content` (string, required): Nội dung bình luận (10-1000 ký tự)
 - `rating` (integer, required): Đánh giá từ 1-5 sao
+  - **Lưu ý**: Hệ thống sẽ tự động đặt rating = -1 cho người chưa mua hàng
+  - **Rating = -1**: Không tính vào điểm trung bình của sản phẩm
+  - **Rating 1-5**: Chỉ áp dụng cho người đã mua hàng và tính vào điểm trung bình
+
+**Response format**:
+- Trường `has_purchased`: `true` nếu đã mua hàng, `false` nếu chưa mua
+- Trường `rating`: Số từ 1-5 cho người đã mua, -1 cho người chưa mua
 
 ## Thêm bình luận cho sản phẩm
 

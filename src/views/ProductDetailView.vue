@@ -13,7 +13,7 @@
     </div>
 
     <!-- Product content -->
-    <div v-else class="container">
+    <div v-else class="container py-4">
       <!-- Navigation breadcrumb -->
       <nav aria-label="breadcrumb" class="py-3">
         <ol class="breadcrumb">
@@ -30,137 +30,159 @@
       </nav>
 
       <!-- Product main content -->
-      <div class="row">
-        <!-- Product images -->
-        <div class="col-lg-6">
-          <div class="product-images">
-            <ImageZoom 
-              :images="productImages" 
-              :alt="product.name"
-              :initial-index="0"
-            />
+      <div class="product-detail-card">
+        <div class="row g-4">
+          <!-- Product images -->
+          <div class="col-lg-6">
+            <div class="product-images-section">
+              <ImageZoom 
+                :images="productImages" 
+                :alt="product.name"
+                :initial-index="0"
+              />
+            </div>
           </div>
-        </div>
 
-        <!-- Product info -->
-        <div class="col-lg-6">
-          <div class="product-info">
-            <h1 class="product-title h2 mb-3">{{ product.name }}</h1>
+          <!-- Product info -->
+          <div class="col-lg-6">
+            <div class="product-info-section">
+              <!-- Product title -->
+              <div class="product-header mb-4">
+                <h1 class="product-title">{{ product.name }}</h1>
+                
+                <!-- Brand -->
+                <div v-if="product.brand" class="product-brand mb-3">
+                  <span class="brand-badge">{{ product.brand.name }}</span>
+                </div>
+                
+                <!-- Rating -->
+                <div class="product-rating-display mb-3">
+                  <template v-if="totalComments > 0">
+                    <div class="rating-content">
+                      <div class="rating-stars">
+                        <i 
+                          v-for="i in 5" 
+                          :key="i"
+                          class="bi bi-star-fill"
+                          :class="{ 'filled': i <= Math.floor(averageRating) }"
+                        ></i>
+                      </div>
+                      <span class="rating-score">{{ averageRating.toFixed(1) }}</span>
+                      <span class="rating-count">({{ totalComments }} đánh giá)</span>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="no-rating">
+                      <span class="text-muted">Chưa có đánh giá</span>
+                    </div>
+                  </template>
+                </div>
+              </div>
 
-            <!-- Rating -->
-            <div class="product-rating mb-3">
-              <div class="stars d-flex align-items-center">
-                <template v-if="totalComments > 0">
-                  <div class="rating-stars me-2">
-                    <i 
-                      v-for="i in 5" 
-                      :key="i"
-                      class="bi bi-star-fill"
-                      :class="{ 'text-warning': i <= Math.floor(averageRating), 'text-muted': i > Math.floor(averageRating) }"
-                    ></i>
+              <!-- Price -->
+              <div class="product-pricing mb-4">
+                <!-- Check for discount_price from new backend structure -->
+                <template v-if="product.discount_price && Number(product.discount_price) < Number(product.price)">
+                  <div class="price-container">
+                    <div class="current-price">
+                      {{ formatPrice(Number(product.discount_price)) }}
+                    </div>
+                    <div class="original-price">
+                      {{ formatPrice(Number(product.price)) }}
+                    </div>
+                    <div class="discount-badge">
+                      -{{ Math.round(((Number(product.price) - Number(product.discount_price)) / Number(product.price)) * 100) }}%
+                    </div>
                   </div>
-                  <span class="rating-score me-2 fw-semibold">{{ averageRating.toFixed(1) }}</span>
-                  <span class="text-muted">({{ totalComments }} đánh giá)</span>
+                  <div class="save-amount">
+                    Tiết kiệm {{ formatPrice(Number(product.price) - Number(product.discount_price)) }}
+                  </div>
                 </template>
+                <!-- Regular pricing -->
                 <template v-else>
-                  <span class="text-muted">Chưa có đánh giá</span>
+                  <div class="price-container">
+                    <div class="current-price">
+                      {{ formatPrice(Number(product.price)) }}
+                    </div>
+                  </div>
                 </template>
               </div>
-            </div>
 
-            <!-- Price -->
-            <div class="product-price mb-4">
-              <!-- Check for discount_price from new backend structure -->
-              <template v-if="product.discount_price && Number(product.discount_price) < Number(product.price)">
-                <div class="current-price h3 text-danger fw-bold mb-1">
-                  {{ formatPrice(Number(product.discount_price)) }}
+              <!-- Stock status -->
+              <div class="stock-status mb-4">
+                <div class="stock-info" :class="{ 'in-stock': product.stock > 0, 'out-of-stock': product.stock === 0 }">
+                  <i class="bi bi-box-seam"></i>
+                  <span>{{ product.stock > 0 ? `Còn ${product.stock} sản phẩm` : 'Hết hàng' }}</span>
                 </div>
-                <div class="original-price text-muted text-decoration-line-through">
-                  {{ formatPrice(Number(product.price)) }}
-                </div>
-                <div class="save-amount text-success">
-                  Tiết kiệm {{ formatPrice(Number(product.price) - Number(product.discount_price)) }}
-                </div>
-              </template>
-              <!-- Regular pricing -->
-              <template v-else>
-                <div class="current-price h3 text-danger fw-bold mb-1">
-                  {{ formatPrice(Number(product.price)) }}
-                </div>
-              </template>
-            </div>
+              </div>
 
-            <!-- Product options -->
-            <div class="product-options mb-4">
-              <!-- Quantity -->
-              <div class="option-group mb-3">
-                <label class="option-label fw-semibold mb-2">Số lượng:</label>
-                <div class="quantity-controls d-flex align-items-center">
-                  <button class="btn btn-outline-secondary btn-sm" @click="decreaseQuantity" :disabled="quantity <= 1">
-                    <i class="bi bi-dash"></i>
+              <!-- Product options -->
+              <div class="product-options mb-4">
+                <!-- Quantity -->
+                <div class="option-group">
+                  <label class="option-label">Số lượng:</label>
+                  <div class="quantity-selector">
+                    <button class="quantity-btn" @click="decreaseQuantity" :disabled="quantity <= 1">
+                      <i class="bi bi-dash"></i>
+                    </button>
+                    <input type="number" v-model="quantity" class="quantity-input" min="1" :max="product.stock" />
+                    <button class="quantity-btn" @click="increaseQuantity" :disabled="quantity >= product.stock">
+                      <i class="bi bi-plus"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="product-actions mb-4">
+                <button 
+                  class="btn-primary-action" 
+                  @click="addToCart" 
+                  :disabled="product.stock === 0 || isAddingToCart"
+                >
+                  <span v-if="isAddingToCart" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  <i v-else class="bi bi-cart-plus me-2"></i>
+                  {{ isAddingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}
+                </button>
+                
+                <div class="secondary-actions">
+                  <button 
+                    class="btn-secondary-action wishlist-btn" 
+                    @click="toggleWishlistHandler"
+                    :class="{ 'active': isInWishlistComputed }"
+                  >
+                    <i class="bi me-2" :class="isInWishlistComputed ? 'bi-heart-fill' : 'bi-heart'"></i>
+                    {{ isInWishlistComputed ? 'Đã yêu thích' : 'Yêu thích' }}
                   </button>
-                  <input type="number" v-model="quantity" class="form-control quantity-input mx-2 text-center" min="1" :max="product.stock" />
-                  <button class="btn btn-outline-secondary btn-sm" @click="increaseQuantity" :disabled="quantity >= product.stock">
-                    <i class="bi bi-plus"></i>
+                  
+                  <button 
+                    class="btn-secondary-action share-btn"
+                    @click="openShareModal"
+                  >
+                    <i class="bi bi-share me-2"></i>
+                    Chia sẻ
                   </button>
                 </div>
               </div>
-            </div>
 
-            <!-- Stock status -->
-            <div class="stock-status mb-3">
-              <span class="badge" :class="product.stock > 0 ? 'bg-success' : 'bg-danger'">
-                {{ product.stock > 0 ? `Còn ${product.stock} sản phẩm` : 'Hết hàng' }}
-              </span>
-            </div>
-
-            <!-- Action buttons -->
-            <div class="product-actions">
-              <button 
-                class="btn btn-primary btn-lg me-3 mb-2" 
-                @click="addToCart" 
-                :disabled="product.stock === 0 || isAddingToCart"
-              >
-                <span v-if="isAddingToCart" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                <i v-else class="bi bi-cart-plus me-2"></i>
-                {{ isAddingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}
-              </button>
-              
-              <button 
-                class="btn btn-lg me-2 mb-2 wishlist-btn" 
-                @click="toggleWishlistHandler"
-                :class="isInWishlistComputed ? 'btn-danger' : 'btn-outline-danger'"
-              >
-                <i class="bi me-2" :class="isInWishlistComputed ? 'bi-heart-fill' : 'bi-heart'"></i>
-                {{ isInWishlistComputed ? 'Đã yêu thích' : 'Yêu thích' }}
-              </button>
-              
-              <button 
-                class="btn btn-outline-success btn-lg mb-2"
-                @click="openShareModal"
-              >
-                <i class="bi bi-share me-2"></i>
-                Chia sẻ
-              </button>
-            </div>
-
-            <!-- Quick info -->
-            <div class="quick-info mt-4">
-              <div class="info-item d-flex align-items-center mb-2">
-                <i class="bi bi-truck text-primary me-2"></i>
-                <span>Miễn phí vận chuyển đơn hàng từ 500.000đ</span>
-              </div>
-              <div class="info-item d-flex align-items-center mb-2">
-                <i class="bi bi-arrow-clockwise text-primary me-2"></i>
-                <span>Đổi trả miễn phí trong 30 ngày</span>
-              </div>
-              <div class="info-item d-flex align-items-center mb-2">
-                <i class="bi bi-shield-check text-primary me-2"></i>
-                <span>Bảo hành chính hãng 12 tháng</span>
-              </div>
-              <div class="info-item d-flex align-items-center mb-2">
-                <i class="bi bi-award text-primary me-2"></i>
-                <span>Cam kết 100% hàng chính hãng</span>
+              <!-- Product features -->
+              <div class="product-features">
+                <div class="feature-item">
+                  <i class="bi bi-truck"></i>
+                  <span>Miễn phí vận chuyển đơn hàng từ 500.000đ</span>
+                </div>
+                <div class="feature-item">
+                  <i class="bi bi-arrow-clockwise"></i>
+                  <span>Đổi trả miễn phí trong 30 ngày</span>
+                </div>
+                <div class="feature-item">
+                  <i class="bi bi-shield-check"></i>
+                  <span>Bảo hành chính hãng 12 tháng</span>
+                </div>
+                <div class="feature-item">
+                  <i class="bi bi-award"></i>
+                  <span>Cam kết 100% hàng chính hãng</span>
+                </div>
               </div>
             </div>
           </div>
@@ -168,51 +190,77 @@
       </div>
 
       <!-- Product tabs -->
-      <div class="product-tabs mt-5">
-        <ul class="nav nav-tabs" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">
-              Mô tả sản phẩm
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
-              Đánh giá ({{ totalComments }})
-            </button>
-          </li>
-        </ul>
+      <div class="product-tabs-section mt-5">
+        <div class="tabs-container">
+          <ul class="nav nav-tabs modern-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">
+                <i class="bi bi-file-text me-2"></i>
+                Mô tả sản phẩm
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
+                <i class="bi bi-star me-2"></i>
+                Đánh giá ({{ totalComments }})
+              </button>
+            </li>
+          </ul>
 
-        <div class="tab-content mt-3">
-          <!-- Description tab -->
-          <div class="tab-pane fade show active" id="description" role="tabpanel">
-            <div class="description-content" v-html="product.description"></div>
-          </div>
+          <div class="tab-content modern-tab-content">
+            <!-- Description tab -->
+            <div class="tab-pane fade show active" id="description" role="tabpanel">
+              <div class="description-content">
+                <div class="content-card">
+                  <div v-html="product.description"></div>
+                </div>
+              </div>
+            </div>
 
-          <!-- Reviews tab -->
-          <div class="tab-pane fade" id="reviews" role="tabpanel">
-            <CommentsSection :product-id="product.id" />
+            <!-- Reviews tab -->
+            <div class="tab-pane fade" id="reviews" role="tabpanel">
+              <div class="reviews-content">
+                <CommentsSection :product-id="product.id" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Related products -->
-      <div class="related-products mt-5">
-        <h3 class="mb-4">Sản phẩm liên quan</h3>
-        <div class="row">
-          <div v-for="relatedProd in relatedProducts" :key="relatedProd.id" class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="card product-card h-100">
+      <div class="related-products-section mt-5">
+        <div class="section-header mb-4">
+          <h3 class="section-title">
+            <i class="bi bi-grid me-2"></i>
+            Sản phẩm liên quan
+          </h3>
+          <div class="section-subtitle">Khám phá thêm các sản phẩm tương tự</div>
+        </div>
+        
+        <div class="related-products-grid">
+          <div v-for="relatedProd in relatedProducts" :key="relatedProd.id" class="related-product-item">
+            <div class="product-card modern-card">
               <router-link :to="relatedProd.slug ? `/product/slug/${relatedProd.slug}` : `/product/${relatedProd.id}`" class="text-decoration-none">
-                <img :src="getImageUrl(relatedProd.image)" :alt="relatedProd.name" class="card-img-top" />
-                <div class="card-body">
+                <div class="card-image-container">
+                  <img :src="getImageUrl(relatedProd.image)" :alt="relatedProd.name" class="card-image" />
+                  <!-- Discount badge -->
+                  <div 
+                    v-if="relatedProd.discount_price && Number(relatedProd.discount_price) < Number(relatedProd.price)" 
+                    class="card-discount-badge"
+                  >
+                    -{{ Math.round(((Number(relatedProd.price) - Number(relatedProd.discount_price)) / Number(relatedProd.price)) * 100) }}%
+                  </div>
+                </div>
+                <div class="card-content">
                   <h6 class="card-title">{{ relatedProd.name }}</h6>
-                  <div class="price">
+                  <div class="card-pricing">
                     <!-- Handle discount pricing -->
                     <template v-if="relatedProd.discount_price && Number(relatedProd.discount_price) < Number(relatedProd.price)">
-                      <span class="current-price text-danger fw-bold">{{ formatPrice(Number(relatedProd.discount_price)) }}</span>
-                      <span class="original-price text-muted text-decoration-line-through ms-2">{{ formatPrice(Number(relatedProd.price)) }}</span>
+                      <span class="current-price">{{ formatPrice(Number(relatedProd.discount_price)) }}</span>
+                      <span class="original-price">{{ formatPrice(Number(relatedProd.price)) }}</span>
                     </template>
                     <template v-else>
-                      <span class="current-price text-danger fw-bold">{{ formatPrice(Number(relatedProd.price)) }}</span>
+                      <span class="current-price">{{ formatPrice(Number(relatedProd.price)) }}</span>
                     </template>
                   </div>
                 </div>
@@ -444,81 +492,535 @@ watch(
 </script>
 
 <style scoped>
-/* Override conflicting CSS from main.css for product detail page */
-.product-actions {
-  position: static !important;
-  opacity: 1 !important;
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: wrap;
-  gap: 0 !important;
-  top: auto !important;
-  right: auto !important;
-  z-index: auto !important;
-  align-items: center;
+/* Product Detail Modern Styles */
+.product-detail {
+  background: #f8f9fa;
+  min-height: 100vh;
 }
 
-.product-actions .btn {
-  width: auto !important;
+.product-detail-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.product-images-section {
+  position: relative;
+}
+
+.product-info-section {
+  padding-left: 1rem;
+}
+
+/* Product Header */
+.product-header {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 1.5rem;
+}
+
+.product-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
   margin-bottom: 0.5rem;
-  margin-right: 0.5rem;
-  font-weight: 500;
+  line-height: 1.3;
+}
+
+.brand-badge {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Rating Display */
+.product-rating-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rating-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.rating-stars i {
+  color: #e4e5e9;
+  font-size: 1.1rem;
+  transition: color 0.3s ease;
+}
+
+.rating-stars i.filled {
+  color: #ffd700;
+}
+
+.rating-score {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffd700;
+}
+
+.rating-count {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Pricing */
+.product-pricing {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #ff6b35;
+}
+
+.price-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.current-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ff6b35;
+}
+
+.original-price {
+  font-size: 1.2rem;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.discount-badge {
+  background: #dc3545;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.save-amount {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Stock Status */
+.stock-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
   border-radius: 8px;
-  padding: 12px 24px;
+  font-weight: 600;
+}
+
+.stock-info.in-stock {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.stock-info.out-of-stock {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Product Options */
+.option-group {
+  margin-bottom: 1.5rem;
+}
+
+.option-label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.quantity-btn {
+  background: #f8f9fa;
+  border: none;
+  padding: 0.75rem 1rem;
+  color: #333;
+  font-weight: 600;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
-/* Wishlist button styling */
-.wishlist-btn {
-  min-width: 140px;
-}
-
-.wishlist-btn.btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
+.quantity-btn:hover:not(:disabled) {
+  background: #ff6b35;
   color: white;
 }
 
-.wishlist-btn.btn-danger:hover {
-  background-color: #c82333;
-  border-color: #bd2130;
-  transform: translateY(-1px);
+.quantity-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.wishlist-btn.btn-outline-danger {
-  color: #dc3545;
-  border-color: #dc3545;
+.quantity-input {
+  border: none;
+  padding: 0.75rem;
+  text-align: center;
+  width: 80px;
+  font-weight: 600;
+  background: white;
 }
 
-.wishlist-btn.btn-outline-danger:hover {
-  background-color: #dc3545;
-  border-color: #dc3545;
+.quantity-input:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px #ff6b35;
+}
+
+/* Action Buttons */
+.product-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-primary-action {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary-action:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+}
+
+.btn-primary-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.secondary-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-secondary-action {
+  flex: 1;
+  background: white;
+  border: 2px solid #e9ecef;
+  color: #666;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary-action:hover {
+  border-color: #ff6b35;
+  color: #ff6b35;
   transform: translateY(-1px);
 }
 
-/* For mobile, keep the sticky behavior but override other conflicting styles */
+.wishlist-btn.active {
+  background: #ff6b35;
+  border-color: #ff6b35;
+  color: white;
+}
+
+/* Product Features */
+.product-features {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.feature-item:last-child {
+  margin-bottom: 0;
+}
+
+.feature-item i {
+  color: #ff6b35;
+  font-size: 1.2rem;
+  width: 20px;
+  text-align: center;
+}
+
+/* Tabs Section */
+.product-tabs-section {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.tabs-container {
+  width: 100%;
+}
+
+.modern-tabs {
+  background: #f8f9fa;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.modern-tabs .nav-item {
+  flex: 1;
+}
+
+.modern-tabs .nav-link {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-weight: 600;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  border-radius: 0;
+}
+
+.modern-tabs .nav-link:hover,
+.modern-tabs .nav-link.active {
+  background: #ff6b35;
+  color: white;
+}
+
+.modern-tab-content {
+  padding: 2rem;
+}
+
+.content-card {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 12px;
+  border-left: 4px solid #ff6b35;
+}
+
+/* Related Products */
+.related-products-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.section-title i {
+  color: #ff6b35;
+}
+
+.section-subtitle {
+  color: #666;
+  font-size: 1rem;
+}
+
+.related-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.related-product-item {
+  height: 100%;
+}
+
+.modern-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  height: 100%;
+  border: none;
+}
+
+.modern-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.card-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.modern-card:hover .card-image {
+  transform: scale(1.05);
+}
+
+.card-discount-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #dc3545;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.card-content {
+  padding: 1.25rem;
+}
+
+.card-title {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-pricing .current-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ff6b35;
+}
+
+.card-pricing .original-price {
+  font-size: 0.9rem;
+  color: #999;
+  text-decoration: line-through;
+  margin-left: 0.5rem;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .product-actions {
-    position: sticky !important;
-    bottom: 0 !important;
-    background: white !important;
-    padding: 15px !important;
-    border-top: 1px solid #dee2e6 !important;
-    margin: 0 -15px !important;
-    flex-direction: column !important;
-    gap: 0 !important;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-  }
-
-  .product-actions .btn {
-    width: 100% !important;
-    margin-right: 0 !important;
-    margin-bottom: 10px !important;
+  .product-detail-card {
+    padding: 1rem;
+    border-radius: 8px;
   }
   
-  .wishlist-btn {
-    min-width: auto;
+  .product-info-section {
+    padding-left: 0;
+    margin-top: 1.5rem;
   }
+  
+  .product-title {
+    font-size: 1.5rem;
+  }
+  
+  .current-price {
+    font-size: 1.5rem;
+  }
+  
+  .secondary-actions {
+    flex-direction: column;
+  }
+  
+  .related-products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .modern-tabs .nav-link {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .modern-tab-content {
+    padding: 1.5rem;
+  }
+  
+  .content-card {
+    padding: 1.5rem;
+  }
+  
+  /* Mobile sticky actions */
+  .product-actions {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 1rem;
+    border-top: 1px solid #e9ecef;
+    margin: 0 -1rem -1rem -1rem;
+    border-radius: 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.spinner-border-sm {
+  animation: pulse 1.5s ease-in-out infinite;
 }
 </style>

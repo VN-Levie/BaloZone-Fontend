@@ -17,6 +17,7 @@ const category = ref<Category | null>(null)
 const loading = ref(false)
 const categoryLoading = ref(false)
 const productsLoading = ref(false)
+const categoryError = ref<string | null>(null)
 
 // SEO and Meta tags
 const updateMetaTags = () => {
@@ -34,32 +35,38 @@ const updateMetaTags = () => {
   }
 }
 
-const fetchCategoryAndProducts = async (slug: string, page: number = 1, perPage: number = 12) => {
-  loading.value = true
-
+// Separate function to fetch category data by slug
+const fetchCategory = async (slug: string) => {
+  categoryLoading.value = true
+  categoryError.value = null
+  
   try {
-    // First, get category info
     console.log(`Fetching category info for slug: ${slug}`)
     const categoryResponse = await categoriesApi.getCategoryBySlug(slug)
+    console.log('Category API Response:', categoryResponse);
     
-    if (categoryResponse.category) {
-      category.value = categoryResponse.category
+    if (categoryResponse.data) {
+      category.value = categoryResponse.data
       console.log('Category set successfully:', category.value)
     } else {
       console.warn('No category data received from API')
-      category.value = {
-        id: 0,
-        name: getCategoryName(slug),
-        slug: slug,
-        description: `Khám phá bộ sưu tập ${getCategoryName(slug).toLowerCase()} chính hãng với giá tốt nhất`,
-        image: '',
-        products_count: 0,
-        created_at: '',
-        updated_at: ''
-      }
+      categoryError.value = 'Danh mục không tồn tại'
+      category.value = null
     }
-    
-    // Then fetch products using the new unified products API with category filtering
+  } catch (error) {
+    console.error('Failed to load category:', error)
+    categoryError.value = 'Danh mục không tồn tại hoặc đã bị xóa'
+    category.value = null
+  } finally {
+    categoryLoading.value = false
+  }
+}
+
+// Separate function to fetch products with filters
+const fetchProducts = async (page: number = 1, perPage: number = 12) => {
+  productsLoading.value = true
+  
+  try {
     console.log(`Fetching products for category: ${category.value?.id}, page: ${page}, per_page: ${perPage}`)
     
     const filters: any = {
@@ -69,9 +76,12 @@ const fetchCategoryAndProducts = async (slug: string, page: number = 1, perPage:
       sort_order: getSortOrder(selectedSort.value)
     }
     
-    // Add category filter if we have valid category ID
+    // Add category filter - CRITICAL: Always add category_id when we have it
     if (category.value && category.value.id > 0) {
       filters.category_id = category.value.id
+      console.log(`Adding category_id filter: ${filters.category_id}`)
+    } else {
+      console.warn('No valid category ID found, will fetch all products without category filter')
     }
     
     // Apply additional filters
@@ -90,23 +100,40 @@ const fetchCategoryAndProducts = async (slug: string, page: number = 1, perPage:
     
     const productsResponse = await productsApi.getProducts(filters)
     console.log('Products API Response:', productsResponse)
+    console.log('Filters sent to API:', filters)
+    
+    // Build debug URL to see exactly what's being called
+    const debugParams = new URLSearchParams()
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        debugParams.append(key, String(value))
+      }
+    })
+    console.log('API URL would be:', `http://localhost:8000/api/products?${debugParams.toString()}`)
     
     if (productsResponse.data) {
-      products.value = productsResponse.data
+      console.log('Products pagination data received:', productsResponse.data);
       
-      // Update pagination info from products response
-      currentPage.value = productsResponse.current_page || 1
-      totalPages.value = productsResponse.last_page || 1
-      totalProducts.value = productsResponse.total || 0
-      itemsPerPage.value = productsResponse.per_page || perPage
+      // Extract products array from pagination data
+      const productsArray = productsResponse.data.data || []
+      console.log('Products array extracted:', productsArray);
+      
+      // Ensure products data is an array and filter out any null/undefined values
+      products.value = Array.isArray(productsArray) ? productsArray.filter(product => product && product.id) : []
+      
+      // Update pagination info from products response (PaginatedResponse structure)
+      currentPage.value = productsResponse.data.current_page || 1
+      totalPages.value = productsResponse.data.last_page || 1
+      totalProducts.value = productsResponse.data.total || 0
+      itemsPerPage.value = productsResponse.data.per_page || perPage
       
       // Update category products count
       if (category.value) {
-        category.value.products_count = productsResponse.total || 0
+        category.value.products_count = productsResponse.data.total || 0
       }
       
       console.log('Products and pagination set successfully:', {
-        productsCount: productsResponse.data.length,
+        productsCount: products.value.length,
         currentPage: currentPage.value,
         totalPages: totalPages.value,
         totalProducts: totalProducts.value,
@@ -121,24 +148,45 @@ const fetchCategoryAndProducts = async (slug: string, page: number = 1, perPage:
     }
     
   } catch (error) {
-    console.error('Failed to load category and products:', error)
-    // Fallback data
-    category.value = {
-      id: 0,
-      name: getCategoryName(slug),
-      slug: slug,
-      description: `Khám phá bộ sưu tập ${getCategoryName(slug).toLowerCase()} chính hãng với giá tốt nhất`,
-      image: '',
-      products_count: 0,
-      created_at: '',
-      updated_at: ''
-    }
+    console.error('Failed to load products:', error)
     products.value = []
     currentPage.value = 1
     totalPages.value = 1
     totalProducts.value = 0
   } finally {
+    productsLoading.value = false
+  }
+}
+
+// Combined function to load both category and products
+const loadCategoryPage = async (slug: string, page: number = 1, perPage: number = 12) => {
+  loading.value = true
+  
+  try {
+    // Step 1: Fetch category first
+    await fetchCategory(slug)
+    
+    // Step 2: Only fetch products if category exists
+    if (category.value && !categoryError.value) {
+      await fetchProducts(page, perPage)
+    }
+    
+  } catch (error) {
+    console.error('Failed to load category page:', error)
+  } finally {
     loading.value = false
+  }
+}
+
+// Convenience function to refresh only products (useful for filtering/sorting)
+const refreshProducts = async (page: number = currentPage.value, perPage: number = itemsPerPage.value) => {
+  await fetchProducts(page, perPage)
+}
+
+// Convenience function to reload current page with new filters
+const applyFiltersAndRefresh = async () => {
+  if (category.value) {
+    await fetchProducts(1, itemsPerPage.value) // Reset to page 1 when applying filters
   }
 }
 
@@ -165,15 +213,17 @@ const getSortOrder = (sort: string): 'asc' | 'desc' => {
 const fetchBrands = async () => {
   try {
     const response = await brandsApi.getActiveBrands()
-    allBrands.value = response.data
+    // Ensure response.data is an array and filter out any null/undefined values
+    allBrands.value = Array.isArray(response.data) ? response.data.filter(brand => brand && brand.id) : []
   } catch (error) {
     console.error('Failed to load brands:', error)
+    allBrands.value = []
   }
 }
 
 onMounted(() => {
   if (categorySlug.value) {
-    fetchCategoryAndProducts(categorySlug.value, 1, itemsPerPage.value)
+    loadCategoryPage(categorySlug.value, 1, itemsPerPage.value)
   }
   fetchBrands()
 
@@ -188,7 +238,7 @@ onMounted(() => {
 
 watch(categorySlug, (newSlug) => {
   if (newSlug) {
-    fetchCategoryAndProducts(newSlug, 1, itemsPerPage.value)
+    loadCategoryPage(newSlug, 1, itemsPerPage.value)
   }
 })
 
@@ -211,8 +261,8 @@ const totalPages = ref(1)
 const totalProducts = ref(0)
 
 const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value && categorySlug.value) {
-    fetchCategoryAndProducts(categorySlug.value, page, itemsPerPage.value)
+  if (page >= 1 && page <= totalPages.value) {
+    refreshProducts(page, itemsPerPage.value)
     // Smooth scroll to top of products section
     nextTick(() => {
       const productsSection = document.querySelector('.products-section')
@@ -291,8 +341,8 @@ watch([selectedSort, selectedPriceRange, selectedBrand], () => {
 
 // Reset pagination when items per page changes
 watch(itemsPerPage, (newPerPage) => {
-  if (categorySlug.value) {
-    fetchCategoryAndProducts(categorySlug.value, 1, newPerPage)
+  if (category.value) {
+    refreshProducts(1, newPerPage) // Reset to page 1 with new items per page
   }
 })
 
@@ -303,20 +353,20 @@ watch(categorySlug, (newSlug) => {
     selectedSort.value = 'popular'
     selectedPriceRange.value = 'all'
     selectedBrand.value = 'all'
-    fetchCategoryAndProducts(newSlug, 1, itemsPerPage.value)
+    loadCategoryPage(newSlug, 1, itemsPerPage.value)
   }
 })
 
 
 // For display - no additional client-side filtering needed
 const displayedProducts = computed(() => {
-  return categoryProducts.value
+  return categoryProducts.value.filter(product => product && product.id)
 })
 
 // Apply filters with backend call
 const applyFilters = () => {
-  if (categorySlug.value) {
-    fetchCategoryAndProducts(categorySlug.value, 1, itemsPerPage.value)
+  if (category.value) {
+    applyFiltersAndRefresh()
   }
 }
 
@@ -334,19 +384,22 @@ const debouncedApplyFilters = () => {
 
 // Computed properties for filtered and sorted products (now applied locally on current page)
 const categoryProducts = computed(() => {
-  // Products are now filtered by backend, so we return them as-is
-  return products.value
+  // Products are now filtered by backend, so we return them as-is but filter out null/undefined
+  return products.value.filter(product => product && product.id)
 })
 
 const brands = computed(() => {
-  return allBrands.value
+  return allBrands.value.filter(brand => brand && brand.id && brand.slug && brand.name)
 })
 
 const categoryTitle = computed(() => {
+  if (categoryError.value) return 'Lỗi'
   return category.value?.name || getCategoryName(categorySlug.value)
 })
 
 const categoryDescription = computed(() => {
+  if (categoryError.value) return categoryError.value
+  
   console.log('Computing categoryDescription:', {
     categoryValue: category.value,
     hasDescription: !!category.value?.description,
@@ -359,7 +412,7 @@ const categoryDescription = computed(() => {
   }
   
   console.log(`Using default description for category: ${categorySlug.value}`)
-  return `Khám phá bộ sưu tập ${categoryTitle.value.toLowerCase()} chính hãng với giá tốt nhất tại BaloZone`
+  return `Khám phá bộ sưu tập ${category.value?.name || getCategoryName(categorySlug.value).toLowerCase()} chính hãng với giá tốt nhất tại BaloZone`
 })
 
 const categoryImage = computed(() => {
@@ -407,8 +460,37 @@ watch(categoryProducts, (newProducts) => {
     <!-- Breadcrumbs -->
     <Breadcrumb :items="breadcrumbs" />
 
+    <!-- Category Error Section -->
+    <section v-if="categoryError" class="category-error">
+      <div class="container-fluid px-4">
+        <div class="row justify-content-center">
+          <div class="col-md-8 col-lg-6">
+            <div class="error-card">
+              <div class="error-icon">
+                <i class="bi bi-exclamation-triangle"></i>
+              </div>
+              <h2 class="error-title">Danh mục không tồn tại</h2>
+              <p class="error-description">
+                Xin lỗi, danh mục bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
+              </p>
+              <div class="error-actions">
+                <router-link to="/" class="btn btn-primary">
+                  <i class="bi bi-house"></i>
+                  Về trang chủ
+                </router-link>
+                <router-link to="/categories" class="btn btn-outline-secondary">
+                  <i class="bi bi-grid"></i>
+                  Xem tất cả danh mục
+                </router-link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Category Header -->
-    <section class="category-header">
+    <section v-else class="category-header">
       <div class="container-fluid px-4">
         <div class="row align-items-center">
           <!-- Category Info -->
@@ -453,7 +535,7 @@ watch(categoryProducts, (newProducts) => {
     </section>
 
     <!-- Filters and Products -->
-    <section class="products-section">
+    <section v-if="!categoryError" class="products-section">
       <div class="container-fluid px-4">
         <div class="row">
           <!-- Sidebar Filters -->
@@ -524,11 +606,13 @@ watch(categoryProducts, (newProducts) => {
                     <span class="checkmark"></span>
                     Tất cả
                   </label>
-                  <label v-for="brand in brands" :key="brand.id" class="filter-option">
-                    <input type="radio" v-model="selectedBrand" :value="brand.slug">
-                    <span class="checkmark"></span>
-                    {{ brand.name }}
-                  </label>
+                  <template v-for="brand in brands" :key="brand.id">
+                    <label v-if="brand && brand.id" class="filter-option">
+                      <input type="radio" v-model="selectedBrand" :value="brand.slug">
+                      <span class="checkmark"></span>
+                      {{ brand.name }}
+                    </label>
+                  </template>
                 </div>
               </div>
             </div>
@@ -641,6 +725,82 @@ watch(categoryProducts, (newProducts) => {
 .category-page {
   min-height: 100vh;
   background-color: #f8f9fa;
+}
+
+/* Category Error Section */
+.category-error {
+  padding: 80px 0;
+  background-color: #f8f9fa;
+}
+
+.error-card {
+  background: white;
+  border-radius: 16px;
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.error-icon {
+  font-size: 4rem;
+  color: #dc3545;
+  margin-bottom: 24px;
+}
+
+.error-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+.error-description {
+  font-size: 1.1rem;
+  color: #6c757d;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.error-actions .btn {
+  padding: 12px 24px;
+  font-weight: 500;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.error-actions .btn-primary {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  border: none;
+  color: white;
+}
+
+.error-actions .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+}
+
+.error-actions .btn-outline-secondary {
+  border: 2px solid #6c757d;
+  color: #6c757d;
+  background: transparent;
+}
+
+.error-actions .btn-outline-secondary:hover {
+  background: #6c757d;
+  color: white;
+  transform: translateY(-2px);
 }
 
 /* Category Header */
@@ -986,6 +1146,34 @@ watch(categoryProducts, (newProducts) => {
   .pagination-info {
     font-size: 0.85rem;
   }
+
+  /* Error Section Mobile */
+  .error-card {
+    padding: 40px 20px;
+    margin: 0 20px;
+  }
+
+  .error-icon {
+    font-size: 3rem;
+  }
+
+  .error-title {
+    font-size: 1.5rem;
+  }
+
+  .error-description {
+    font-size: 1rem;
+  }
+
+  .error-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .error-actions .btn {
+    width: 100%;
+    max-width: 200px;
+  }
 }
 
 @media (max-width: 576px) {
@@ -1036,6 +1224,37 @@ watch(categoryProducts, (newProducts) => {
     display: block;
     margin-left: 0;
     margin-top: 4px;
+  }
+
+  /* Error Section Extra Small Mobile */
+  .category-error {
+    padding: 40px 0;
+  }
+
+  .error-card {
+    padding: 30px 15px;
+    margin: 0 15px;
+    border-radius: 12px;
+  }
+
+  .error-icon {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+
+  .error-title {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+
+  .error-description {
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+
+  .error-actions .btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
   }
 }
 </style>

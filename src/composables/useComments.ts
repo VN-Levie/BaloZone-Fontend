@@ -24,16 +24,21 @@ export function useComments(productId?: number) {
   const hasComments = computed(() => comments.value.length > 0)
   const totalComments = computed(() => pagination.value.total)
   const averageRating = computed(() => {
-    if (comments.value.length === 0) return 0
-    const sum = comments.value.reduce((acc, comment) => acc + comment.rating, 0)
-    return Math.round((sum / comments.value.length) * 10) / 10
+    // Chỉ tính rating từ người đã mua hàng (rating > 0)
+    const validRatings = comments.value.filter(comment => comment.rating > 0)
+    if (validRatings.length === 0) return 0
+    const sum = validRatings.reduce((acc, comment) => acc + comment.rating, 0)
+    return Math.round((sum / validRatings.length) * 10) / 10
   })
   
   const ratingDistribution = computed(() => {
     const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-    comments.value.forEach(comment => {
-      distribution[comment.rating as keyof typeof distribution]++
-    })
+    // Chỉ tính rating từ người đã mua hàng (rating > 0)
+    comments.value
+      .filter(comment => comment.rating > 0)
+      .forEach(comment => {
+        distribution[comment.rating as keyof typeof distribution]++
+      })
     return distribution
   })
 
@@ -103,13 +108,24 @@ export function useComments(productId?: number) {
   }
 
   const updateComment = async (commentId: number, commentData: CommentRequest) => {
+    if (!productId) {
+      showError('Lỗi', 'Product ID is required')
+      return false
+    }
+
     if (!canComment.value) {
       showError('Lỗi', 'Bạn cần đăng nhập để chỉnh sửa bình luận')
       return false
     }
 
     try {
-      const response = await commentsApi.updateComment(commentId, commentData)
+      // Đảm bảo có product_id trong request body theo API docs
+      const updateData = {
+        ...commentData,
+        product_id: productId
+      }
+      
+      const response = await commentsApi.updateComment(commentId, updateData)
       
       // Update comment in the list
       const index = comments.value.findIndex(c => c.id === commentId)

@@ -149,8 +149,14 @@
               <div class="comment-header">
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
-                    <h6 class="comment-author">{{ comment.user.name }}</h6>
-                    <div class="comment-rating">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <h6 class="comment-author mb-0">{{ comment.user.name }}</h6>
+                      <span v-if="comment.has_purchased" class="badge bg-success text-white purchased-badge">
+                        <i class="bi bi-check-circle-fill me-1"></i>
+                        Đã mua hàng
+                      </span>
+                    </div>
+                    <div class="comment-rating" v-if="comment.rating > 0">
                       <i 
                         v-for="i in 5" 
                         :key="i"
@@ -570,6 +576,16 @@ onMounted(() => {
     width: 40px;
     height: 40px;
     font-size: 0.8rem;
+  }
+
+  .purchased-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    
+    i {
+      font-size: 0.6rem;
+    }
   }
 }
 </style>
