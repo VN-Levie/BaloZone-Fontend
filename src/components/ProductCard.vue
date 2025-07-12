@@ -116,7 +116,7 @@
       <div v-if="props.listView" class="list-view-actions">
         <button class="btn btn-outline-primary btn-sm me-2" @click="addToCartHandler">
           <i class="bi bi-cart-plus"></i>
-          {{ isInCartComputed ? 'Đã trong giỏ' : 'Thêm vào giỏ' }}
+          {{ isInCartComputed ? 'Đã trong giỏ' : 'Thêm vào giỏ!' }}
         </button>
         <button class="btn btn-outline-secondary btn-sm" @click="quickView">
           <i class="bi bi-eye"></i>
@@ -233,17 +233,18 @@ const addToCartHandler = () => {
 
 <style scoped>
 .product-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.175);
   height: 100%;
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.08);
   position: relative;
+  max-width: 100%;
 }
 
 .product-card::before {
@@ -253,17 +254,17 @@ const addToCartHandler = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(247, 147, 30, 0.05));
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.03), rgba(247, 147, 30, 0.03));
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
-  border-radius: 20px;
+  border-radius: 16px;
 }
 
 .product-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 50px rgba(255, 107, 53, 0.25);
-  border-color: rgba(255, 107, 53, 0.3);
+  transform: translateY(-6px);
+  box-shadow: 0 15px 40px rgba(255, 107, 53, 0.15);
+  border-color: rgba(255, 107, 53, 0.2);
 }
 
 .product-card:hover::before {
@@ -275,6 +276,8 @@ const addToCartHandler = () => {
   overflow: hidden;
   aspect-ratio: 1;
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .product-image-link {
@@ -289,66 +292,66 @@ const addToCartHandler = () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.3s ease;
   border-radius: 0;
 }
 
 .product-card:hover .product-image {
-  transform: scale(1.1) rotate(2deg);
-  filter: brightness(1.1) saturate(1.2);
+  transform: scale(1.05);
+  filter: brightness(1.05) saturate(1.1);
 }
 
 /* Modern sale badge styling */
 .modern-sale-badge {
   background: linear-gradient(135deg, #ff6b35, #f7931e);
   color: white;
-  padding: 8px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 15px;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+  letter-spacing: 0.3px;
+  box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
   z-index: 10;
   position: absolute;
-  top: 15px;
-  left: 15px;
+  top: 12px;
+  left: 12px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .modern-sale-badge::before {
   content: '🏷️';
-  font-size: 0.8rem;
+  font-size: 0.7rem;
 }
 
 .discount-badge {
   position: absolute;
-  top: 15px;
-  left: 15px;
+  top: 12px;
+  left: 12px;
   background: linear-gradient(135deg, #ff4757, #ff3742);
   color: white;
-  padding: 8px 12px;
-  border-radius: 25px;
-  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 15px;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+  letter-spacing: 0.3px;
+  box-shadow: 0 3px 10px rgba(255, 71, 87, 0.3);
   z-index: 10;
 }
 
 .product-actions {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 12px;
+  right: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   opacity: 0;
-  transform: translateX(20px);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateX(15px);
+  transition: all 0.3s ease;
   z-index: 10;
 }
 
@@ -358,27 +361,27 @@ const addToCartHandler = () => {
 }
 
 .action-btn {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border: none;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
   color: #495057;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .action-btn:hover {
   background: linear-gradient(135deg, #ff6b35, #f7931e);
   color: white;
-  transform: scale(1.15) rotate(5deg);
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
 }
 
 .action-btn i.bi-heart-fill {
@@ -391,12 +394,12 @@ const addToCartHandler = () => {
 
 .quick-add {
   position: absolute;
-  bottom: 15px;
-  left: 15px;
-  right: 15px;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateY(15px);
+  transition: all 0.3s ease;
   z-index: 10;
 }
 
@@ -407,24 +410,24 @@ const addToCartHandler = () => {
 
 .quick-add-btn {
   width: 100%;
-  padding: 12px 20px;
+  padding: 10px 16px;
   border: none;
   background: linear-gradient(135deg, #ff6b35, #f7931e);
   color: white;
-  border-radius: 25px;
+  border-radius: 20px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 12px rgba(255, 107, 53, 0.25);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .quick-add-btn:hover {
   background: linear-gradient(135deg, #f7931e, #e67e22);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.35);
 }
 
 .quick-add-btn:active {
@@ -432,20 +435,21 @@ const addToCartHandler = () => {
 }
 
 .product-info {
-  padding: 20px;
+  padding: 16px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.95));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 249, 250, 0.98));
+  min-height: 0;
 }
 
 .product-brand {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #ff6b35;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   background: linear-gradient(135deg, #ff6b35, #f7931e);
   background-clip: text;
   -webkit-background-clip: text;
@@ -459,10 +463,10 @@ const addToCartHandler = () => {
 }
 
 .product-name {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  margin: 0 0 12px 0;
-  line-height: 1.4;
+  margin: 0 0 10px 0;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -470,60 +474,61 @@ const addToCartHandler = () => {
   overflow: hidden;
   color: #2c3e50;
   transition: all 0.3s ease;
+  min-height: 2.7rem;
 }
 
 .product-name-link:hover .product-name {
   color: #ff6b35;
-  transform: translateY(-2px);
 }
 
 .product-rating {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .stars {
   display: flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .stars i {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #e9ecef;
   transition: all 0.2s ease;
 }
 
 .stars i.active {
   color: #ffc107;
-  text-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+  text-shadow: 0 1px 3px rgba(255, 193, 7, 0.3);
 }
 
 .rating-text {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #6c757d;
   font-weight: 500;
 }
 
 .product-pricing {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .current-price {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 800;
   background: linear-gradient(135deg, #ff6b35, #f7931e);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
 .original-price {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: #9ca3af;
   text-decoration: line-through;
-  margin-left: 10px;
+  margin-left: 8px;
   font-weight: 500;
 }
 
@@ -538,54 +543,54 @@ const addToCartHandler = () => {
 
 .save-amount {
   color: #22c55e;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  margin-left: 10px;
+  margin-left: 8px;
   background: rgba(34, 197, 94, 0.1);
-  padding: 2px 8px;
-  border-radius: 12px;
+  padding: 2px 6px;
+  border-radius: 10px;
   display: inline-block;
 }
 
 .sale-info {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .sale-end {
   background: linear-gradient(135deg, #fff3cd, #ffeaa7);
   color: #856404;
-  padding: 6px 12px;
-  border-radius: 15px;
-  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
   font-weight: 600;
   border: 1px solid #ffeaa7;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .sale-end::before {
   content: '⏰';
-  font-size: 0.8rem;
+  font-size: 0.7rem;
 }
 
 .product-meta {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   margin-top: auto;
-  padding-top: 12px;
-  border-top: 2px solid rgba(255, 107, 53, 0.1);
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 107, 53, 0.1);
 }
 
 .stock-info {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
+  gap: 5px;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 12px;
+  padding: 3px 8px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.8);
 }
 
@@ -610,13 +615,13 @@ const addToCartHandler = () => {
 .product-color {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
+  gap: 5px;
+  font-size: 0.75rem;
   color: #6c757d;
   font-weight: 500;
-  padding: 4px 10px;
+  padding: 3px 8px;
   background: rgba(255, 107, 53, 0.1);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 107, 53, 0.2);
 }
 
@@ -627,13 +632,13 @@ const addToCartHandler = () => {
 .sold-count {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
+  gap: 5px;
+  font-size: 0.75rem;
   color: #6c757d;
   font-weight: 500;
-  padding: 4px 10px;
+  padding: 3px 8px;
   background: rgba(255, 193, 7, 0.1);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 193, 7, 0.2);
 }
 
@@ -645,15 +650,16 @@ const addToCartHandler = () => {
 .product-card-list {
   flex-direction: row;
   height: auto;
-  min-height: 250px;
+  min-height: 200px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(15px);
+  max-width: 100%;
 }
 
 .product-card-list .product-image-container {
-  width: 250px;
-  min-width: 250px;
+  width: 200px;
+  min-width: 200px;
   aspect-ratio: 1;
   flex-shrink: 0;
   border-radius: 16px 0 0 16px;
@@ -662,43 +668,45 @@ const addToCartHandler = () => {
 
 .product-card-list .product-info {
   flex: 1;
-  padding: 30px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 249, 250, 0.98));
   border-radius: 0 16px 16px 0;
+  min-width: 0;
 }
 
 .product-card-list .product-name {
-  font-size: 1.3rem;
-  margin-bottom: 15px;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  min-height: auto;
 }
 
 .product-card-list .product-pricing {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .product-card-list .current-price {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
 }
 
 .product-card-list .product-meta {
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
-  padding-top: 15px;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
 }
 
 .product-card-list .product-actions {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 15px;
+  right: 15px;
   flex-direction: row;
-  gap: 8px;
+  gap: 6px;
   opacity: 1;
   transform: none;
 }
@@ -715,20 +723,21 @@ const addToCartHandler = () => {
 
 .list-view-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: 15px;
 }
 
 .list-view-actions .btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 25px;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
 }
 
 .list-view-actions .btn-outline-primary {
@@ -741,7 +750,7 @@ const addToCartHandler = () => {
   background: linear-gradient(135deg, #ff6b35, #f7931e);
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.25);
 }
 
 .list-view-actions .btn-outline-secondary {
@@ -754,7 +763,7 @@ const addToCartHandler = () => {
   background: #6c757d;
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(108, 117, 125, 0.3);
+  box-shadow: 0 5px 12px rgba(108, 117, 125, 0.25);
 }
 
 /* Responsive adjustments for list view */
@@ -773,27 +782,28 @@ const addToCartHandler = () => {
   }
   
   .product-card-list .product-info {
-    padding: 20px;
+    padding: 16px;
     border-radius: 0 0 16px 16px;
   }
   
   .product-card-list .product-actions {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: 12px;
+    right: 12px;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
   
   .list-view-actions {
     flex-direction: column;
-    gap: 12px;
-    margin-top: 15px;
+    gap: 10px;
+    margin-top: 12px;
   }
   
   .list-view-actions .btn {
     justify-content: center;
     width: 100%;
+    padding: 10px 16px;
   }
   
   .product-card {
@@ -806,10 +816,10 @@ const addToCartHandler = () => {
     right: auto;
     flex-direction: row;
     justify-content: center;
-    margin-top: 15px;
+    margin-top: 12px;
     opacity: 1;
     transform: none;
-    gap: 12px;
+    gap: 10px;
   }
   
   .quick-add {
@@ -817,14 +827,14 @@ const addToCartHandler = () => {
     bottom: auto;
     left: auto;
     right: auto;
-    margin-top: 15px;
+    margin-top: 12px;
     opacity: 1;
     transform: none;
   }
   
   .product-meta {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 }
 
@@ -834,26 +844,44 @@ const addToCartHandler = () => {
   }
   
   .product-info {
-    padding: 15px;
+    padding: 12px;
   }
   
   .product-name {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    min-height: 2.4rem;
   }
   
   .current-price {
-    font-size: 1.1rem;
-  }
-  
-  .action-btn {
-    width: 38px;
-    height: 38px;
     font-size: 1rem;
   }
   
+  .action-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
+  
   .quick-add-btn {
-    padding: 10px 16px;
-    font-size: 0.85rem;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+  
+  .product-card-list .product-image-container {
+    width: 100%;
+    aspect-ratio: 4/3;
+  }
+  
+  .product-card-list .product-info {
+    padding: 12px;
+  }
+  
+  .product-card-list .product-name {
+    font-size: 1rem;
+  }
+  
+  .product-card-list .current-price {
+    font-size: 1.1rem;
   }
 }
 
@@ -877,12 +905,28 @@ const addToCartHandler = () => {
 .action-btn:focus,
 .quick-add-btn:focus,
 .product-name-link:focus {
-  outline: 3px solid rgba(255, 107, 53, 0.5);
+  outline: 2px solid rgba(255, 107, 53, 0.5);
   outline-offset: 2px;
 }
 
+/* Grid layout optimization */
+.product-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure proper layout */
+.product-card * {
+  box-sizing: border-box;
+}
+
+.product-info {
+  position: relative;
+  z-index: 1;
+}
+
 /* Dark mode support */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   .product-card {
     background: rgba(45, 55, 72, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -900,5 +944,5 @@ const addToCartHandler = () => {
     background: rgba(45, 55, 72, 0.9);
     color: #e2e8f0;
   }
-}
+} */
 </style>
