@@ -163,9 +163,9 @@ onMounted(() => {
               >
                 <div class="campaign-card">
                   <div class="campaign-header">
-                    <SaleBadge :campaign="campaign" />
+                    <!-- <SaleBadge :campaign="campaign" /> -->
                     <div class="campaign-priority" v-if="campaign.priority > 0">
-                      <span class="priority-badge">HOT</span>
+                      <span class="priority-badge">SALE</span>
                     </div>
                   </div>
                   

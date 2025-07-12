@@ -35,11 +35,7 @@
           <!-- Product images -->
           <div class="col-lg-6">
             <div class="product-images-section">
-              <ImageZoom 
-                :images="productImages" 
-                :alt="product.name"
-                :initial-index="0"
-              />
+              <ImageZoom :images="productImages" :alt="product.name" :initial-index="0" />
             </div>
           </div>
 
@@ -49,23 +45,18 @@
               <!-- Product title -->
               <div class="product-header mb-4">
                 <h1 class="product-title">{{ product.name }}</h1>
-                
+
                 <!-- Brand -->
                 <div v-if="product.brand" class="product-brand mb-3">
                   <span class="brand-badge">{{ product.brand.name }}</span>
                 </div>
-                
+
                 <!-- Rating -->
                 <div class="product-rating-display mb-3">
                   <template v-if="totalComments > 0">
                     <div class="rating-content">
                       <div class="rating-stars">
-                        <i 
-                          v-for="i in 5" 
-                          :key="i"
-                          class="bi bi-star-fill"
-                          :class="{ 'filled': i <= Math.floor(averageRating) }"
-                        ></i>
+                        <i v-for="i in 5" :key="i" class="bi bi-star-fill" :class="{ 'filled': i <= Math.floor(averageRating) }"></i>
                       </div>
                       <span class="rating-score">{{ averageRating.toFixed(1) }}</span>
                       <span class="rating-count">({{ totalComments }} đánh giá)</span>
@@ -134,31 +125,19 @@
               </div>
 
               <!-- Action buttons -->
-              <div class="product-actions mb-4">
-                <button 
-                  class="btn-primary-action" 
-                  @click="addToCart" 
-                  :disabled="product.stock === 0 || isAddingToCart"
-                >
+              <div class="product-actions-detail mb-4"> <button class="btn-primary-action" @click="addToCartHandler" :disabled="product.stock === 0 || isAddingToCart">
                   <span v-if="isAddingToCart" class="spinner-border spinner-border-sm me-2" role="status"></span>
                   <i v-else class="bi bi-cart-plus me-2"></i>
                   {{ isAddingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}
                 </button>
-                
+
                 <div class="secondary-actions">
-                  <button 
-                    class="btn-secondary-action wishlist-btn" 
-                    @click="toggleWishlistHandler"
-                    :class="{ 'active': isInWishlistComputed }"
-                  >
+                  <button class="btn-secondary-action wishlist-btn" @click="toggleWishlistHandler" :class="{ 'active': isInWishlistComputed }">
                     <i class="bi me-2" :class="isInWishlistComputed ? 'bi-heart-fill' : 'bi-heart'"></i>
                     {{ isInWishlistComputed ? 'Đã yêu thích' : 'Yêu thích' }}
                   </button>
-                  
-                  <button 
-                    class="btn-secondary-action share-btn"
-                    @click="openShareModal"
-                  >
+
+                  <button class="btn-secondary-action share-btn" @click="openShareModal">
                     <i class="bi bi-share me-2"></i>
                     Chia sẻ
                   </button>
@@ -236,7 +215,7 @@
           </h3>
           <div class="section-subtitle">Khám phá thêm các sản phẩm tương tự</div>
         </div>
-        
+
         <div class="related-products-grid">
           <div v-for="relatedProd in relatedProducts" :key="relatedProd.id" class="related-product-item">
             <div class="product-card modern-card">
@@ -244,10 +223,7 @@
                 <div class="card-image-container">
                   <img :src="getImageUrl(relatedProd.image)" :alt="relatedProd.name" class="card-image" />
                   <!-- Discount badge -->
-                  <div 
-                    v-if="relatedProd.discount_price && Number(relatedProd.discount_price) < Number(relatedProd.price)" 
-                    class="card-discount-badge"
-                  >
+                  <div v-if="relatedProd.discount_price && Number(relatedProd.discount_price) < Number(relatedProd.price)" class="card-discount-badge">
                     -{{ Math.round(((Number(relatedProd.price) - Number(relatedProd.discount_price)) / Number(relatedProd.price)) * 100) }}%
                   </div>
                 </div>
@@ -285,14 +261,16 @@ import { formatPrice, formatDate, getImageUrl } from '@/utils'
 import { useCart } from '@/composables/useCart'
 import { useWishlist } from '@/composables/useWishlist'
 import { useComments } from '@/composables/useComments'
+import { useToast } from '@/composables/useToast'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import ShareModal from '@/components/ShareModal.vue'
 import ImageZoom from '@/components/ImageZoom.vue'
 import CommentsSection from '@/components/CommentsSection.vue'
 
 const route = useRoute()
-const { addToCart: addToCartComposable, isInCart } = useCart()
+const { addToCart, isInCart } = useCart()
 const { toggleWishlist, isInWishlist } = useWishlist()
+const { showAddToCartSuccess } = useToast()
 
 // Determine if we're using slug or ID route
 const isSlugRoute = computed(() => route.name === 'product-detail-slug')
@@ -328,7 +306,7 @@ const fetchProduct = async (id: number) => {
       if (commentsComposable.value) {
         await commentsComposable.value.fetchComments()
       }
-      
+
       // Fetch related products using new API
       const relatedResponse = await productsApi.getRelatedProducts(product.value.id, 4)
       relatedProducts.value = relatedResponse.data
@@ -355,7 +333,7 @@ const fetchProductBySlug = async (slug: string) => {
       if (commentsComposable.value) {
         await commentsComposable.value.fetchComments()
       }
-      
+
       // Fetch related products using new API
       const relatedResponse = await productsApi.getRelatedProducts(product.value.id, 4)
       relatedProducts.value = relatedResponse.data
@@ -370,21 +348,21 @@ const fetchProductBySlug = async (slug: string) => {
 // Product images array for zoom component
 const productImages = computed(() => {
   if (!product.value) return []
-  
+
   const images: string[] = []
-  
+
   // Main product image
   if (product.value.image) {
     images.push(getImageUrl(product.value.image))
   }
-  
+
   // Gallery images from API
   if (product.value.gallery && Array.isArray(product.value.gallery)) {
     product.value.gallery.forEach(galleryImage => {
       images.push(getImageUrl(galleryImage))
     })
   }
-  
+
   // If no gallery images, add some placeholder images for demo
   if (images.length === 1 && product.value.image) {
     images.push(
@@ -393,7 +371,7 @@ const productImages = computed(() => {
       'https://via.placeholder.com/600x600.png/5500aa?text=Gallery+Image+4'
     )
   }
-  
+
   return images
 })
 
@@ -415,13 +393,14 @@ const decreaseQuantity = () => {
   }
 }
 
-const addToCart = async () => {
+const addToCartHandler = async () => {
   if (!product.value) return
 
   isAddingToCart.value = true
   try {
     // Add to cart using composable
-    addToCartComposable(product.value, quantity.value)
+    addToCart(product.value, quantity.value)
+    showAddToCartSuccess(product.value.name)
     console.log(`Added ${quantity.value} of ${product.value.name} to cart`)
   } catch (error) {
     console.error('Failed to add to cart:', error)
@@ -453,7 +432,7 @@ const openShareModal = () => {
       modalElement.classList.add('show')
       modalElement.style.display = 'block'
       document.body.classList.add('modal-open')
-      
+
       // Add backdrop
       const backdrop = document.createElement('div')
       backdrop.className = 'modal-backdrop fade show'
@@ -502,7 +481,7 @@ watch(
   background: white;
   border-radius: 15px;
   padding: 2rem;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
   margin-bottom: 2rem;
 }
 
@@ -699,7 +678,7 @@ watch(
 }
 
 /* Action Buttons */
-.product-actions {
+.product-actions-detail {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -797,7 +776,7 @@ watch(
   background: white;
   border-radius: 15px;
   overflow: hidden;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
 
 .tabs-container {
@@ -848,7 +827,7 @@ watch(
   background: white;
   padding: 2rem;
   border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
 
 .section-header {
@@ -890,7 +869,7 @@ watch(
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   height: 100%;
   border: none;
@@ -898,7 +877,7 @@ watch(
 
 .modern-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .card-image-container {
@@ -964,44 +943,44 @@ watch(
     padding: 1rem;
     border-radius: 8px;
   }
-  
+
   .product-info-section {
     padding-left: 0;
     margin-top: 1.5rem;
   }
-  
+
   .product-title {
     font-size: 1.5rem;
   }
-  
+
   .current-price {
     font-size: 1.5rem;
   }
-  
+
   .secondary-actions {
     flex-direction: column;
   }
-  
+
   .related-products-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
   }
-  
+
   .modern-tabs .nav-link {
     padding: 1rem;
     font-size: 0.9rem;
   }
-  
+
   .modern-tab-content {
     padding: 1.5rem;
   }
-  
+
   .content-card {
     padding: 1.5rem;
   }
-  
+
   /* Mobile sticky actions */
-  .product-actions {
+  .product-actions-detail {
     position: sticky;
     bottom: 0;
     background: white;
@@ -1009,15 +988,23 @@ watch(
     border-top: 1px solid #e9ecef;
     margin: 0 -1rem -1rem -1rem;
     border-radius: 0;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   }
 }
 
 /* Animation for loading states */
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .spinner-border-sm {

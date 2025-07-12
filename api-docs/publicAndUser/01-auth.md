@@ -26,31 +26,36 @@ Các endpoint để quản lý xác thực người dùng sử dụng JWT (JSON 
 {
     "success": true,
     "message": "Đăng nhập thành công",
-    "data": {
-        "access_token": "your_jwt_token",
-        "token_type": "bearer",
-        "expires_in": 3600,
-        "user": {
-            "id": 1,
-            "name": "Tên người dùng",
-            "email": "admin@balozone.com",
-            "phone": "admin123",
-            "status": "active",
-            "roles": [
-                {
-                    "id": 1,
-                    "name": "admin",
-                    "guard_name": "api",
-                    "created_at": "2025-07-04T12:00:00.000000Z",
-                    "updated_at": "2025-07-04T12:00:00.000000Z",
-                    "pivot": {
-                        "model_id": 1,
-                        "role_id": 2,
-                        "model_type": "App\Models\User"
-                    }
+    "user": {
+        "id": 1,
+        "name": "Admin BaloZone",
+        "email": "admin@balozone.com",
+        "email_verified_at": null,
+        "phone": "0901234567",
+        "status": "active",
+        "created_at": "2025-07-12T17:24:35.000000Z",
+        "updated_at": "2025-07-12T17:24:35.000000Z",
+        "deleted_at": null,
+        "roles": [
+            {
+                "id": 1,
+                "name": "admin",
+                "display_name": "Admin",
+                "description": "Quản trị viên hệ thống - có quyền truy cập toàn bộ hệ thống",
+                "created_at": "2025-07-12T17:24:34.000000Z",
+                "updated_at": "2025-07-12T17:24:34.000000Z",
+                "deleted_at": null,
+                "pivot": {
+                    "user_id": 1,
+                    "role_id": 1
                 }
-            ]
-        }
+            }
+        ]
+    },
+    "authorization": {
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NTIzNTE2MjgsImV4cCI6MTc1MjM1NTIyOCwibmJmIjoxNzUyMzUxNjI4LCJqdGkiOiJKY0s3QU9vSVA3dmU5OFN1Iiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.E8e_4phWOBbzlzNwwaXwU471DU35IUumQqEa7MeSj8o",
+        "type": "bearer",
+        "expires_in": 3600
     }
 }
 ```
@@ -68,54 +73,63 @@ Các endpoint để quản lý xác thực người dùng sử dụng JWT (JSON 
 - **Mô tả:** Đăng ký người dùng mới.
 - **Phân quyền:** Public
 - **Input (JSON):**
+
 ```json
 {
-    "name": "Tên người dùng mới",
-    "email": "newuser@example.com",
+    "name": "Test User",
+    "email": "testuser@example.com",
     "password": "password123",
     "password_confirmation": "password123",
     "phone": "0987654321"
 }
 ```
+
 - **Validation:**
   - `name`: required|string|max:255
   - `email`: required|email|unique:users
   - `password`: required|string|min:6|confirmed
   - `phone`: nullable|string|max:20
+
 - **Output thành công (JSON):**
+
 ```json
 {
     "success": true,
     "message": "Đăng ký thành công",
-    "data": {
-        "access_token": "your_jwt_token",
-        "token_type": "bearer",
-        "expires_in": 3600,
-        "user": {
-            "id": 2,
-            "name": "Tên người dùng mới",
-            "email": "newuser@example.com",
-            "phone": "0987654321",
-            "status": "active",
-            "roles": [
-                {
-                    "id": 2,
-                    "name": "user",
-                    "guard_name": "api",
-                    "created_at": "2025-07-04T12:00:00.000000Z",
-                    "updated_at": "2025-07-04T12:00:00.000000Z",
-                    "pivot": {
-                        "model_id": 2,
-                        "role_id": 2,
-                        "model_type": "App\Models\User"
-                    }
+    "user": {
+        "name": "Test User",
+        "email": "testuser@example.com",
+        "phone": "0987654321",
+        "status": "active",
+        "updated_at": "2025-07-12T20:21:06.000000Z",
+        "created_at": "2025-07-12T20:21:06.000000Z",
+        "id": 24,
+        "roles": [
+            {
+                "id": 2,
+                "name": "user",
+                "display_name": "User",
+                "description": "Người dùng thông thường - có thể mua hàng và sử dụng các tính năng cơ bản",
+                "created_at": "2025-07-12T17:24:34.000000Z",
+                "updated_at": "2025-07-12T17:24:34.000000Z",
+                "deleted_at": null,
+                "pivot": {
+                    "user_id": 24,
+                    "role_id": 2
                 }
-            ]
-        }
+            }
+        ]
+    },
+    "authorization": {
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL2F1dGgvcmVnaXN0ZXIiLCJpYXQiOjE3NTIzNTE2NjYsImV4cCI6MTc1MjM1NTI2NiwibmJmIjoxNzUyMzUxNjY2LCJqdGkiOiJaY3Z0WWdXN0F2dFZPQ05BIiwic3ViIjoiMjQiLCJwcnYiOiIyM2JkNWM4OTQ5ZjYwMGFkYjM5ZTcwMWM0MDA4NzJkYjdhNTk3NmY3In0.S26WY8McIEDhyZjgaPwn8nGNPIRrDfPK9Svb4r6vYOM",
+        "type": "bearer",
+        "expires_in": 3600
     }
 }
 ```
+
 - **Output thất bại (Validation errors):**
+
 ```json
 {
     "success": false,
@@ -135,11 +149,23 @@ Các endpoint để quản lý xác thực người dùng sử dụng JWT (JSON 
 - **Phân quyền:** Authenticated
 - **Headers:**
   - `Authorization: Bearer your_jwt_token`
+
 - **Output thành công (JSON):**
+
 ```json
 {
     "success": true,
     "message": "Đăng xuất thành công"
+}
+```
+
+- **Output thất bại (Token invalid):**
+
+```json
+{
+    "success": false,
+    "message": "Token không hợp lệ hoặc đã hết hạn",
+    "data": null
 }
 ```
 
@@ -150,12 +176,44 @@ Các endpoint để quản lý xác thực người dùng sử dụng JWT (JSON 
 - **Phân quyền:** Authenticated
 - **Headers:**
   - `Authorization: Bearer your_jwt_token`
+
 - **Output thành công (JSON):**
+
 ```json
 {
-    "access_token": "new_jwt_token",
-    "token_type": "bearer",
-    "expires_in": 3600
+    "success": true,
+    "message": "Đăng nhập thành công",
+    "user": {
+        "id": 1,
+        "name": "Admin BaloZone",
+        "email": "admin@balozone.com",
+        "email_verified_at": null,
+        "phone": "0901234567",
+        "status": "active",
+        "created_at": "2025-07-12T17:24:35.000000Z",
+        "updated_at": "2025-07-12T17:24:35.000000Z",
+        "deleted_at": null,
+        "roles": [
+            {
+                "id": 1,
+                "name": "admin",
+                "display_name": "Admin",
+                "description": "Quản trị viên hệ thống - có quyền truy cập toàn bộ hệ thống",
+                "created_at": "2025-07-12T17:24:34.000000Z",
+                "updated_at": "2025-07-12T17:24:34.000000Z",
+                "deleted_at": null,
+                "pivot": {
+                    "user_id": 1,
+                    "role_id": 1
+                }
+            }
+        ]
+    },
+    "authorization": {
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL2F1dGgvcmVmcmVzaCIsImlhdCI6MTc1MjM1MTYyOCwiZXhwIjoxNzUyMzU1MjU5LCJuYmYiOjE3NTIzNTE2NTksImp0aSI6InFBbDkxT1NJQlRQRG1OcGoiLCJzdWIiOiIxIiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.0UjRteJBCzk19DrBbJKiGvYP9K68IVF4mj_89w08QCE",
+        "type": "bearer",
+        "expires_in": 3600
+    }
 }
 ```
 
@@ -166,41 +224,87 @@ Các endpoint để quản lý xác thực người dùng sử dụng JWT (JSON 
 - **Phân quyền:** Authenticated
 - **Headers:**
   - `Authorization: Bearer your_jwt_token`
+
 - **Output thành công (JSON):**
+
 ```json
 {
-    "id": 1,
-    "name": "Tên người dùng",
-    "email": "user@example.com",
-    "phone": "0123456789",
-    "status": "active",
-    "roles": [
-        {
-            "id": 2,
-            "name": "user",
-            "guard_name": "api",
-            "created_at": "2025-07-04T12:00:00.000000Z",
-            "updated_at": "2025-07-04T12:00:00.000000Z",
-            "pivot": {
-                "model_id": 1,
-                "role_id": 2,
-                "model_type": "App\Models\User"
+    "success": true,
+    "user": {
+        "id": 1,
+        "name": "Admin BaloZone",
+        "email": "admin@balozone.com",
+        "email_verified_at": null,
+        "phone": "0901234567",
+        "status": "active",
+        "created_at": "2025-07-12T17:24:35.000000Z",
+        "updated_at": "2025-07-12T17:24:35.000000Z",
+        "deleted_at": null,
+        "address_books": [
+            {
+                "id": 55,
+                "user_id": 1,
+                "address": "Địa chỉ chi tiết",
+                "province": "Tỉnh Phú Thọ",
+                "postal_code": null,
+                "district": "Huyện Tân Sơn",
+                "ward": "Xã Kim Thượng",
+                "recipient_name": "Họ và tên",
+                "recipient_phone": "0111111111",
+                "is_default": false,
+                "created_at": "2025-07-12T17:40:33.000000Z",
+                "updated_at": "2025-07-12T17:44:23.000000Z",
+                "deleted_at": null
             }
-        }
-    ]
+        ],
+        "orders": [
+            {
+                "id": 16,
+                "order_number": "ORD-2025-000016",
+                "status": "processing",
+                "total_amount": "9324927.00",
+                "shipping_fee": "38683.00",
+                "voucher_discount": "50000.00",
+                "final_amount": "9313610.00",
+                "payment_method": "vnpay",
+                "payment_status": "paid",
+                "created_at": "2025-07-12T17:24:38.000000Z",
+                "updated_at": "2025-07-12T17:24:38.000000Z"
+            }
+        ],
+        "roles": [
+            {
+                "id": 1,
+                "name": "admin",
+                "display_name": "Admin",
+                "description": "Quản trị viên hệ thống - có quyền truy cập toàn bộ hệ thống",
+                "created_at": "2025-07-12T17:24:34.000000Z",
+                "updated_at": "2025-07-12T17:24:34.000000Z",
+                "deleted_at": null,
+                "pivot": {
+                    "user_id": 1,
+                    "role_id": 1
+                }
+            }
+        ]
+    }
 }
 ```
 
 ## Error Responses
 
 ### 401 Unauthorized
+
 ```json
 {
-    "message": "Unauthenticated."
+    "success": false,
+    "message": "Token không hợp lệ hoặc đã hết hạn",
+    "data": null
 }
 ```
 
 ### 422 Unprocessable Entity
+
 ```json
 {
     "success": false,
@@ -219,6 +323,44 @@ Các endpoint để quản lý xác thực người dùng sử dụng JWT (JSON 
 - Sau khi đăng ký thành công, người dùng sẽ được tự động gán role "user"
 - Sử dụng endpoint refresh để gia hạn token trước khi hết hạn
 - Tất cả token sẽ bị vô hiệu hóa sau khi logout
+- Response `/api/auth/me` bao gồm cả thông tin address_books và orders của user
+
+## cURL Examples
+
+### Login
+```bash
+curl -X POST "http://localhost:8000/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@balozone.com","password":"admin123"}'
+```
+
+### Register
+```bash
+curl -X POST "http://localhost:8000/api/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test User","email":"test@example.com","password":"password123","password_confirmation":"password123","phone":"0987654321"}'
+```
+
+### Get User Info
+```bash
+curl -X GET "http://localhost:8000/api/auth/me" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json"
+```
+
+### Refresh Token
+```bash
+curl -X POST "http://localhost:8000/api/auth/refresh" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json"
+```
+
+### Logout
+```bash
+curl -X POST "http://localhost:8000/api/auth/logout" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json"
+```
 
 ---
 
