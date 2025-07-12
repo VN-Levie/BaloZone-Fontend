@@ -208,34 +208,63 @@ const makeRequest = async <T>(
 
 // Products API
 export const productsApi = {
-  // Get all products with filters
-  getProducts: (filters?: ProductFilters): Promise<PaginatedResponse<Product>> =>
-    makeRequest('/products' + (filters ? '?' + new URLSearchParams(
-      Object.entries(filters).reduce((acc, [key, value]) => {
-        if (value !== undefined && value !== null) {
-          acc[key] = String(value)
+  // Get all products with advanced filtering (NEW UNIFIED ENDPOINT)
+  getProducts: (filters?: {
+    search?: string
+    category_id?: number
+    brand_id?: number
+    min_price?: number
+    max_price?: number
+    color?: string
+    in_stock?: boolean
+    sort_by?: 'name' | 'price' | 'created_at'
+    sort_order?: 'asc' | 'desc'
+    page?: number
+    per_page?: number
+  }): Promise<PaginatedResponse<Product>> => {
+    const queryString = new URLSearchParams()
+    
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          queryString.append(key, String(value))
         }
-        return acc
-      }, {} as Record<string, string>)
-    ).toString() : '')),
+      })
+    }
+    
+    const queryStr = queryString.toString()
+    return makeRequest(`/products${queryStr ? '?' + queryStr : ''}`)
+  },
   
   // Get featured products
   getFeaturedProducts: (): Promise<ApiResponse<Product[]>> =>
-    makeRequest('/products-featured'),
+    makeRequest('/products/featured'),
+  
+  // Get latest products
+  getLatestProducts: (limit?: number): Promise<ApiResponse<Product[]>> =>
+    makeRequest(`/products/latest${limit ? '?limit=' + limit : ''}`),
   
   // Get single product
   getProduct: (id: number): Promise<ApiResponse<Product>> =>
     makeRequest(`/products/${id}`),
   
-  // Get products by category slug
+  // Get product by slug
+  getProductBySlug: (slug: string): Promise<ApiResponse<Product>> =>
+    makeRequest(`/products/slug/${slug}`),
+  
+  // Get related products
+  getRelatedProducts: (id: number, limit?: number): Promise<ApiResponse<Product[]>> =>
+    makeRequest(`/products/${id}/related${limit ? '?limit=' + limit : ''}`),
+
+  // DEPRECATED: Use getProducts with category_id filter instead
   getProductsByCategory: (categorySlug: string): Promise<PaginatedResponse<Product>> =>
     makeRequest(`/products/category/${categorySlug}`),
 
-  // Get products by brand slug
+  // DEPRECATED: Use getProducts with brand_id filter instead  
   getProductsByBrand: (brandSlug: string): Promise<PaginatedResponse<Product>> =>
     makeRequest(`/products/brand/${brandSlug}`),
 
-  // Search products
+  // DEPRECATED: Use getProducts with search filter instead
   searchProducts: (params: any): Promise<PaginatedResponse<Product>> => {
     const queryString = new URLSearchParams(
       Object.entries(params).reduce((acc, [key, value]) => {
@@ -875,8 +904,11 @@ export const saleCampaignsApi = {
     return makeRequest(`/sale-campaigns${queryString}`)
   },
 
-  // Get single sale campaign
+  // Get single sale campaign by ID
   getSaleCampaign: (id: number | string): Promise<ApiResponse<any>> => makeRequest(`/sale-campaigns/${id}`),
+
+  // Get single sale campaign by slug
+  getSaleCampaignBySlug: (slug: string): Promise<ApiResponse<any>> => makeRequest(`/sale-campaigns/slug/${slug}`),
 
   // Get active sale campaigns (using query parameter)
   getActiveSaleCampaigns: (): Promise<PaginatedResponse<any>> =>

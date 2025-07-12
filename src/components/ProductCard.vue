@@ -1,7 +1,7 @@
 <template>
   <div class="product-card" :class="{ 'product-card-list': props.listView }">
     <div class="product-image-container">
-      <router-link :to="`/product/${product.id}`" class="product-image-link">
+      <router-link :to="productRoute" class="product-image-link">
         <img :src="product.image" :alt="product.name" class="product-image" />
       </router-link>
       
@@ -43,7 +43,7 @@
     </div>
     <div class="product-info">
       <div v-if="product.brand" class="product-brand">{{ product.brand.name }}</div>
-      <router-link :to="`/product/${product.id}`" class="product-name-link">
+      <router-link :to="productRoute" class="product-name-link">
         <h6 class="product-name">{{ product.name }}</h6>
       </router-link>
       <div v-if="product.rating" class="product-rating">
@@ -190,6 +190,14 @@ const saleEndTime = computed(() => {
 // Computed properties
 const isInWishlistComputed = computed(() => isInWishlist(props.product.id))
 const isInCartComputed = computed(() => isInCart(props.product.id))
+
+// Product route URL - prefer slug over ID
+const productRoute = computed(() => {
+  if (props.product.slug) {
+    return `/product/slug/${props.product.slug}`
+  }
+  return `/product/${props.product.id}`
+})
 
 // Utility function
 const formatPrice = (price: number | string): string => {

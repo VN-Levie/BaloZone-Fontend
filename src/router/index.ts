@@ -30,6 +30,11 @@ const router = createRouter({
       component: () => import('../views/CategoryView.vue'),
     },
     {
+      path: '/product/slug/:slug',
+      name: 'product-detail-slug',
+      component: () => import('../views/ProductDetailView.vue'),
+    },
+    {
       path: '/product/:id',
       name: 'product-detail',
       component: () => import('../views/ProductDetailView.vue'),
@@ -97,6 +102,11 @@ const router = createRouter({
       path: '/sale-campaigns',
       name: 'sale-campaigns',
       component: () => import('../views/SaleCampaignsView.vue'),
+    },
+    {
+      path: '/sale-campaigns/slug/:slug',
+      name: 'sale-campaign-detail-slug',
+      component: () => import('../views/SaleCampaignDetailView.vue'),
     },
     {
       path: '/sale-campaigns/:id',

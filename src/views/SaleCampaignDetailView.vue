@@ -136,11 +136,11 @@
                 :key="saleProduct.id"
                 class="col-lg-3 col-md-4 col-sm-6"
               >
-                <div class="product-card" @click="goToProduct(saleProduct.product.slug || saleProduct.product.id)">
+                <div class="product-card" @click="goToProduct(saleProduct.product?.slug || saleProduct.product?.id || '')">
                   <div class="product-image">
                     <img 
-                      :src="getImageUrl(saleProduct.product.image)" 
-                      :alt="saleProduct.product.name"
+                      :src="getImageUrl(saleProduct.product?.image || '')" 
+                      :alt="saleProduct.product?.name || ''"
                       loading="lazy"
                     />
                     <div class="discount-badge">
@@ -149,8 +149,8 @@
                   </div>
                   
                   <div class="product-info">
-                    <h5 class="product-name">{{ saleProduct.product.name }}</h5>
-                    <div class="product-category" v-if="saleProduct.product.category">
+                    <h5 class="product-name">{{ saleProduct.product?.name }}</h5>
+                    <div class="product-category" v-if="saleProduct.product?.category">
                       {{ saleProduct.product.category.name }}
                     </div>
                     
@@ -158,7 +158,7 @@
                       <span class="original-price">{{ formatPrice(saleProduct.original_price) }}</span>
                       <span class="sale-price">{{ formatPrice(saleProduct.sale_price) }}</span>
                       <div class="savings">
-                        Tiết kiệm: {{ formatPrice(saleProduct.discount_amount) }}
+                        Tiết kiệm: {{ formatPrice(calculateDiscount(saleProduct)) }}
                       </div>
                     </div>
                     
@@ -170,7 +170,7 @@
                         ></div>
                       </div>
                       <span class="stock-text">
-                        Còn {{ saleProduct.max_quantity - (saleProduct.sold_quantity || 0) }} sản phẩm
+                        Còn {{ (saleProduct.max_quantity || 0) - ((saleProduct as any).sold_quantity || 0) }} sản phẩm
                       </span>
                     </div>
                     
@@ -204,13 +204,18 @@ import { getImageUrl } from '@/utils'
 
 const route = useRoute()
 const router = useRouter()
+
+// Determine if we're using slug or ID route
+const isSlugRoute = computed(() => route.name === 'sale-campaign-detail-slug')
 const campaignId = computed(() => route.params.id as string)
+const campaignSlug = computed(() => route.params.slug as string)
 
 const {
   currentCampaign,
   isLoading,
   error,
   fetchSaleCampaign,
+  fetchSaleCampaignBySlug,
   isCampaignActive,
   getCampaignTimeRemaining
 } = useSaleCampaigns()
@@ -222,7 +227,11 @@ let timerInterval: ReturnType<typeof setInterval> | null = null
 // Methods
 const loadCampaign = async () => {
   try {
-    await fetchSaleCampaign(campaignId.value)
+    if (isSlugRoute.value) {
+      await fetchSaleCampaignBySlug(campaignSlug.value)
+    } else {
+      await fetchSaleCampaign(campaignId.value)
+    }
     if (currentCampaign.value && isCampaignActive(currentCampaign.value)) {
       startTimer()
     }
@@ -279,20 +288,31 @@ const getMaxDiscount = () => {
   if (!currentCampaign.value?.sale_products) return 0
   
   const discounts = currentCampaign.value.sale_products.map(sp => 
-    parseFloat(sp.discount_percentage || '0')
+    parseFloat(String(sp.discount_percentage || 0))
   )
   return Math.max(...discounts)
 }
 
+const calculateDiscount = (saleProduct: any) => {
+  return saleProduct.original_price - saleProduct.sale_price
+}
+
 const getStockPercentage = (saleProduct: any) => {
   if (!saleProduct.max_quantity) return 0
-  const sold = saleProduct.sold_quantity || 0
+  const sold = (saleProduct as any).sold_quantity || 0
   const remaining = saleProduct.max_quantity - sold
   return (remaining / saleProduct.max_quantity) * 100
 }
 
-const goToProduct = (productId: number | string) => {
-  router.push(`/product/${productId}`)
+const goToProduct = (productId?: number | string) => {
+  if (productId) {
+    // If it looks like a slug (contains non-numeric characters), use slug route
+    if (typeof productId === 'string' && !/^\d+$/.test(productId)) {
+      router.push(`/product/slug/${productId}`)
+    } else {
+      router.push(`/product/${productId}`)
+    }
+  }
 }
 
 // Lifecycle

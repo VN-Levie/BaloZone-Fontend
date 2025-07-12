@@ -172,7 +172,7 @@
         <div class="row">
           <div v-for="relatedProd in relatedProducts" :key="relatedProd.id" class="col-lg-3 col-md-4 col-sm-6 mb-4">
             <div class="card product-card h-100">
-              <router-link :to="`/product/${relatedProd.id}`" class="text-decoration-none">
+              <router-link :to="relatedProd.slug ? `/product/slug/${relatedProd.slug}` : `/product/${relatedProd.id}`" class="text-decoration-none">
                 <img :src="getImageUrl(relatedProd.image)" :alt="relatedProd.name" class="card-img-top" />
                 <div class="card-body">
                   <h6 class="card-title">{{ relatedProd.name }}</h6>
@@ -210,6 +210,11 @@ const route = useRoute()
 const { addToCart: addToCartComposable, isInCart } = useCart()
 const { toggleWishlist, isInWishlist } = useWishlist()
 
+// Determine if we're using slug or ID route
+const isSlugRoute = computed(() => route.name === 'product-detail-slug')
+const productId = computed(() => route.params.id as string)
+const productSlug = computed(() => route.params.slug as string)
+
 // Reactive data
 const product = ref<Product | null>(null)
 const relatedProducts = ref<Product[]>([])
@@ -242,6 +247,26 @@ const fetchProduct = async (id: number) => {
     }
   } catch (error) {
     console.error('Failed to load product details:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const fetchProductBySlug = async (slug: string) => {
+  loading.value = true
+  product.value = null
+  try {
+    const response = await productsApi.getProductBySlug(slug)
+    product.value = response.data
+
+    if (product.value.category?.slug) {
+      const relatedResponse = await productsApi.getProductsByCategory(product.value.category.slug)
+      relatedProducts.value = relatedResponse.data
+        .filter((p) => p.id !== product.value?.id)
+        .slice(0, 4)
+    }
+  } catch (error) {
+    console.error('Failed to load product details by slug:', error)
   } finally {
     loading.value = false
   }
@@ -336,10 +361,18 @@ const openShareModal = () => {
 }
 
 const initializeProduct = () => {
-  const productId = parseInt(route.params.id as string)
-  if (!isNaN(productId)) {
-    fetchProduct(productId)
-    quantity.value = 1
+  if (isSlugRoute.value) {
+    const slug = productSlug.value
+    if (slug) {
+      fetchProductBySlug(slug)
+      quantity.value = 1
+    }
+  } else {
+    const productIdNum = parseInt(productId.value)
+    if (!isNaN(productIdNum)) {
+      fetchProduct(productIdNum)
+      quantity.value = 1
+    }
   }
 }
 
@@ -348,11 +381,9 @@ onMounted(() => {
 })
 
 watch(
-  () => route.params.id,
-  (newId) => {
-    if (newId) {
-      initializeProduct()
-    }
+  () => [route.params.id, route.params.slug],
+  () => {
+    initializeProduct()
   }
 )
 </script>

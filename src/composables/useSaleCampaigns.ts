@@ -81,6 +81,22 @@ export function useSaleCampaigns() {
     }
   }
 
+  const fetchSaleCampaignBySlug = async (slug: string) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await saleCampaignsApi.getSaleCampaignBySlug(slug)
+      currentCampaign.value = response.data
+      return response.data
+    } catch (err) {
+      error.value = 'Failed to fetch sale campaign by slug'
+      console.error('Error fetching sale campaign by slug:', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const fetchCampaignProducts = async (campaignId: number | string, filters?: any) => {
     isLoading.value = true
     error.value = null
@@ -199,6 +215,7 @@ export function useSaleCampaigns() {
     fetchActiveCampaigns,
     fetchFeaturedCampaigns,
     fetchSaleCampaign,
+    fetchSaleCampaignBySlug,
     fetchCampaignProducts,
     createSaleCampaign,
     updateSaleCampaign,

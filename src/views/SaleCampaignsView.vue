@@ -19,7 +19,7 @@
             v-for="campaign in featuredCampaigns" 
             :key="campaign.id"
             class="campaign-card featured"
-            @click="goToCampaign(campaign.id)"
+            @click="goToCampaign(campaign)"
           >
             <div class="campaign-header">
               <h3 class="campaign-name">{{ campaign.name }}</h3>
@@ -91,7 +91,7 @@
             v-for="campaign in saleCampaigns" 
             :key="campaign.id"
             class="campaign-card"
-            @click="goToCampaign(campaign.id)"
+            @click="goToCampaign(campaign)"
           >
             <div class="campaign-header">
               <div>
@@ -183,8 +183,13 @@ const debouncedSearch = debounce(() => {
   fetchCampaigns()
 }, 500)
 
-const goToCampaign = (campaignId: number | string) => {
-  router.push(`/sale-campaigns/${campaignId}`)
+const goToCampaign = (campaign: any) => {
+  // Prefer slug over ID for better SEO
+  if (campaign.slug) {
+    router.push(`/sale-campaigns/slug/${campaign.slug}`)
+  } else {
+    router.push(`/sale-campaigns/${campaign.id}`)
+  }
 }
 
 const formatDate = (dateString: string) => {

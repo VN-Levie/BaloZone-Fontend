@@ -158,7 +158,7 @@ onMounted(() => {
               class="col-lg-4 col-md-6"
             >
               <router-link 
-                :to="`/sale-campaigns/${campaign.slug}`" 
+                :to="`/sale-campaigns/slug/${campaign.slug}`" 
                 class="campaign-card-link"
               >
                 <div class="campaign-card">

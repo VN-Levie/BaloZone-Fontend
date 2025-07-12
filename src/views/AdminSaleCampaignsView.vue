@@ -218,7 +218,7 @@
                 >
                   <button 
                     class="page-link" 
-                    @click="changePage(page)"
+                    @click="changePage(Number(page))"
                     v-if="page !== '...'"
                   >
                     {{ page }}

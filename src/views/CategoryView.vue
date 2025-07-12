@@ -38,21 +38,15 @@ const fetchCategoryAndProducts = async (slug: string, page: number = 1, perPage:
   loading.value = true
 
   try {
-    // Fetch category info and products together from single endpoint with pagination
-    console.log(`Fetching category and products for slug: ${slug}, page: ${page}, per_page: ${perPage}`)
-    const response = await categoriesApi.getCategoryBySlug(slug, { page, per_page: perPage })
-    console.log('!Category and Products API Response:', response)
+    // First, get category info
+    console.log(`Fetching category info for slug: ${slug}`)
+    const categoryResponse = await categoriesApi.getCategoryBySlug(slug)
     
-    // Set category data
-    if (response.category) {
-      category.value = {
-        ...response.category,
-        products_count: response.products?.total || 0
-      }
+    if (categoryResponse.category) {
+      category.value = categoryResponse.category
       console.log('Category set successfully:', category.value)
     } else {
       console.warn('No category data received from API')
-      // Fallback to default category data
       category.value = {
         id: 0,
         name: getCategoryName(slug),
@@ -65,18 +59,50 @@ const fetchCategoryAndProducts = async (slug: string, page: number = 1, perPage:
       }
     }
     
-    // Set products data (already paginated by backend)
-    if (response.products?.data) {
-      products.value = response.products.data
+    // Then fetch products using the new unified products API with category filtering
+    console.log(`Fetching products for category: ${category.value?.id}, page: ${page}, per_page: ${perPage}`)
+    
+    const filters: any = {
+      category_id: category.value?.id,
+      page: page,
+      per_page: perPage,
+      sort_by: getSortField(selectedSort.value),
+      sort_order: getSortOrder(selectedSort.value)
+    }
+    
+    // Apply additional filters
+    if (selectedBrand.value !== 'all') {
+      const brandId = allBrands.value.find(b => b.slug === selectedBrand.value)?.id
+      if (brandId) {
+        filters.brand_id = brandId
+      }
+    }
+    
+    if (selectedPriceRange.value !== 'all') {
+      const [min, max] = selectedPriceRange.value.split('-').map(Number)
+      filters.min_price = min
+      if (max) filters.max_price = max
+    }
+    
+    const productsResponse = await productsApi.getProducts(filters)
+    console.log('Products API Response:', productsResponse)
+    
+    if (productsResponse.data) {
+      products.value = productsResponse.data
       
-      // Update pagination info from backend response
-      currentPage.value = response.products.current_page
-      totalPages.value = response.products.last_page
-      totalProducts.value = response.products.total
-      itemsPerPage.value = response.products.per_page
+      // Update pagination info from products response
+      currentPage.value = productsResponse.current_page || 1
+      totalPages.value = productsResponse.last_page || 1
+      totalProducts.value = productsResponse.total || 0
+      itemsPerPage.value = productsResponse.per_page || perPage
+      
+      // Update category products count
+      if (category.value) {
+        category.value.products_count = productsResponse.total || 0
+      }
       
       console.log('Products and pagination set successfully:', {
-        productsCount: response.products.data.length,
+        productsCount: productsResponse.data.length,
         currentPage: currentPage.value,
         totalPages: totalPages.value,
         totalProducts: totalProducts.value,
@@ -109,6 +135,27 @@ const fetchCategoryAndProducts = async (slug: string, page: number = 1, perPage:
     totalProducts.value = 0
   } finally {
     loading.value = false
+  }
+}
+
+// Helper functions for sort mapping
+const getSortField = (sort: string): string => {
+  switch (sort) {
+    case 'newest': return 'created_at'
+    case 'price-asc': 
+    case 'price-desc': return 'price'
+    case 'name': return 'name'
+    default: return 'created_at'
+  }
+}
+
+const getSortOrder = (sort: string): 'asc' | 'desc' => {
+  switch (sort) {
+    case 'price-asc': return 'asc'
+    case 'price-desc': return 'desc'
+    case 'name': return 'asc'
+    case 'newest': 
+    default: return 'desc'
   }
 }
 const fetchBrands = async () => {
@@ -248,52 +295,43 @@ watch(itemsPerPage, (newPerPage) => {
 // Reset pagination when category changes
 watch(categorySlug, (newSlug) => {
   if (newSlug) {
+    // Reset filters when changing category
+    selectedSort.value = 'popular'
+    selectedPriceRange.value = 'all'
+    selectedBrand.value = 'all'
     fetchCategoryAndProducts(newSlug, 1, itemsPerPage.value)
   }
 })
 
-// Computed properties for filtered and sorted products (now applied locally on current page)
-const categoryProducts = computed(() => {
-  let filtered = [...products.value]
 
-  // Apply brand filter
-  if (selectedBrand.value !== 'all') {
-    filtered = filtered.filter((product) => product.brand?.slug === selectedBrand.value)
-  }
-
-  // Apply price filter
-  if (selectedPriceRange.value !== 'all') {
-    const [min, max] = selectedPriceRange.value.split('-').map(Number)
-    filtered = filtered.filter((product) => {
-      const price = Number(product.price);
-      if (max) {
-        return price >= min && price <= max
-      }
-      return price >= min
-    })
-  }
-
-  // Apply sorting
-  switch (selectedSort.value) {
-    case 'newest':
-      filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      break
-    case 'price-asc':
-      filtered.sort((a, b) => Number(a.price) - Number(b.price))
-      break
-    case 'price-desc':
-      filtered.sort((a, b) => Number(b.price) - Number(a.price))
-      break
-    // Add default case or handle 'popular' if you have data for it
-  }
-
-  return filtered
-})
-
-// For now, we'll show products from current page (backend paginated)
-// In future, we might want to move filtering to backend as well
+// For display - no additional client-side filtering needed
 const displayedProducts = computed(() => {
   return categoryProducts.value
+})
+
+// Apply filters with backend call
+const applyFilters = () => {
+  if (categorySlug.value) {
+    fetchCategoryAndProducts(categorySlug.value, 1, itemsPerPage.value)
+  }
+}
+
+// Debounced filter application
+let filterTimeout: number | null = null
+const debouncedApplyFilters = () => {
+  if (filterTimeout) {
+    clearTimeout(filterTimeout)
+  }
+  
+  filterTimeout = setTimeout(() => {
+    applyFilters()
+  }, 300)
+}
+
+// Computed properties for filtered and sorted products (now applied locally on current page)
+const categoryProducts = computed(() => {
+  // Products are now filtered by backend, so we return them as-is
+  return products.value
 })
 
 const brands = computed(() => {
@@ -342,26 +380,6 @@ watch(category, (newCategory) => {
     description: newCategory?.description
   })
 }, { deep: true, immediate: true })
-
-// Performance optimization: debounce filter changes
-let filterTimeout: number | null = null
-const debouncedApplyFilters = () => {
-  if (filterTimeout) clearTimeout(filterTimeout)
-  filterTimeout = setTimeout(() => {
-    // For now, filters are applied on client side to current page
-    // In the future, we might want to send filter params to backend
-    console.log('Filters applied:', {
-      sort: selectedSort.value,
-      priceRange: selectedPriceRange.value,
-      brand: selectedBrand.value
-    })
-  }, 300)
-}
-
-// Watch for filter changes and apply debounce
-watch([selectedSort, selectedPriceRange, selectedBrand], () => {
-  debouncedApplyFilters()
-})
 
 // Watch for view mode changes to persist user preference
 watch(viewMode, (newMode) => {

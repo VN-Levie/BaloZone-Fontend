@@ -157,3 +157,4 @@ API được chia thành 3 nhóm chính:
   - Nếu các class định nghĩa trong `/src/types/index.ts` sai so với tài liệu api hãy sửa lại chúng cho khớp với tài liệu api
   - Đảm bảo code được viết rõ ràng, dễ hiểu và tuân thủ các quy tắc đã đề ra.
   - Nếu có bất kỳ câu hỏi nào, hãy tham khảo tài liệu hoặc hỏi người quản lý dự án.
+  - no need to check if dev server is running, it is always running
