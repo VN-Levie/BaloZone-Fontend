@@ -237,12 +237,12 @@
                     Hủy đơn hàng
                   </button>
                   <button 
-                    v-if="order.payment_status === 'paid'"
-                    @click="reorderItems"
+                    v-if="canReorder(order.status, order.payment_status)"
+                    @click="showReorderConfirmModal"
                     class="action-btn reorder-btn"
                   >
                     <i class="bi bi-arrow-clockwise me-2"></i>
-                    Đặt lại
+                    Đặt lại lần nữa
                   </button>
                   <router-link to="/orders" class="action-btn back-btn">
                     <i class="bi bi-arrow-left me-2"></i>
@@ -252,6 +252,54 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reorder Confirmation Modal -->
+    <div v-if="showReorderModal" class="modal-overlay" @click="hideReorderModal">
+      <div class="reorder-modal" @click.stop>
+        <div class="modal-header">
+          <div class="modal-icon">
+            <i class="bi bi-arrow-clockwise"></i>
+          </div>
+          <h4 class="modal-title">Đặt lại đơn hàng</h4>
+        </div>
+        <div class="modal-body">
+          <p class="modal-message">Bạn có muốn thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?</p>
+          <div class="order-preview">
+            <div class="preview-header">
+              <i class="bi bi-bag-check me-2"></i>
+              {{ order?.items?.length || 0 }} sản phẩm
+            </div>
+            <div class="reorder-items">
+              <div v-for="item in order?.items?.slice(0, 3)" :key="item.id" class="reorder-item">
+                <img :src="item.product_image || '/placeholder.jpg'" :alt="item.product_name" />
+                <div class="item-info">
+                  <span class="item-name">{{ item.product_name }}</span>
+                  <span class="item-quantity">x{{ item.quantity }}</span>
+                </div>
+              </div>
+              <div v-if="order?.items && order.items.length > 3" class="more-items">
+                +{{ order.items.length - 3 }} sản phẩm khác
+              </div>
+            </div>
+          </div>
+          <p class="info-text">
+            <i class="bi bi-info-circle me-2"></i>
+            Sản phẩm sẽ được thêm vào giỏ hàng với giá hiện tại
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-cancel" @click="hideReorderModal">
+            <i class="bi bi-x-circle me-2"></i>
+            Hủy bỏ
+          </button>
+          <button class="btn btn-confirm-reorder" @click="confirmReorder" :disabled="reordering">
+            <span v-if="reordering" class="spinner-border spinner-border-sm me-2"></span>
+            <i v-else class="bi bi-cart-plus me-2"></i>
+            {{ reordering ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}
+          </button>
         </div>
       </div>
     </div>
@@ -320,7 +368,9 @@ const order = ref<Order | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const showCancelOrderModal = ref(false)
+const showReorderModal = ref(false)
 const cancelling = ref(false)
+const reordering = ref(false)
 
 const orderId = computed(() => {
   const id = route.params.id
@@ -419,6 +469,11 @@ const canCancelOrder = (status: string) => {
   return ['pending', 'confirmed'].includes(status)
 }
 
+const canReorder = (status: string, paymentStatus: string) => {
+  // Cho phép đặt lại khi đơn hàng đã được giao, đã hủy, hoặc đã thanh toán
+  return ['delivered', 'cancelled'].includes(status) || paymentStatus === 'paid'
+}
+
 // Methods
 const fetchOrderDetail = async () => {
   try {
@@ -443,6 +498,14 @@ const hideCancelModal = () => {
   showCancelOrderModal.value = false
 }
 
+const showReorderConfirmModal = () => {
+  showReorderModal.value = true
+}
+
+const hideReorderModal = () => {
+  showReorderModal.value = false
+}
+
 const confirmCancelOrder = async () => {
   if (!order.value) return
   
@@ -459,19 +522,36 @@ const confirmCancelOrder = async () => {
   }
 }
 
-const reorderItems = async () => {
+const confirmReorder = async () => {
   try {
-    if (!order.value || !order.value.items) return
-    
-    for (const item of order.value.items) {
-      if (item.product_name && item.product_image) {
+    reordering.value = true
+    await reorderItems()
+    hideReorderModal()
+  } catch (err: any) {
+    console.error('Confirm reorder failed:', err)
+  } finally {
+    reordering.value = false
+  }
+}
+
+const reorderItems = async () => {
+  if (!order.value || !order.value.items || order.value.items.length === 0) {
+    showToast('Không có sản phẩm nào để đặt lại', 'warning')
+    return
+  }
+  
+  let addedCount = 0
+  
+  for (const item of order.value.items) {
+    if (item.product_name && item.product_id) {
+      try {
         const product = {
           id: item.product_id || 0,
           name: item.product_name,
           price: item.price,
           originalPrice: item.price,
           quantity: 1,
-          image: item.product_image,
+          image: item.product_image || '/placeholder.jpg',
           slug: `product-${item.product_id}`,
           description: '',
           brand_id: 0,
@@ -480,13 +560,22 @@ const reorderItems = async () => {
           updated_at: ''
         }
         await addToCart(product, item.quantity)
+        addedCount++
+      } catch (itemError) {
+        console.error(`Failed to add item ${item.product_name}:`, itemError)
       }
     }
+  }
+  
+  if (addedCount > 0) {
+    showToast(`Đã thêm ${addedCount} sản phẩm vào giỏ hàng`, 'success')
     
-    showToast('Đã thêm tất cả sản phẩm vào giỏ hàng', 'success')
-    router.push('/cart')
-  } catch (err: any) {
-    showToast('Không thể thêm sản phẩm vào giỏ hàng', 'error')
+    // Navigate to cart after a short delay
+    setTimeout(() => {
+      router.push('/cart')
+    }, 1500)
+  } else {
+    showToast('Không thể thêm sản phẩm nào vào giỏ hàng', 'error')
   }
 }
 
@@ -981,7 +1070,7 @@ onMounted(() => {
 }
 
 .action-btn {
-  padding: 0.75rem 1.5rem;
+  padding: 1rem 1.5rem;
   border: none;
   border-radius: 12px;
   font-weight: 600;
@@ -992,26 +1081,81 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1rem;
+  min-height: 50px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.action-btn i {
+  flex-shrink: 0;
+}
+
+.action-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.3);
 }
 
 .cancel-btn {
   background: linear-gradient(135deg, #dc3545, #c82333);
-  color: white;
+  color: white !important;
+  border: 2px solid transparent;
+}
+
+.cancel-btn:hover {
+  background: linear-gradient(135deg, #c82333, #a71e2a);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+  color: white !important;
+  text-decoration: none !important;
 }
 
 .reorder-btn {
   background: linear-gradient(135deg, #28a745, #1e7e34);
-  color: white;
+  color: white !important;
+  border: 2px solid transparent;
+}
+
+.reorder-btn:hover {
+  background: linear-gradient(135deg, #1e7e34, #155724);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+  color: white !important;
+  text-decoration: none !important;
 }
 
 .back-btn {
   background: linear-gradient(135deg, #ff6b35, #f7931e);
-  color: white;
+  color: white !important;
+  border: 2px solid transparent;
 }
 
-.action-btn:hover {
+.back-btn:hover {
+  background: linear-gradient(135deg, #f7931e, #e67e22);
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Fix for router-link specific styles */
+.action-btn.back-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.action-btn:visited,
+.action-btn:link {
+  color: white !important;
+  text-decoration: none !important;
 }
 
 /* Modal */
@@ -1035,7 +1179,8 @@ onMounted(() => {
   to { opacity: 1; }
 }
 
-.cancel-modal {
+.cancel-modal,
+.reorder-modal {
   background: white;
   border-radius: 20px;
   max-width: 500px;
@@ -1090,12 +1235,76 @@ onMounted(() => {
 .preview-header {
   font-weight: 700;
   color: #333;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .preview-info {
   color: #6c757d;
   font-size: 0.95rem;
+}
+
+/* Reorder Modal Specific Styles */
+.reorder-items {
+  margin-top: 1rem;
+}
+
+.reorder-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.reorder-item img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.item-quantity {
+  color: #6c757d;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.more-items {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 107, 53, 0.1);
+  border-radius: 6px;
+}
+
+.info-text {
+  background: #e7f3ff;
+  color: #0066cc;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #b3d9ff;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0;
 }
 
 .warning-text {
@@ -1149,6 +1358,21 @@ onMounted(() => {
 }
 
 .btn-confirm-cancel:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-confirm-reorder {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: white;
+}
+
+.btn-confirm-reorder:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+}
+
+.btn-confirm-reorder:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
@@ -1229,6 +1453,16 @@ onMounted(() => {
   .payment-badge {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
+  }
+  
+  .action-btn {
+    padding: 1rem;
+    font-size: 0.95rem;
+    min-height: 45px;
+  }
+  
+  .action-btn i {
+    margin-right: 0.5rem !important;
   }
 }
 </style>

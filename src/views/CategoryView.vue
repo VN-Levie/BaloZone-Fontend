@@ -224,10 +224,11 @@ const categoryProducts = computed(() => {
   if (selectedPriceRange.value !== 'all') {
     const [min, max] = selectedPriceRange.value.split('-').map(Number)
     filtered = filtered.filter((product) => {
+      const price = Number(product.price);
       if (max) {
-        return product.price >= min && product.price <= max
+        return price >= min && price <= max
       }
-      return product.price >= min
+      return price >= min
     })
   }
 
@@ -237,10 +238,10 @@ const categoryProducts = computed(() => {
       filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       break
     case 'price-asc':
-      filtered.sort((a, b) => a.price - b.price)
+      filtered.sort((a, b) => Number(a.price) - Number(b.price))
       break
     case 'price-desc':
-      filtered.sort((a, b) => b.price - a.price)
+      filtered.sort((a, b) => Number(b.price) - Number(a.price))
       break
     // Add default case or handle 'popular' if you have data for it
   }

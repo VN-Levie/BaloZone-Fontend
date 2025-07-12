@@ -3,7 +3,7 @@
     <div class="container py-4">
       <!-- Loading state -->
       <LoadingSpinner v-if="isLoading" text="Đang tải thông tin..." size="lg" />
-      
+
       <!-- Checkout content -->
       <div v-else>
         <!-- Header -->
@@ -58,7 +58,7 @@
                   <i class="bi bi-1-circle-fill"></i>
                 </div>
               </div>
-              
+
               <div class="section-content">
                 <div v-if="addresses.length === 0" class="empty-state">
                   <div class="empty-icon">
@@ -71,24 +71,12 @@
                     Thêm địa chỉ mới
                   </button>
                 </div>
-                
+
                 <div v-else>
                   <div class="address-list">
-                    <div 
-                      v-for="address in addresses" 
-                      :key="address.id"
-                      class="address-item"
-                      :class="{ active: selectedAddress?.id === address.id }"
-                      @click="selectedAddress = address"
-                    >
+                    <div v-for="address in addresses" :key="address.id" class="address-item" :class="{ active: selectedAddress?.id === address.id }" @click="selectedAddress = address">
                       <div class="address-radio">
-                        <input 
-                          type="radio" 
-                          :id="`address-${address.id}`"
-                          :value="address.id"
-                          :checked="selectedAddress?.id === address.id"
-                          @change="selectedAddress = address"
-                        />
+                        <input type="radio" :id="`address-${address.id}`" :value="address.id" :checked="selectedAddress?.id === address.id" @change="selectedAddress = address" />
                         <label :for="`address-${address.id}`" class="radio-label"></label>
                       </div>
                       <div class="address-content">
@@ -116,7 +104,7 @@
                       </div>
                     </div>
                   </div>
-                  
+
                   <button class="btn btn-outline-primary btn-add-more" @click="showAddAddressModal = true">
                     <i class="bi bi-plus-circle me-2"></i>
                     Thêm địa chỉ mới
@@ -136,24 +124,12 @@
                   <i class="bi bi-2-circle-fill"></i>
                 </div>
               </div>
-              
+
               <div class="section-content">
                 <div class="payment-methods">
-                  <div 
-                    v-for="method in paymentMethods" 
-                    :key="method.id"
-                    class="payment-item"
-                    :class="{ active: selectedPaymentMethod?.id === method.id }"
-                    @click="selectedPaymentMethod = method"
-                  >
+                  <div v-for="method in paymentMethods" :key="method.id" class="payment-item" :class="{ active: selectedPaymentMethod?.id === method.id }" @click="selectedPaymentMethod = method">
                     <div class="payment-radio">
-                      <input 
-                        type="radio" 
-                        :id="`payment-${method.id}`"
-                        :value="method.id"
-                        :checked="selectedPaymentMethod?.id === method.id"
-                        @change="selectedPaymentMethod = method"
-                      />
+                      <input type="radio" :id="`payment-${method.id}`" :value="method.id" :checked="selectedPaymentMethod?.id === method.id" @change="selectedPaymentMethod = method" />
                       <label :for="`payment-${method.id}`" class="radio-label"></label>
                     </div>
                     <div class="payment-icon">
@@ -190,7 +166,7 @@
                   <i class="bi bi-3-circle-fill"></i>
                 </div>
               </div>
-              
+
               <div class="section-content">
                 <div v-if="selectedVoucher" class="voucher-applied">
                   <div class="voucher-icon">
@@ -206,31 +182,20 @@
                     <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
-                
+
                 <div v-else class="voucher-input">
                   <div class="input-group custom-input-group">
                     <span class="input-group-text">
                       <i class="bi bi-ticket-perforated"></i>
                     </span>
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      placeholder="Nhập mã giảm giá của bạn"
-                      v-model="voucherCode"
-                      @keyup.enter="applyVoucher"
-                    />
-                    <button 
-                      class="btn btn-primary" 
-                      type="button"
-                      @click="applyVoucher"
-                      :disabled="!voucherCode.trim()"
-                    >
+                    <input type="text" class="form-control" placeholder="Nhập mã giảm giá của bạn" v-model="voucherCode" @keyup.enter="applyVoucher" />
+                    <button class="btn btn-primary" type="button" @click="applyVoucher" :disabled="!voucherCode.trim()">
                       <i class="bi bi-check me-1"></i>
                       Áp dụng
                     </button>
                   </div>
                 </div>
-                
+
                 <!-- Available vouchers -->
                 <div v-if="availableVouchers.length > 0" class="available-vouchers">
                   <div class="vouchers-header">
@@ -238,12 +203,7 @@
                     <small class="vouchers-title">Voucher có sẵn:</small>
                   </div>
                   <div class="voucher-list">
-                    <button 
-                      v-for="voucher in availableVouchers.slice(0, 3)" 
-                      :key="voucher.id"
-                      class="voucher-chip"
-                      @click="applyAvailableVoucher(voucher)"
-                    >
+                    <button v-for="voucher in availableVouchers.slice(0, 3)" :key="voucher.id" class="voucher-chip" @click="applyAvailableVoucher(voucher)">
                       <span class="voucher-chip-code">{{ voucher.code }}</span>
                       <span class="voucher-chip-discount">
                         -{{ formatVoucherPrice(voucher) }}{{ voucher.discount_type === 'percentage' ? '' : 'đ' }}
@@ -265,15 +225,10 @@
                   <i class="bi bi-4-circle"></i>
                 </div>
               </div>
-              
+
               <div class="section-content">
                 <div class="notes-input">
-                  <textarea 
-                    class="form-control custom-textarea" 
-                    rows="4"
-                    placeholder="Thêm ghi chú cho đơn hàng (không bắt buộc)..."
-                    v-model="orderComment"
-                  ></textarea>
+                  <textarea class="form-control custom-textarea" rows="4" placeholder="Thêm ghi chú cho đơn hàng (không bắt buộc)..." v-model="orderComment"></textarea>
                   <div class="notes-hint">
                     <i class="bi bi-info-circle me-1"></i>
                     Ví dụ: Giao hàng vào buổi sáng, gọi trước khi giao...
@@ -293,14 +248,10 @@
                 </h4>
                 <div class="summary-count">{{ cartItems.length }} sản phẩm</div>
               </div>
-              
+
               <!-- Cart items -->
               <div class="summary-items">
-                <div 
-                  v-for="item in cartItems" 
-                  :key="`${item.product.id}-${item.selectedSize || 'default'}`"
-                  class="summary-item"
-                >
+                <div v-for="item in cartItems" :key="`${item.product.id}-${item.selectedSize || 'default'}`" class="summary-item">
                   <div class="item-image">
                     <img :src="item.product.image" :alt="item.product.name" />
                     <div class="item-quantity-badge">{{ item.quantity }}</div>
@@ -344,9 +295,9 @@
                   </span>
                   <span class="total-value discount-value">-{{ formatPrice(Number(discount)) }}</span>
                 </div>
-                
+
                 <div class="summary-divider"></div>
-                
+
                 <div class="total-row final-total">
                   <span class="total-label final-label">Tổng thanh toán:</span>
                   <span class="total-value final-value">{{ formatPrice(total) }}</span>
@@ -368,23 +319,21 @@
                   <span>Đổi trả trong 7 ngày</span>
                 </div>
               </div>
+              <div class="place-order-section">
+                <!-- Place order button -->
+                <button class="btn btn-primary btn-place-order w-90" @click="handlePlaceOrder" :disabled="!canPlaceOrder || isPlacingOrder">
+                  <span v-if="isPlacingOrder" class="button-loading">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Đang xử lý...
+                  </span>
+                  <span v-else class="button-content">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Đặt hàng ngay
+                  </span>
+                </button>
+              </div>
 
-              <!-- Place order button -->
-              <button 
-                class="btn btn-primary btn-place-order w-100"
-                @click="handlePlaceOrder"
-                :disabled="!canPlaceOrder || isPlacingOrder"
-              >
-                <span v-if="isPlacingOrder" class="button-loading">
-                  <span class="spinner-border spinner-border-sm me-2"></span>
-                  Đang xử lý...
-                </span>
-                <span v-else class="button-content">
-                  <i class="bi bi-check-circle me-2"></i>
-                  Đặt hàng ngay
-                </span>
-              </button>
-              
+
               <div class="order-note">
                 <i class="bi bi-info-circle me-1"></i>
                 Bạn sẽ không bị tính phí cho đến khi xem lại đơn hàng
@@ -396,12 +345,7 @@
     </div>
 
     <!-- Add Address Modal -->
-    <AddressFormModal 
-      v-if="showAddAddressModal"
-      :isEdit="false"
-      @submit="handleAddressAdded"
-      @cancel="showAddAddressModal = false"
-    />
+    <AddressFormModal v-if="showAddAddressModal" :isEdit="false" @submit="handleAddressAdded" @cancel="showAddAddressModal = false" />
   </div>
 </template>
 
@@ -448,7 +392,7 @@ const voucherCode = ref('')
 // Methods
 const applyVoucher = async () => {
   if (!voucherCode.value.trim()) return
-  
+
   const success = await validateVoucherCode(voucherCode.value.trim())
   if (success) {
     voucherCode.value = ''
@@ -462,26 +406,26 @@ const applyAvailableVoucher = (voucher: Voucher) => {
 // Format voucher price safely
 const formatVoucherPrice = (voucher: Voucher): string => {
   console.log('formatVoucherPrice called with voucher:', voucher);
-  
+
   if (!voucher) return '0'
-  
+
   // Handle legacy price field first
   if (voucher.price !== undefined && voucher.price !== null) {
     const numPrice = typeof voucher.price === 'string' ? parseFloat(voucher.price) || 0 : voucher.price || 0
     return numPrice.toLocaleString()
   }
-  
+
   // Handle new discount structure
   if (voucher.discount_type && voucher.discount_value) {
     const discountValue = parseFloat(voucher.discount_value) || 0
-    
+
     if (voucher.discount_type === 'percentage') {
       return `${discountValue}%`
     } else if (voucher.discount_type === 'fixed') {
       return discountValue.toLocaleString()
     }
   }
-  
+
   return '0'
 }
 
@@ -620,6 +564,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  color: white;
 }
 
 .section-badge {
@@ -741,12 +686,12 @@ onMounted(async () => {
   position: relative;
 }
 
-.address-radio input:checked + .radio-label {
+.address-radio input:checked+.radio-label {
   border-color: #ff6b35;
   background: #ff6b35;
 }
 
-.address-radio input:checked + .radio-label::after {
+.address-radio input:checked+.radio-label::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -1349,13 +1294,22 @@ onMounted(async () => {
   border: none;
   color: white;
   font-weight: 700;
-  padding: 1.25rem 2rem;
+  padding: 1.25rem;
   border-radius: 12px;
   font-size: 1.2rem;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
-  margin: 1.5rem 2rem 0;
+  margin: 1rem 0;
+  max-width: 100%;
+  display: block;
 }
+
+.place-order-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 
 .btn-place-order:hover:not(:disabled) {
   background: linear-gradient(135deg, #e55a2b 0%, #d6841a 100%);
@@ -1434,32 +1388,32 @@ onMounted(async () => {
     padding: 1.5rem;
     margin-bottom: 1.5rem;
   }
-  
+
   .page-title {
     font-size: 2rem;
   }
-  
+
   .checkout-actions {
     margin-top: 1rem;
   }
-  
+
   .section-content {
     padding: 1.5rem;
   }
-  
+
   .address-item,
   .payment-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .address-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .payment-icon {
     width: 40px;
     height: 40px;
@@ -1471,49 +1425,46 @@ onMounted(async () => {
   .checkout-header {
     padding: 1rem;
   }
-  
+
   .page-title {
     font-size: 1.8rem;
   }
-  
+
   .checkout-header .d-flex {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
   }
-  
+
   .section-header {
     padding: 1rem 1.5rem;
     flex-direction: column;
     gap: 0.5rem;
     text-align: center;
   }
-  
+
   .section-content {
     padding: 1rem;
   }
-  
+
   .summary-items {
     padding: 1rem;
   }
-  
+
   .summary-totals {
     padding: 1rem;
   }
-  
-  .btn-place-order {
-    margin: 1rem;
-    font-size: 1.1rem;
-  }
-  
+
+
+
   .order-note {
     padding: 1rem;
   }
-  
+
   .voucher-list {
     flex-direction: column;
   }
-  
+
   .voucher-chip {
     justify-content: center;
   }
@@ -1523,49 +1474,49 @@ onMounted(async () => {
   .checkout-header {
     padding: 0.75rem;
   }
-  
+
   .page-title {
     font-size: 1.6rem;
   }
-  
+
   .empty-state {
     padding: 2rem 1rem;
   }
-  
+
   .empty-icon {
     font-size: 3rem;
   }
-  
+
   .address-item,
   .payment-item {
     padding: 1rem;
   }
-  
+
   .item-image {
     width: 60px;
     height: 60px;
   }
-  
+
   .summary-item {
     flex-direction: column;
     gap: 0.75rem;
     align-items: flex-start;
   }
-  
+
   .item-total {
     text-align: left;
     font-size: 1.1rem;
   }
-  
+
   .final-total {
     margin: 0.5rem -0.5rem 1rem -0.5rem;
     padding: 0.75rem;
   }
-  
+
   .final-label {
     font-size: 1.1rem;
   }
-  
+
   .final-value {
     font-size: 1.3rem;
   }
