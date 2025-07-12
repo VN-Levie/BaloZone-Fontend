@@ -60,16 +60,6 @@ export interface Brand {
   deleted_at?: string
 }
 
-export interface Comment {
-  id: number
-  product_id: number
-  user_id: number
-  comment: string
-  created_at: string
-  updated_at: string
-  user?: User
-}
-
 export interface Role {
   id: number
   name: string
@@ -410,17 +400,25 @@ export interface Comment {
   product_id: number
   content: string
   rating: number
-  author: {
-    id: number
-    name: string
-    email: string
-    avatar?: string
-  }
   created_at: string
   updated_at: string
+  deleted_at?: string | null
+  user: {
+    id: number
+    name: string
+    email?: string
+    avatar?: string
+  }
+  product?: {
+    id: number
+    name: string
+    slug?: string
+    image?: string
+  }
 }
 
 export interface CommentRequest {
+  product_id?: number // Optional when using /comments/product/{id} endpoint
   content: string
   rating: number
 }

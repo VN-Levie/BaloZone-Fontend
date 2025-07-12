@@ -49,8 +49,22 @@
 
             <!-- Rating -->
             <div class="product-rating mb-3">
-              <div class="stars">
-                <span class="ms-2 text-muted">({{ totalComments }} đánh giá)</span>
+              <div class="stars d-flex align-items-center">
+                <template v-if="totalComments > 0">
+                  <div class="rating-stars me-2">
+                    <i 
+                      v-for="i in 5" 
+                      :key="i"
+                      class="bi bi-star-fill"
+                      :class="{ 'text-warning': i <= Math.floor(averageRating), 'text-muted': i > Math.floor(averageRating) }"
+                    ></i>
+                  </div>
+                  <span class="rating-score me-2 fw-semibold">{{ averageRating.toFixed(1) }}</span>
+                  <span class="text-muted">({{ totalComments }} đánh giá)</span>
+                </template>
+                <template v-else>
+                  <span class="text-muted">Chưa có đánh giá</span>
+                </template>
               </div>
             </div>
 
@@ -244,25 +258,30 @@ const loading = ref(true)
 const quantity = ref(1)
 const isAddingToCart = ref(false)
 
-// For compatibility with existing template
-const reviews = ref<Comment[]>([])
+// Use comments composable - will be initialized when product is loaded
+const commentsComposable = ref<ReturnType<typeof useComments> | null>(null)
 
-const totalComments = computed(() => reviews.value.length)
-const averageRating = computed(() => {
-  if (reviews.value.length === 0) return 0
-  const sum = reviews.value.reduce((acc, review) => acc + (review.rating || 0), 0)
-  return Math.round((sum / reviews.value.length) * 10) / 10
-})
+// Computed properties for comments
+const totalComments = computed(() => commentsComposable.value?.totalComments || 0)
+const averageRating = computed(() => commentsComposable.value?.averageRating || 0)
 
 const fetchProduct = async (id: number) => {
   loading.value = true
   product.value = null
+  commentsComposable.value = null
   try {
     const response = await productsApi.getProduct(id)
     product.value = response.data
 
-    // Fetch related products using new API
+    // Initialize comments composable with product ID
     if (product.value?.id) {
+      commentsComposable.value = useComments(product.value.id)
+      // Fetch comments
+      if (commentsComposable.value) {
+        await commentsComposable.value.fetchComments()
+      }
+      
+      // Fetch related products using new API
       const relatedResponse = await productsApi.getRelatedProducts(product.value.id, 4)
       relatedProducts.value = relatedResponse.data
     }
@@ -276,12 +295,20 @@ const fetchProduct = async (id: number) => {
 const fetchProductBySlug = async (slug: string) => {
   loading.value = true
   product.value = null
+  commentsComposable.value = null
   try {
     const response = await productsApi.getProductBySlug(slug)
     product.value = response.data
 
-    // Fetch related products using new API
+    // Initialize comments composable with product ID
     if (product.value?.id) {
+      commentsComposable.value = useComments(product.value.id)
+      // Fetch comments
+      if (commentsComposable.value) {
+        await commentsComposable.value.fetchComments()
+      }
+      
+      // Fetch related products using new API
       const relatedResponse = await productsApi.getRelatedProducts(product.value.id, 4)
       relatedProducts.value = relatedResponse.data
     }

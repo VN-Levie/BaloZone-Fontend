@@ -140,7 +140,7 @@
             <!-- Avatar -->
             <div class="comment-avatar me-3">
               <div class="avatar-circle">
-                {{ getInitials(comment.author.name) }}
+                {{ getInitials(comment.user.name) }}
               </div>
             </div>
             
@@ -149,7 +149,7 @@
               <div class="comment-header">
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
-                    <h6 class="comment-author">{{ comment.author.name }}</h6>
+                    <h6 class="comment-author">{{ comment.user.name }}</h6>
                     <div class="comment-rating">
                       <i 
                         v-for="i in 5" 

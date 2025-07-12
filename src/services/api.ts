@@ -813,19 +813,56 @@ export const vouchersApi = {
 
 // Comments API
 export const commentsApi = {
-  // Get comments for a product
-  getProductComments: (productId: number, page = 1, perPage = 10): Promise<CommentsResponse> =>
-    makeRequest(`/products/${productId}/comments?page=${page}&per_page=${perPage}`),
+  // Get all comments (public)
+  getComments: (params?: { page?: number; per_page?: number }): Promise<PaginatedResponse<Comment>> => {
+    const queryParams = new URLSearchParams()
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.per_page) queryParams.append('per_page', params.per_page.toString())
+    
+    const queryString = queryParams.toString()
+    return makeRequest(`/comments${queryString ? '?' + queryString : ''}`)
+  },
+
+  // Get single comment (public)
+  getComment: (id: number): Promise<ApiResponse<Comment>> =>
+    makeRequest(`/comments/${id}`),
+
+  // Get comments for a product (public) - using standard API endpoint
+  getProductComments: (productId: number, params?: { page?: number; per_page?: number }): Promise<PaginatedResponse<Comment>> => {
+    const queryParams = new URLSearchParams()
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.per_page) queryParams.append('per_page', params.per_page.toString())
+    
+    const queryString = queryParams.toString()
+    return makeRequest(`/comments/product/${productId}${queryString ? '?' + queryString : ''}`)
+  },
+
+  // Get my comments (authenticated)
+  getMyComments: (params?: { page?: number; per_page?: number }): Promise<PaginatedResponse<Comment>> => {
+    const queryParams = new URLSearchParams()
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.per_page) queryParams.append('per_page', params.per_page.toString())
+    
+    const queryString = queryParams.toString()
+    return makeRequest(`/my-comments${queryString ? '?' + queryString : ''}`)
+  },
+
+  // Create a new comment (authenticated users)
+  createComment: (commentData: CommentRequest): Promise<ApiResponse<Comment>> =>
+    makeRequest('/comments', {
+      method: 'POST',
+      body: JSON.stringify(commentData),
+    }),
 
   // Create a new comment for a product (authenticated users)
-  createProductComment: (productId: number, commentData: CommentRequest): Promise<ApiResponse<Comment>> =>
-    makeRequest(`/products/${productId}/comments`, {
+  createProductComment: (productId: number, commentData: Omit<CommentRequest, 'product_id'>): Promise<ApiResponse<Comment>> =>
+    makeRequest(`/comments/product/${productId}`, {
       method: 'POST',
       body: JSON.stringify(commentData),
     }),
 
   // Update comment (own comments only)
-  updateComment: (id: number, commentData: CommentRequest): Promise<ApiResponse<Comment>> =>
+  updateComment: (id: number, commentData: Partial<CommentRequest>): Promise<ApiResponse<Comment>> =>
     makeRequest(`/comments/${id}`, {
       method: 'PUT',
       body: JSON.stringify(commentData),

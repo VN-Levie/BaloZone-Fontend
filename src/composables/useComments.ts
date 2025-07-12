@@ -50,7 +50,10 @@ export function useComments(productId?: number) {
     error.value = null
 
     try {
-      const response = await commentsApi.getProductComments(productId, page, pagination.value.perPage)
+      const response = await commentsApi.getProductComments(productId, {
+        page,
+        per_page: pagination.value.perPage
+      })
       
       comments.value = response.data
       pagination.value = {

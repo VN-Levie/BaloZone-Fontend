@@ -1,6 +1,8 @@
-# 6. Bình luận (Comments)
+# API Comments - Bình luận
 
-## Lấy tất cả bình luận
+Tài liệu này mô tả các API endpoint liên quan đến quản lý bình luận trong hệ thống BaloZone.
+
+## 1. Lấy tất cả bình luận
 
 ### GET /api/comments
 
@@ -10,37 +12,68 @@
 
 **URL**: `/api/comments`
 
-**Phân quyền**: Không yêu cầu authentication
+**Phân quyền**: Không yêu cầu
 
-**Tham số query**:
-- `page` (integer, optional): Số trang (mặc định: 1)
-- `per_page` (integer, optional): Số bình luận mỗi trang (mặc định: 10)
+**Headers**: 
+```
+Accept: application/json
+```
+
+**Query Parameters** (optional):
+- `page` (integer): Số trang (mặc định: 1)
+- `per_page` (integer): Số bình luận mỗi trang (mặc định: 10)
+
+**cURL**:
+```bash
+curl -X GET "http://localhost:8000/api/comments" -H "Accept: application/json"
+```
 
 **Response thành công (200)**:
-
 ```json
 {
   "current_page": 1,
   "data": [
     {
-      "id": 1,
+      "id": 100,
+      "product_id": 69,
       "user_id": 1,
-      "product_id": 1,
-      "content": "Sản phẩm rất tốt, đáng mua!",
+      "content": "Phù hợp cho cả nam và nữ.",
       "rating": 5,
+      "created_at": "2025-07-12T17:24:39.000000Z",
+      "updated_at": "2025-07-12T17:24:39.000000Z",
+      "deleted_at": null,
       "user": {
         "id": 1,
-        "name": "Nguyễn Văn A",
-        "email": "user@example.com"
+        "name": "Admin BaloZone"
       },
-      "created_at": "2024-01-01T00:00:00.000000Z",
-      "updated_at": "2024-01-01T00:00:00.000000Z"
+      "product": {
+        "id": 69,
+        "name": "Balo Mini Cute ipsam"
+      }
+    },
+    {
+      "id": 88,
+      "product_id": 175,
+      "user_id": 13,
+      "content": "Chất liệu bền, thiết kế đẹp mắt.",
+      "rating": 3,
+      "created_at": "2025-07-12T17:24:39.000000Z",
+      "updated_at": "2025-07-12T17:24:39.000000Z",
+      "deleted_at": null,
+      "user": {
+        "id": 13,
+        "name": "Chesley Kuhn"
+      },
+      "product": {
+        "id": 175,
+        "name": "Balo Gaming RGB in"
+      }
     }
   ],
   "first_page_url": "http://localhost:8000/api/comments?page=1",
   "from": 1,
-  "last_page": 1,
-  "last_page_url": "http://localhost:8000/api/comments?page=1",
+  "last_page": 10,
+  "last_page_url": "http://localhost:8000/api/comments?page=10",
   "links": [
     {
       "url": null,
@@ -51,23 +84,18 @@
       "url": "http://localhost:8000/api/comments?page=1",
       "label": "1",
       "active": true
-    },
-    {
-      "url": null,
-      "label": "Next &raquo;",
-      "active": false
     }
   ],
-  "next_page_url": null,
+  "next_page_url": "http://localhost:8000/api/comments?page=2",
   "path": "http://localhost:8000/api/comments",
   "per_page": 10,
   "prev_page_url": null,
-  "to": 1,
-  "total": 1
+  "to": 10,
+  "total": 100
 }
 ```
 
-## Lấy chi tiết bình luận
+## 2. Lấy chi tiết bình luận
 
 ### GET /api/comments/{id}
 
@@ -77,35 +105,47 @@
 
 **URL**: `/api/comments/{id}`
 
-**Phân quyền**: Không yêu cầu authentication
+**Phân quyền**: Không yêu cầu
 
-**Tham số URL**:
+**Headers**: 
+```
+Accept: application/json
+```
 
+**Path Parameters**:
 - `id` (integer, required): ID bình luận
 
-**Response thành công (200)**:
+**cURL**:
+```bash
+curl -X GET "http://localhost:8000/api/comments/100" -H "Accept: application/json"
+```
 
+**Response thành công (200)**:
 ```json
 {
-  "success": true,
   "data": {
-    "id": 1,
+    "id": 100,
+    "product_id": 69,
     "user_id": 1,
-    "product_id": 1,
-    "content": "Sản phẩm rất tốt, đáng mua!",
+    "content": "Phù hợp cho cả nam và nữ.",
     "rating": 5,
+    "created_at": "2025-07-12T17:24:39.000000Z",
+    "updated_at": "2025-07-12T17:24:39.000000Z",
+    "deleted_at": null,
     "user": {
       "id": 1,
-      "name": "Nguyễn Văn A",
-      "email": "user@example.com"
+      "name": "Admin BaloZone"
     },
-    "created_at": "2024-01-01T00:00:00.000000Z",
-    "updated_at": "2024-01-01T00:00:00.000000Z"
+    "product": {
+      "id": 69,
+      "name": "Balo Mini Cute ipsam",
+      "slug": "balo-mini-cute-ipsam-1903"
+    }
   }
 }
 ```
 
-## Lấy bình luận của sản phẩm
+## 3. Lấy bình luận của sản phẩm
 
 ### GET /api/comments/product/{product_id}
 
@@ -115,42 +155,65 @@
 
 **URL**: `/api/comments/product/{product_id}`
 
-**Phân quyền**: Không yêu cầu authentication
+**Phân quyền**: Không yêu cầu
 
-**Tham số URL**:
+**Headers**: 
+```
+Accept: application/json
+```
 
+**Path Parameters**:
 - `product_id` (integer, required): ID sản phẩm
 
-**Tham số query**:
+**Query Parameters** (optional):
+- `page` (integer): Số trang (mặc định: 1)
+- `per_page` (integer): Số bình luận mỗi trang (mặc định: 10)
 
-- `page` (integer, optional): Số trang (mặc định: 1)
-- `per_page` (integer, optional): Số bình luận mỗi trang (mặc định: 10)
+**cURL**:
+```bash
+curl -X GET "http://localhost:8000/api/comments/product/69" -H "Accept: application/json"
+```
 
 **Response thành công (200)**:
-
 ```json
 {
   "current_page": 1,
   "data": [
     {
-      "id": 1,
+      "id": 100,
+      "product_id": 69,
       "user_id": 1,
-      "product_id": 1,
-      "content": "Sản phẩm rất tốt, đáng mua!",
+      "content": "Đã cập nhật: phù hợp cho cả nam và nữ, thiết kế đẹp!",
       "rating": 5,
+      "created_at": "2025-07-12T17:24:39.000000Z",
+      "updated_at": "2025-07-12T21:57:50.000000Z",
+      "deleted_at": null,
       "user": {
         "id": 1,
-        "name": "Nguyễn Văn A",
-        "email": "user@example.com"
-      },
-      "created_at": "2024-01-01T00:00:00.000000Z",
-      "updated_at": "2024-01-01T00:00:00.000000Z"
+        "name": "Admin BaloZone",
+        "email": "admin@balozone.com"
+      }
+    },
+    {
+      "id": 40,
+      "product_id": 69,
+      "user_id": 11,
+      "content": "Màu sắc đẹp, chất liệu cao cấp.",
+      "rating": 5,
+      "created_at": "2025-07-12T17:24:38.000000Z",
+      "updated_at": "2025-07-12T17:24:38.000000Z",
+      "deleted_at": null,
+      "user": {
+        "id": 11,
+        "name": "Prof. Georgianna Braun IV",
+        "email": "ischowalter@example.net"
+      }
     }
   ],
-  "first_page_url": "http://localhost:8000/api/comments/product/1?page=1",
+  "first_page_url": "http://localhost:8000/api/comments/product/69?page=1",
   "from": 1,
   "last_page": 1,
-  "last_page_url": "http://localhost:8000/api/comments/product/1?page=1",
+  "last_page_url": "http://localhost:8000/api/comments/product/69?page=1",
   "links": [
     {
       "url": null,
@@ -158,7 +221,7 @@
       "active": false
     },
     {
-      "url": "http://localhost:8000/api/comments/product/1?page=1",
+      "url": "http://localhost:8000/api/comments/product/69?page=1",
       "label": "1",
       "active": true
     },
@@ -169,33 +232,15 @@
     }
   ],
   "next_page_url": null,
-  "path": "http://localhost:8000/api/comments/product/1",
+  "path": "http://localhost:8000/api/comments/product/69",
   "per_page": 10,
   "prev_page_url": null,
-  "to": 1,
-  "total": 1
+  "to": 2,
+  "total": 2
 }
 ```
 
-## Lấy bình luận của sản phẩm (Legacy)
-
-### GET /api/comments/product/{product_id}/legacy
-
-**Mô tả**: Lấy danh sách bình luận của sản phẩm (route legacy để tương thích ngược)
-
-**Phương thức**: GET
-
-**URL**: `/api/comments/product/{product_id}/legacy`
-
-**Phân quyền**: Không yêu cầu authentication
-
-**Tham số URL**:
-
-- `product_id` (integer, required): ID sản phẩm
-
-**Response**: Giống như endpoint `/api/comments/product/{product_id}`
-
-## Lấy bình luận của người dùng hiện tại
+## 4. Lấy bình luận của người dùng hiện tại
 
 ### GET /api/my-comments
 
@@ -208,49 +253,261 @@
 **Phân quyền**: Yêu cầu authentication (Bearer Token)
 
 **Headers**:
-
 ```
 Authorization: Bearer {token}
+Accept: application/json
 ```
 
-**Tham số query**:
+**Query Parameters** (optional):
+- `page` (integer): Số trang (mặc định: 1)
+- `per_page` (integer): Số bình luận mỗi trang (mặc định: 10)
 
-- `page` (integer, optional): Số trang (mặc định: 1)
-- `per_page` (integer, optional): Số bình luận mỗi trang (mặc định: 10)
+**cURL**:
+```bash
+curl -X GET "http://localhost:8000/api/my-comments" \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
 
 **Response thành công (200)**:
-
 ```json
 {
   "current_page": 1,
   "data": [
     {
-      "id": 1,
+      "id": 100,
+      "product_id": 69,
       "user_id": 1,
-      "product_id": 1,
-      "content": "Sản phẩm rất tốt, đáng mua!",
+      "content": "Phù hợp cho cả nam và nữ.",
       "rating": 5,
+      "created_at": "2025-07-12T17:24:39.000000Z",
+      "updated_at": "2025-07-12T17:24:39.000000Z",
+      "deleted_at": null,
       "product": {
-        "id": 1,
-        "name": "Balo học sinh",
-        "slug": "balo-hoc-sinh"
-      },
-      "created_at": "2024-01-01T00:00:00.000000Z",
-      "updated_at": "2024-01-01T00:00:00.000000Z"
+        "id": 69,
+        "name": "Balo Mini Cute ipsam",
+        "slug": "balo-mini-cute-ipsam-1903",
+        "image": "https://placehold.co/600x400?text=products/balo-mini-cute-ipsam.jpg"
+      }
+    },
+    {
+      "id": 94,
+      "product_id": 122,
+      "user_id": 1,
+      "content": "Mình rất hài lòng với sản phẩm này.",
+      "rating": 4,
+      "created_at": "2025-07-12T17:24:39.000000Z",
+      "updated_at": "2025-07-12T17:24:39.000000Z",
+      "deleted_at": null,
+      "product": {
+        "id": 122,
+        "name": "Túi Xách Nữ Thời Trang tempora",
+        "slug": "tui-xach-nu-thoi-trang-tempora-7716",
+        "image": "https://placehold.co/600x400?text=products/tui-xach-nu-thoi-trang-tempora.jpg"
+      }
     }
   ],
   "first_page_url": "http://localhost:8000/api/my-comments?page=1",
   "from": 1,
   "last_page": 1,
   "last_page_url": "http://localhost:8000/api/my-comments?page=1",
+  "links": [
+    {
+      "url": null,
+      "label": "&laquo; Previous",
+      "active": false
+    },
+    {
+      "url": "http://localhost:8000/api/my-comments?page=1",
+      "label": "1",
+      "active": true
+    },
+    {
+      "url": null,
+      "label": "Next &raquo;",
+      "active": false
+    }
+  ],
   "next_page_url": null,
   "path": "http://localhost:8000/api/my-comments",
   "per_page": 10,
   "prev_page_url": null,
-  "to": 1,
-  "total": 1
+  "to": 8,
+  "total": 8
 }
 ```
+
+## 5. Cập nhật bình luận
+
+### PUT /api/comments/{id}
+
+**Mô tả**: Cập nhật bình luận (chỉ người tạo mới có thể sửa)
+
+**Phương thức**: PUT
+
+**URL**: `/api/comments/{id}`
+
+**Phân quyền**: Yêu cầu authentication (Bearer Token)
+
+**Headers**:
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+**Path Parameters**:
+- `id` (integer, required): ID bình luận
+
+**Body**:
+```json
+{
+  "product_id": 69,
+  "content": "Đã cập nhật: phù hợp cho cả nam và nữ, thiết kế đẹp!",
+  "rating": 5
+}
+```
+
+**cURL**:
+```bash
+curl -X PUT "http://localhost:8000/api/comments/100" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{"product_id": 69, "content": "Đã cập nhật: phù hợp cho cả nam và nữ, thiết kế đẹp!", "rating": 5}'
+```
+
+**Response thành công (200)**:
+```json
+{
+  "message": "Bình luận đã được cập nhật",
+  "data": {
+    "id": 100,
+    "product_id": 69,
+    "user_id": 1,
+    "content": "Đã cập nhật: phù hợp cho cả nam và nữ, thiết kế đẹp!",
+    "rating": 5,
+    "created_at": "2025-07-12T17:24:39.000000Z",
+    "updated_at": "2025-07-12T21:57:50.000000Z",
+    "deleted_at": null,
+    "user": {
+      "id": 1,
+      "name": "Admin BaloZone"
+    },
+    "product": {
+      "id": 69,
+      "name": "Balo Mini Cute ipsam"
+    }
+  }
+}
+```
+
+**Validation rules**:
+- `product_id` (integer, required): ID sản phẩm
+- `content` (string, required): Nội dung bình luận
+- `rating` (integer, required): Đánh giá từ 1-5 sao
+
+## 6. Xóa bình luận
+
+### DELETE /api/comments/{id}
+
+**Mô tả**: Xóa bình luận (chỉ người tạo mới có thể xóa)
+
+**Phương thức**: DELETE
+
+**URL**: `/api/comments/{id}`
+
+**Phân quyền**: Yêu cầu authentication (Bearer Token)
+
+**Headers**:
+```
+Authorization: Bearer {token}
+```
+
+**Path Parameters**:
+- `id` (integer, required): ID bình luận
+
+**cURL**:
+```bash
+curl -X DELETE "http://localhost:8000/api/comments/93" \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+
+**Response thành công (200)**:
+```json
+{
+  "message": "Bình luận đã được xóa mềm"
+}
+```
+
+## 7. Lấy bình luận của sản phẩm (Legacy)
+
+### GET /api/comments/product/{product_id}/legacy
+
+**Mô tả**: Lấy danh sách bình luận của sản phẩm (route legacy để tương thích ngược)
+
+**Phương thức**: GET
+
+**URL**: `/api/comments/product/{product_id}/legacy`
+
+**Phân quyền**: Không yêu cầu
+
+**Headers**: 
+```
+Accept: application/json
+```
+
+**Path Parameters**:
+- `product_id` (integer, required): ID sản phẩm
+
+**cURL**:
+```bash
+curl -X GET "http://localhost:8000/api/comments/product/69/legacy" -H "Accept: application/json"
+```
+
+**Response**: Giống như endpoint `/api/comments/product/{product_id}`
+
+**Response lỗi (404)**:
+```json
+{
+  "message": "Comment not found"
+}
+```
+
+**Response lỗi (403)**:
+```json
+{
+  "message": "Bạn không có quyền truy cập bình luận này"
+}
+```
+
+**Response lỗi (500)**:
+```json
+{
+  "message": "Server Error"
+}
+```
+
+---
+
+## Lưu ý quan trọng
+
+### Business Rules
+1. **Chỉ được bình luận sau khi mua**: User chỉ có thể bình luận về sản phẩm đã mua
+2. **Quyền sở hữu**: Chỉ người tạo bình luận mới có thể sửa/xóa
+3. **Soft delete**: Bình luận bị xóa sẽ được soft delete (không xóa vĩnh viễn)
+4. **Rating scale**: Đánh giá từ 1-5 sao (1 = rất tệ, 5 = rất tốt)
+
+### Data Structure
+- Bình luận hiển thị thông tin user (name, email trong một số endpoint)
+- Bình luận hiển thị thông tin product (name, slug, image)
+- Support pagination cho tất cả list endpoints
+- Có timestamp cho created_at, updated_at, deleted_at
+
+### API Patterns  
+- **Public endpoints**: Xem bình luận không cần authentication
+- **Protected endpoints**: Thêm, sửa, xóa cần Bearer token
+- **Legacy support**: Route `/legacy` được giữ lại để tương thích ngược
+- **Consistent response**: Sử dụng format response chuẩn với message và data
 
 ## Thêm bình luận
 
@@ -509,4 +766,4 @@ Authorization: Bearer {token}
 - Rating từ 1-5 sao (1 = rất tệ, 5 = rất tốt)
 - Bình luận sẽ hiển thị thông tin người dùng (name, email)
 - Có 2 cách để thêm bình luận: `/api/comments` (cần truyền product_id) và `/api/comments/product/{product_id}` (không cần truyền product_id)
-- Route legacy `/api/comments/product/{product_id}/legacy` được giữ lại để tương thích ngược
+
