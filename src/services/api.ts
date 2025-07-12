@@ -43,23 +43,30 @@ const getAuthToken = (): string | null => {
   return localStorage.getItem('auth_token')
 }
 
-// Utility function to get refresh token
-const getRefreshToken = (): string | null => {
-  return localStorage.getItem('refresh_token')
-}
-
-// Utility function to save tokens
-const saveTokens = (authToken: string, refreshToken?: string): void => {
+// Utility function to save tokens (chỉ cần lưu auth token theo API documentation)
+const saveTokens = (authToken: string): void => {
   localStorage.setItem('auth_token', authToken)
-  if (refreshToken) {
-    localStorage.setItem('refresh_token', refreshToken)
-  }
+  // Lưu thời gian hết hạn (1 giờ từ bây giờ)
+  const expiryTime = Date.now() + (3600 * 1000) // 3600 seconds = 1 hour
+  localStorage.setItem('token_expiry', expiryTime.toString())
 }
 
 // Utility function to clear tokens
 const clearTokens = (): void => {
   localStorage.removeItem('auth_token')
-  localStorage.removeItem('refresh_token')
+  localStorage.removeItem('token_expiry')
+}
+
+// Check if token is expired or about to expire (within 5 minutes)
+const isTokenExpiring = (): boolean => {
+  const expiryTime = localStorage.getItem('token_expiry')
+  if (!expiryTime) return true
+  
+  const expiry = parseInt(expiryTime)
+  const now = Date.now()
+  const fiveMinutes = 5 * 60 * 1000 // 5 minutes in milliseconds
+  
+  return (expiry - now) <= fiveMinutes
 }
 
 // Utility function to refresh token
@@ -72,9 +79,9 @@ const refreshAuthToken = async (): Promise<string | null> => {
   isRefreshing = true
   refreshPromise = (async () => {
     try {
-      const refreshToken = getRefreshToken()
-      if (!refreshToken) {
-        throw new Error('No refresh token available')
+      const currentToken = getAuthToken()
+      if (!currentToken) {
+        throw new Error('No auth token available')
       }
 
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
@@ -82,7 +89,7 @@ const refreshAuthToken = async (): Promise<string | null> => {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${refreshToken}`
+          'Authorization': `Bearer ${currentToken}`
         }
       })
 
@@ -91,11 +98,11 @@ const refreshAuthToken = async (): Promise<string | null> => {
       }
 
       const data = await response.json()
-      const newToken = data.data?.token || data.token
-      const newRefreshToken = data.data?.refresh_token || data.refresh_token
-
-      if (newToken) {
-        saveTokens(newToken, newRefreshToken)
+      
+      // Theo API documentation, token mới nằm trong authorization.token
+      if (data.success && data.authorization?.token) {
+        const newToken = data.authorization.token
+        saveTokens(newToken)
         return newToken
       }
 
@@ -104,15 +111,9 @@ const refreshAuthToken = async (): Promise<string | null> => {
       console.error('Token refresh error:', error)
       clearTokens()
 
-      // Redirect to login if in browser environment
+      // Dispatch custom event for auth failure
       if (typeof window !== 'undefined') {
-        // Dispatch custom event for auth failure
         window.dispatchEvent(new CustomEvent('auth:expired'))
-
-        // Optional: Auto redirect to login page
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login'
-        }
       }
 
       return null
@@ -131,6 +132,7 @@ const makeRequest = async <T>(
   options: RequestInit = {},
   retryCount = 0
 ): Promise<T> => {
+  const MAX_RETRIES = 2 // Tối đa 2 lần retry
   const url = `${API_BASE_URL}${endpoint}`
   const token = getAuthToken()
 
@@ -159,17 +161,23 @@ const makeRequest = async <T>(
     const response = await fetch(url, config)
 
     // Handle 401 Unauthorized - token might be expired
-    if (response.status === 401 && retryCount === 0) {
+    if (response.status === 401 && retryCount < MAX_RETRIES) {
       // Don't retry if it's the auth endpoints to avoid infinite loops
       const isAuthEndpoint = endpoint.includes('/auth/') || endpoint.includes('/login') || endpoint.includes('/register')
 
       if (!isAuthEndpoint) {
-        console.log('Token expired, attempting to refresh...')
+        console.log(`Token expired, attempting to refresh... (retry ${retryCount + 1}/${MAX_RETRIES})`)
         const newToken = await refreshAuthToken()
 
         if (newToken) {
           // Retry the request with new token
           return makeRequest<T>(endpoint, options, retryCount + 1)
+        } else {
+          // Token refresh failed, clear tokens and dispatch auth:expired event
+          clearTokens()
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('auth:expired'))
+          }
         }
       }
     }
@@ -196,9 +204,9 @@ const makeRequest = async <T>(
     const data = await response.json()
     return data
   } catch (error) {
-    // If it's our second attempt and still failing, don't retry again
-    if (retryCount > 0) {
-      console.error(`API request failed for ${endpoint} after retry:`, error)
+    // If we've exhausted retries or it's not a retry-able error, throw it
+    if (retryCount >= MAX_RETRIES || (typeof error === 'object' && error !== null && 'status' in error)) {
+      console.error(`API request failed for ${endpoint} after ${retryCount} retries:`, error)
     } else {
       console.error(`API request failed for ${endpoint}:`, error)
     }
@@ -566,8 +574,8 @@ export const authApi = {
   getMe: (): Promise<User> => makeRequest('/auth/me'),
 
   // Helper methods for token management
-  saveTokens: (authToken: string, refreshToken?: string) => {
-    saveTokens(authToken, refreshToken)
+  saveTokens: (authToken: string) => {
+    saveTokens(authToken)
   },
 
   clearTokens: () => {
@@ -575,7 +583,11 @@ export const authApi = {
   },
 
   hasValidToken: (): boolean => {
-    return !!getAuthToken()
+    const token = getAuthToken()
+    if (!token) return false
+    
+    // Check if token is not expired
+    return !isTokenExpiring()
   },
 
   // Manual token refresh

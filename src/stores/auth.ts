@@ -50,10 +50,10 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await authApi.login(credentials)
-      // Handle new API response format: response.data.access_token and response.data.user
-      const authToken = response.data?.access_token || response.authorization?.token
-      const refreshToken = (response.data as any)?.refresh_token || (response.authorization as any)?.refresh_token
-      const userData = response.data?.user || (response as any).user
+      
+      // Theo API documentation: authorization.token và user object
+      const authToken = response.authorization?.token
+      const userData = response.user
       
       if (!authToken || !userData) {
         throw new Error('Invalid response format from login API')
@@ -62,8 +62,8 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = authToken
       user.value = userData
       
-      // Use the new token management utilities
-      authApi.saveTokens(authToken, refreshToken)
+      // Sử dụng method mới chỉ cần 1 tham số
+      authApi.saveTokens(authToken)
       localStorage.setItem('user', JSON.stringify(userData))
       
       return response
@@ -78,10 +78,10 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await authApi.register(data)
-      // Handle new API response format: response.data.access_token and response.data.user
-      const authToken = response.data?.access_token || response.authorization?.token
-      const refreshToken = (response.data as any)?.refresh_token || (response.authorization as any)?.refresh_token
-      const userData = response.data?.user || (response as any).user
+      
+      // Theo API documentation: authorization.token và user object
+      const authToken = response.authorization?.token
+      const userData = response.user
       
       if (!authToken || !userData) {
         throw new Error('Invalid response format from register API')
@@ -90,8 +90,8 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = authToken
       user.value = userData
       
-      // Use the new token management utilities
-      authApi.saveTokens(authToken, refreshToken)
+      // Sử dụng method mới chỉ cần 1 tham số
+      authApi.saveTokens(authToken)
       localStorage.setItem('user', JSON.stringify(userData))
       
       return response
