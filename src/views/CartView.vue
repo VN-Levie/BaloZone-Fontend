@@ -113,7 +113,7 @@
                         
                         <div class="item-total-section">
                           <span class="item-total-label">Thành tiền:</span>
-                          <span class="item-total">{{ formatPrice((item.product.originalPrice || item.product.price) * item.quantity) }}</span>
+                          <span class="item-total">{{ formatPrice(Number(item.product.originalPrice || item.product.price) * item.quantity) }}</span>
                         </div>
                         
                         <button 
