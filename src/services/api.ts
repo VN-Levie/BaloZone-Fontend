@@ -29,7 +29,8 @@ import type {
   UpdateProductRequest,
   AdminProduct,
   AdminProductResponse,
-  AdminProductsListResponse
+  AdminProductsListResponse,
+  ContactAdminListResponse
 } from '@/types'
 
 const API_BASE_URL = 'http://localhost:8000/api'
@@ -891,6 +892,9 @@ export const contactApi = {
   // Get single contact (public)
   getContact: (id: number): Promise<ApiResponse<any>> => makeRequest(`/contacts/${id}`),
 
+  // Get single contact detail (admin)
+  getAdminContact: (id: number): Promise<ApiResponse<any>> => makeRequest(`/dashboard/contacts/${id}`),
+
   // Send a contact message
   submitContact: (contactData: any): Promise<ApiResponse<any>> =>
     makeRequest('/contacts', {
@@ -899,7 +903,29 @@ export const contactApi = {
     }),
 
   // Admin/Contributor only methods
-  getAdminContacts: (): Promise<PaginatedResponse<any>> => makeRequest('/dashboard/contacts'),
+  getAdminContacts: (params?: any): Promise<ContactAdminListResponse> => {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = String(value)
+        }
+        return acc
+      }, {} as Record<string, string>)
+    ).toString() : ''
+    return makeRequest(`/dashboard/contacts${queryString}`)
+  },
+
+  updateContactStatus: (id: number, statusData: any): Promise<ApiResponse<any>> =>
+    makeRequest(`/dashboard/contacts/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(statusData),
+    }),
+
+  replyContact: (id: number, replyData: any): Promise<ApiResponse<any>> =>
+    makeRequest(`/dashboard/contacts/${id}/reply`, {
+      method: 'POST',
+      body: JSON.stringify(replyData),
+    }),
 
   updateContact: (id: number, contactData: any): Promise<ApiResponse<any>> =>
     makeRequest(`/contacts/${id}`, {

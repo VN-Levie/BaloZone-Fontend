@@ -207,6 +207,13 @@ const router = createRouter({
       component: () => import('../views/admin/AdminBrandsTrashedView.vue'),
       meta: { requiresAuth: true }
     },
+    // Contact Admin Route
+    {
+      path: '/admin/contacts',
+      name: 'admin-contacts',
+      component: () => import('../views/admin/AdminContactView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
     // Orders Admin Routes
     {
       path: '/admin/orders',

@@ -1,6 +1,6 @@
 # 16. Quản lý liên hệ (Admin Contact)
 
-> **Lưu ý**: Các endpoint quản lý liên hệ sử dụng prefix `/api/dashboard/*` và có thể truy cập bởi:
+> **Lưu ý**: Các endpoint quản lý liên hệ sử dụng prefix `/api/dashboard/contacts/*` và có thể truy cập bởi:
 >
 > - Admin (role: admin) - toàn quyền
 > - Contributor (role: contributor) - có quyền quản lý liên hệ
@@ -15,7 +15,7 @@
 
 **URL**: `/api/dashboard/contacts`
 
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
+**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin hoặc Contributor
 
 **Headers**:
 
@@ -25,66 +25,48 @@ Authorization: Bearer {token}
 
 **Tham số query**:
 
-- `status` (string, optional): Lọc theo trạng thái (pending, processing, resolved, closed)
-- `search` (string, optional): Tìm kiếm theo tên, email hoặc chủ đề
-- `from_date` (date, optional): Từ ngày (format: YYYY-MM-DD)
-- `to_date` (date, optional): Đến ngày (format: YYYY-MM-DD)
+- `status` (string, optional): Lọc theo trạng thái (pending, resolved)
+- `search` (string, optional): Tìm kiếm theo tên hoặc email
 - `page` (integer, optional): Số trang (mặc định: 1)
-- `per_page` (integer, optional): Số liên hệ mỗi trang (mặc định: 10)
+- `per_page` (integer, optional): Số liên hệ mỗi trang (mặc định: 15)
 
 **Response thành công (200)**:
 
 ```json
 {
-  "success": true,
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
-        "id": 1,
-        "name": "Nguyễn Văn A",
-        "email": "user@example.com",
-        "phone": "0123456789",
-        "subject": "Hỏi về sản phẩm",
-        "message": "Xin chào, tôi muốn hỏi về sản phẩm balo Nike...",
-        "status": "pending",
-        "priority": "normal",
-        "assigned_to": null,
-        "replied_at": null,
-        "created_at": "2024-01-01T00:00:00.000000Z",
-        "updated_at": "2024-01-01T00:00:00.000000Z"
-      },
-      {
-        "id": 2,
-        "name": "Trần Thị B",
-        "email": "customer@example.com",
-        "phone": "0987654321",
-        "subject": "Khiếu nại về đơn hàng",
-        "message": "Tôi có vấn đề với đơn hàng #ORD-2024-001...",
-        "status": "processing",
-        "priority": "high",
-        "assigned_to": {
-          "id": 1,
-          "name": "Admin",
-          "email": "admin@example.com"
-        },
-        "replied_at": null,
-        "created_at": "2024-01-01T08:00:00.000000Z",
-        "updated_at": "2024-01-01T09:00:00.000000Z"
-      }
-    ],
-    "first_page_url": "http://example.com/api/dashboard/contacts?page=1",
-    "from": 1,
-    "last_page": 5,
-    "last_page_url": "http://example.com/api/dashboard/contacts?page=5",
-    "next_page_url": "http://example.com/api/dashboard/contacts?page=2",
-    "path": "http://example.com/api/dashboard/contacts",
-    "per_page": 10,
-    "prev_page_url": null,
-    "to": 10,
-    "total": 45
-  },
-  "message": "Lấy danh sách liên hệ thành công"
+  "current_page": 1,
+  "data": [
+    {
+      "id": 1,
+      "fullname": "Nguyễn Văn Tài",
+      "email": "tai.nguyen@gmail.com",
+      "message": "Xin chào, tôi muốn hỏi về chính sách đổi trả của cửa hàng. Tôi vừa mua một chiếc balo nhưng kích thước không phù hợp.",
+      "status": "resolved",
+      "created_at": "2025-08-02T19:37:55.000000Z",
+      "updated_at": "2025-08-02T19:37:55.000000Z",
+      "deleted_at": null
+    },
+    {
+      "id": 2,
+      "fullname": "Trần Thị Lan",
+      "email": "lan.tran@gmail.com",
+      "message": "Balo tôi đặt hôm qua đã được giao chưa ạ? Tôi cần gấp để đi công tác.",
+      "status": "pending",
+      "created_at": "2025-08-02T19:37:55.000000Z",
+      "updated_at": "2025-08-02T19:37:55.000000Z",
+      "deleted_at": null
+    }
+  ],
+  "first_page_url": "http://localhost:8000/api/dashboard/contacts?page=1",
+  "from": 1,
+  "last_page": 2,
+  "last_page_url": "http://localhost:8000/api/dashboard/contacts?page=2",
+  "next_page_url": "http://localhost:8000/api/dashboard/contacts?page=2",
+  "path": "http://localhost:8000/api/dashboard/contacts",
+  "per_page": 15,
+  "prev_page_url": null,
+  "to": 15,
+  "total": 22
 }
 ```
 
@@ -98,7 +80,7 @@ Authorization: Bearer {token}
 
 **URL**: `/api/dashboard/contacts/{id}`
 
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
+**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin hoặc Contributor
 
 **Headers**:
 
@@ -114,111 +96,30 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "success": true,
   "data": {
     "id": 1,
-    "name": "Nguyễn Văn A",
-    "email": "user@example.com",
-    "phone": "0123456789",
-    "subject": "Hỏi về sản phẩm",
-    "message": "Xin chào, tôi muốn hỏi về sản phẩm balo Nike...",
-    "status": "pending",
-    "priority": "normal",
-    "assigned_to": null,
-    "replied_at": null,
-    "replies": [],
-    "attachments": [],
-    "notes": [
-      {
-        "id": 1,
-        "content": "Khách hàng hỏi về sản phẩm balo Nike",
-        "admin": {
-          "id": 1,
-          "name": "Admin",
-          "email": "admin@example.com"
-        },
-        "created_at": "2024-01-01T10:00:00.000000Z"
-      }
-    ],
-    "created_at": "2024-01-01T00:00:00.000000Z",
-    "updated_at": "2024-01-01T00:00:00.000000Z"
-  },
-  "message": "Lấy chi tiết liên hệ thành công"
+    "fullname": "Nguyễn Văn Tài",
+    "email": "tai.nguyen@gmail.com",
+    "message": "Xin chào, tôi muốn hỏi về chính sách đổi trả của cửa hàng. Tôi vừa mua một chiếc balo nhưng kích thước không phù hợp.",
+    "status": "resolved",
+    "created_at": "2025-08-02T19:37:55.000000Z",
+    "updated_at": "2025-08-02T19:37:55.000000Z",
+    "deleted_at": null
+  }
 }
 ```
 
 ## Cập nhật trạng thái liên hệ
 
-### PUT /api/dashboard/contacts/{id}/status
+### PUT /api/dashboard/contacts/{id}
 
 **Mô tả**: Cập nhật trạng thái liên hệ
 
 **Phương thức**: PUT
 
-**URL**: `/api/dashboard/contacts/{id}/status`
+**URL**: `/api/dashboard/contacts/{id}`
 
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
-
-**Headers**:
-
-```
-Authorization: Bearer {token}
-Content-Type: application/json
-```
-
-**Tham số URL**:
-
-- `id` (integer, required): ID liên hệ
-
-**Body**:
-
-```json
-{
-  "status": "processing",
-  "priority": "high",
-  "assigned_to": 1,
-  "note": "Chuyển trạng thái sang xử lý"
-}
-```
-
-**Response thành công (200)**:
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 1,
-    "status": "processing",
-    "priority": "high",
-    "assigned_to": {
-      "id": 1,
-      "name": "Admin",
-      "email": "admin@example.com"
-    },
-    "updated_at": "2024-01-01T12:00:00.000000Z"
-  },
-  "message": "Cập nhật trạng thái liên hệ thành công"
-}
-```
-
-**Validation rules**:
-
-- `status` (string, required): Trạng thái mới (pending, processing, resolved, closed)
-- `priority` (string, optional): Độ ưu tiên (low, normal, high, urgent)
-- `assigned_to` (integer, optional): ID admin được phân công
-- `note` (string, optional): Ghi chú về việc cập nhật
-
-## Trả lời liên hệ
-
-### POST /api/dashboard/contacts/{id}/reply
-
-**Mô tả**: Trả lời liên hệ của khách hàng
-
-**Phương thức**: POST
-
-**URL**: `/api/dashboard/contacts/{id}/reply`
-
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
+**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin hoặc Contributor
 
 **Headers**:
 
@@ -235,47 +136,56 @@ Content-Type: application/json
 
 ```json
 {
-  "message": "Xin chào, cảm ơn bạn đã liên hệ với chúng tôi...",
-  "send_email": true
+  "status": "resolved"
 }
 ```
 
-**Response thành công (201)**:
+**Response thành công (200)**:
 
 ```json
 {
   "success": true,
+  "message": "Contact status updated successfully",
   "data": {
-    "id": 1,
-    "contact_id": 1,
-    "message": "Xin chào, cảm ơn bạn đã liên hệ với chúng tôi...",
-    "admin": {
-      "id": 1,
-      "name": "Admin",
-      "email": "admin@example.com"
-    },
-    "created_at": "2024-01-01T12:00:00.000000Z"
-  },
-  "message": "Trả lời liên hệ thành công"
+    "id": 5,
+    "fullname": "Hoàng Văn Đức",
+    "email": "duc.hoang@gmail.com",
+    "message": "Tôi muốn mua balo laptop, cửa hàng có những loại nào phù hợp với laptop 15.6 inch?",
+    "status": "resolved",
+    "created_at": "2025-08-02T19:37:55.000000Z",
+    "updated_at": "2025-08-02T21:39:32.000000Z",
+    "deleted_at": null
+  }
+}
+```
+
+**Response lỗi (422)**:
+
+```json
+{
+  "success": false,
+  "message": "Validation errors",
+  "errors": {
+    "status": ["The selected status is invalid."]
+  }
 }
 ```
 
 **Validation rules**:
 
-- `message` (string, required): Nội dung trả lời
-- `send_email` (boolean, optional): Gửi email thông báo cho khách hàng (mặc định: true)
+- `status` (string, required): Trạng thái mới (pending, resolved)
 
-## Thống kê liên hệ (Admin)
+## Xóa liên hệ
 
-### GET /api/dashboard/contacts/statistics
+### DELETE /api/dashboard/contacts/{id}
 
-**Mô tả**: Lấy thống kê liên hệ cho admin
+**Mô tả**: Xóa liên hệ khỏi hệ thống
 
-**Phương thức**: GET
+**Phương thức**: DELETE
 
-**URL**: `/api/dashboard/contacts/statistics`
+**URL**: `/api/dashboard/contacts/{id}`
 
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
+**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin hoặc Contributor
 
 **Headers**:
 
@@ -283,61 +193,72 @@ Content-Type: application/json
 Authorization: Bearer {token}
 ```
 
-**Tham số query**:
+**Tham số URL**:
 
-- `period` (string, optional): Khoảng thời gian (today, week, month, year)
-- `from_date` (date, optional): Từ ngày (format: YYYY-MM-DD)
-- `to_date` (date, optional): Đến ngày (format: YYYY-MM-DD)
+- `id` (integer, required): ID liên hệ
 
 **Response thành công (200)**:
 
 ```json
 {
   "success": true,
-  "data": {
-    "total_contacts": 45,
-    "pending_contacts": 12,
-    "processing_contacts": 8,
-    "resolved_contacts": 20,
-    "closed_contacts": 5,
-    "contacts_by_priority": {
-      "low": 5,
-      "normal": 25,
-      "high": 10,
-      "urgent": 5
-    },
-    "average_response_time": 2.5,
-    "contacts_today": 3,
-    "contacts_this_week": 15,
-    "contacts_this_month": 45,
-    "top_subjects": [
-      {
-        "subject": "Hỏi về sản phẩm",
-        "count": 15
-      },
-      {
-        "subject": "Khiếu nại về đơn hàng",
-        "count": 10
-      }
-    ],
-    "response_trend": [
-      {
-        "date": "2024-01-01",
-        "new_contacts": 5,
-        "resolved_contacts": 3
-      }
-    ]
-  },
-  "message": "Lấy thống kê liên hệ thành công"
+  "message": "Contact deleted successfully"
 }
+```
+
+## Ví dụ sử dụng curl
+
+### Lấy danh sách liên hệ
+
+```bash
+curl -X GET "http://localhost:8000/api/dashboard/contacts?status=pending&page=1" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Lọc theo trạng thái
+
+```bash
+curl -X GET "http://localhost:8000/api/dashboard/contacts?status=resolved&per_page=5" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Tìm kiếm liên hệ
+
+```bash
+curl -X GET "http://localhost:8000/api/dashboard/contacts?search=gmail" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Lấy chi tiết liên hệ
+
+```bash
+curl -X GET "http://localhost:8000/api/dashboard/contacts/1" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Cập nhật trạng thái liên hệ
+
+```bash
+curl -X PUT "http://localhost:8000/api/dashboard/contacts/5" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "resolved"}'
+```
+
+### Xóa liên hệ
+
+```bash
+curl -X DELETE "http://localhost:8000/api/dashboard/contacts/10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 **Lưu ý**:
 
-- Tất cả các endpoint đều yêu cầu authentication + role admin
-- Admin có thể xem và quản lý tất cả liên hệ trong hệ thống
-- Có thể lọc và tìm kiếm liên hệ theo nhiều tiêu chí
-- Khi trả lời liên hệ, hệ thống có thể tự động gửi email cho khách hàng
-- Trạng thái liên hệ: pending, processing, resolved, closed
-- Độ ưu tiên: low, normal, high, urgent
-- Thống kê cung cấp cái nhìn tổng quan về tình hình liên hệ
+- Tất cả các endpoint đều yêu cầu authentication + role admin hoặc contributor
+- Trạng thái liên hệ theo database: `pending`, `resolved`
+- Response GET danh sách trả về trực tiếp pagination data, không có wrapper `success`
+- Response GET chi tiết có wrapper `{data: {...}}`
+- Response PUT và DELETE có wrapper `success`, `message`, `data`
+- Hỗ trợ soft delete cho liên hệ
+- Có thể lọc theo trạng thái và tìm kiếm theo tên/email
+- Tìm kiếm tiếng Việt có thể gặp vấn đề, nên sử dụng từ khóa tiếng Anh

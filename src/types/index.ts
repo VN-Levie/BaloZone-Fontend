@@ -1,3 +1,61 @@
+// Contact types for admin
+export interface ContactAdmin {
+  id: number
+  fullname: string
+  email: string
+  phone?: string
+  subject?: string
+  message: string
+  status: 'pending' | 'processing' | 'resolved' | 'closed'
+  priority?: 'low' | 'normal' | 'high' | 'urgent'
+  assigned_to?: null | {
+    id: number
+    name: string
+    email: string
+  }
+  replied_at?: string | null
+  created_at: string
+  updated_at: string
+  deleted_at?: string | null
+}
+
+export interface ContactAdminDetail extends ContactAdmin {
+  replies: any[]
+  attachments: any[]
+  notes: Array<{
+    id: number
+    content: string
+    admin: {
+      id: number
+      name: string
+      email: string
+    }
+    created_at: string
+  }>
+}
+
+export interface ContactAdminListResponse {
+  success?: boolean
+  message?: string
+  // Direct pagination data - dựa theo dữ liệu bạn cung cấp
+  current_page: number
+  data: ContactAdmin[]
+  total: number
+  per_page: number
+  first_page_url: string
+  from: number
+  last_page: number
+  last_page_url: string
+  next_page_url: string | null
+  path: string
+  prev_page_url: string | null
+  to: number
+  links?: Array<{
+    url: string | null
+    label: string
+    active: boolean
+  }>
+}
 // Types definitions for BaloZone API
 
 export interface Product {
