@@ -30,6 +30,7 @@ import type {
   AdminProduct,
   AdminProductResponse,
   AdminProductsListResponse,
+  ContactAdmin,
   ContactAdminListResponse
 } from '@/types'
 
@@ -893,7 +894,7 @@ export const contactApi = {
   getContact: (id: number): Promise<ApiResponse<any>> => makeRequest(`/contacts/${id}`),
 
   // Get single contact detail (admin)
-  getAdminContact: (id: number): Promise<ApiResponse<any>> => makeRequest(`/dashboard/contacts/${id}`),
+  getAdminContact: (id: number): Promise<ApiResponse<ContactAdmin>> => makeRequest(`/dashboard/contacts/${id}`),
 
   // Send a contact message
   submitContact: (contactData: any): Promise<ApiResponse<any>> =>
@@ -915,26 +916,14 @@ export const contactApi = {
     return makeRequest(`/dashboard/contacts${queryString}`)
   },
 
-  updateContactStatus: (id: number, statusData: any): Promise<ApiResponse<any>> =>
-    makeRequest(`/dashboard/contacts/${id}/status`, {
+  updateContactStatus: (id: number, statusData: { status: 'pending' | 'resolved' }): Promise<ApiResponse<ContactAdmin>> =>
+    makeRequest(`/dashboard/contacts/${id}`, {
       method: 'PUT',
       body: JSON.stringify(statusData),
     }),
 
-  replyContact: (id: number, replyData: any): Promise<ApiResponse<any>> =>
-    makeRequest(`/dashboard/contacts/${id}/reply`, {
-      method: 'POST',
-      body: JSON.stringify(replyData),
-    }),
-
-  updateContact: (id: number, contactData: any): Promise<ApiResponse<any>> =>
-    makeRequest(`/contacts/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(contactData),
-    }),
-
   deleteContact: (id: number): Promise<ApiResponse<void>> =>
-    makeRequest(`/contacts/${id}`, {
+    makeRequest(`/dashboard/contacts/${id}`, {
       method: 'DELETE',
     }),
 }

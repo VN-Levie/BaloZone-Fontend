@@ -106,93 +106,70 @@
                 </div>
 
                 <form @submit.prevent="submitForm" class="contact-form">
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <label for="firstName" class="form-label">
-                        First Name <span class="text-danger">*</span>
-                      </label>
-                      <input id="firstName" v-model="form.firstName" type="text" class="form-control" :class="{ 'is-invalid': errors.firstName }" required>
-                      <div v-if="errors.firstName" class="invalid-feedback">
-                        {{ errors.firstName }}
-                      </div>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                      <label for="lastName" class="form-label">
-                        Last Name <span class="text-danger">*</span>
-                      </label>
-                      <input id="lastName" v-model="form.lastName" type="text" class="form-control" :class="{ 'is-invalid': errors.lastName }" required>
-                      <div v-if="errors.lastName" class="invalid-feedback">
-                        {{ errors.lastName }}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <label for="email" class="form-label">
-                        Email Address <span class="text-danger">*</span>
-                      </label>
-                      <input id="email" v-model="form.email" type="email" class="form-control" :class="{ 'is-invalid': errors.email }" required>
-                      <div v-if="errors.email" class="invalid-feedback">
-                        {{ errors.email }}
-                      </div>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                      <label for="phone" class="form-label">Phone Number</label>
-                      <input id="phone" v-model="form.phone" type="tel" class="form-control" :class="{ 'is-invalid': errors.phone }">
-                      <div v-if="errors.phone" class="invalid-feedback">
-                        {{ errors.phone }}
-                      </div>
+                  <div class="mb-3">
+                    <label for="fullname" class="form-label">
+                      Họ và tên <span class="text-danger">*</span>
+                    </label>
+                    <input
+                      id="fullname"
+                      v-model="form.fullname"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.fullname }"
+                      required
+                      placeholder="Nhập họ và tên của bạn"
+                    >
+                    <div v-if="errors.fullname" class="invalid-feedback">
+                      {{ errors.fullname }}
                     </div>
                   </div>
 
                   <div class="mb-3">
-                    <label for="subject" class="form-label">
-                      Subject <span class="text-danger">*</span>
+                    <label for="email" class="form-label">
+                      Email <span class="text-danger">*</span>
                     </label>
-                    <select id="subject" v-model="form.subject" class="form-select" :class="{ 'is-invalid': errors.subject }" required>
-                      <option value="">Select a subject</option>
-                      <option value="general">General Inquiry</option>
-                      <option value="product">Product Question</option>
-                      <option value="order">Order Support</option>
-                      <option value="return">Return/Exchange</option>
-                      <option value="complaint">Complaint</option>
-                      <option value="suggestion">Suggestion</option>
-                    </select>
-                    <div v-if="errors.subject" class="invalid-feedback">
-                      {{ errors.subject }}
+                    <input
+                      id="email"
+                      v-model="form.email"
+                      type="email"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.email }"
+                      required
+                      placeholder="Nhập địa chỉ email của bạn"
+                    >
+                    <div v-if="errors.email" class="invalid-feedback">
+                      {{ errors.email }}
                     </div>
                   </div>
 
                   <div class="mb-4">
                     <label for="message" class="form-label">
-                      Message <span class="text-danger">*</span>
+                      Tin nhắn <span class="text-danger">*</span>
                     </label>
-                    <textarea id="message" v-model="form.message" class="form-control" :class="{ 'is-invalid': errors.message }" rows="6" placeholder="Please describe your inquiry in detail..." required></textarea>
+                    <textarea
+                      id="message"
+                      v-model="form.message"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.message }"
+                      rows="6"
+                      placeholder="Vui lòng mô tả chi tiết câu hỏi hoặc yêu cầu của bạn..."
+                      required
+                    ></textarea>
                     <div v-if="errors.message" class="invalid-feedback">
                       {{ errors.message }}
                     </div>
                     <div class="form-text">
-                      {{ form.message.length }}/1000 characters
+                      {{ form.message.length }}/1000 ký tự
                     </div>
-                  </div>
-
-                  <div class="mb-3 form-check">
-                    <input id="newsletter" v-model="form.newsletter" type="checkbox" class="form-check-input">
-                    <label for="newsletter" class="form-check-label">
-                      Subscribe to our newsletter for updates and promotions
-                    </label>
                   </div>
 
                   <div class="d-flex justify-content-between align-items-center">
                     <small class="text-muted">
-                      * Required fields
+                      * Trường bắt buộc
                     </small>
                     <button type="submit" class="btn btn-primary" :disabled="submitting">
                       <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-                      {{ submitting ? 'Sending...' : 'Send Message' }}
+                      {{ submitting ? 'Đang gửi...' : 'Gửi tin nhắn' }}
                     </button>
                   </div>
                 </form>
@@ -230,7 +207,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { contactApi } from '../services/api'
-import { isValidEmail, isValidPhone } from '../utils'
+import { isValidEmail } from '../utils'
 import Breadcrumb from '../components/Breadcrumb.vue'
 import UserLayout from '@/components/layouts/UserLayout.vue'
 
@@ -240,21 +217,14 @@ const breadcrumbItems = [
 ]
 
 const form = reactive({
-  firstName: '',
-  lastName: '',
+  fullname: '',
   email: '',
-  phone: '',
-  subject: '',
-  message: '',
-  newsletter: false
+  message: ''
 })
 
 const errors = reactive({
-  firstName: '',
-  lastName: '',
+  fullname: '',
   email: '',
-  phone: '',
-  subject: '',
   message: ''
 })
 
@@ -293,45 +263,33 @@ const validateForm = (): boolean => {
 
   let isValid = true
 
-  // First name validation
-  if (!form.firstName.trim()) {
-    errors.firstName = 'First name is required'
+  // Full name validation
+  if (!form.fullname.trim()) {
+    errors.fullname = 'Họ và tên là bắt buộc'
     isValid = false
-  }
-
-  // Last name validation
-  if (!form.lastName.trim()) {
-    errors.lastName = 'Last name is required'
+  } else if (form.fullname.trim().length < 2) {
+    errors.fullname = 'Họ và tên phải có ít nhất 2 ký tự'
     isValid = false
   }
 
   // Email validation
   if (!form.email.trim()) {
-    errors.email = 'Email is required'
+    errors.email = 'Email là bắt buộc'
     isValid = false
   } else if (!isValidEmail(form.email)) {
-    errors.email = 'Please enter a valid email address'
-    isValid = false
-  }
-
-  // Phone validation (optional but must be valid if provided)
-  if (form.phone.trim() && !isValidPhone(form.phone)) {
-    errors.phone = 'Please enter a valid phone number'
-    isValid = false
-  }
-
-  // Subject validation
-  if (!form.subject) {
-    errors.subject = 'Please select a subject'
+    errors.email = 'Vui lòng nhập địa chỉ email hợp lệ'
     isValid = false
   }
 
   // Message validation
   if (!form.message.trim()) {
-    errors.message = 'Message is required'
+    errors.message = 'Tin nhắn là bắt buộc'
+    isValid = false
+  } else if (form.message.trim().length < 10) {
+    errors.message = 'Tin nhắn phải có ít nhất 10 ký tự'
     isValid = false
   } else if (form.message.length > 1000) {
-    errors.message = 'Message must be less than 1000 characters'
+    errors.message = 'Tin nhắn không được vượt quá 1000 ký tự'
     isValid = false
   }
 
@@ -347,28 +305,37 @@ const submitForm = async () => {
     submitting.value = true
     errorMessage.value = ''
 
-    await contactApi.submitContact({
-      name: `${form.firstName} ${form.lastName}`,
-      email: form.email,
-      phone: form.phone || null,
-      subject: form.subject,
-      message: form.message,
-      newsletter_subscription: form.newsletter
-    })
+    const contactData = {
+      fullname: form.fullname.trim(),
+      email: form.email.trim(),
+      message: form.message.trim()
+    }
 
-    successMessage.value = 'Thank you for your message! We will get back to you within 24 hours.'
+    await contactApi.submitContact(contactData)
+
+    successMessage.value = 'Tin nhắn của bạn đã được gửi thành công! Chúng tôi sẽ phản hồi trong thời gian sớm nhất.'
 
     // Reset form
-    Object.keys(form).forEach(key => {
-      if (key === 'newsletter') {
-        (form as any)[key] = false
-      } else {
-        (form as any)[key] = ''
-      }
-    })
+    form.fullname = ''
+    form.email = ''
+    form.message = ''
 
   } catch (err: any) {
-    errorMessage.value = err.response?.data?.message || 'Failed to send message. Please try again.'
+    console.error('Error submitting contact form:', err)
+
+    if (err.response?.data?.errors) {
+      // Handle validation errors from server
+      const serverErrors = err.response.data.errors
+      Object.keys(serverErrors).forEach(key => {
+        if (key in errors) {
+          errors[key as keyof typeof errors] = Array.isArray(serverErrors[key])
+            ? serverErrors[key][0]
+            : serverErrors[key]
+        }
+      })
+    } else {
+      errorMessage.value = err.response?.data?.message || 'Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau.'
+    }
   } finally {
     submitting.value = false
   }

@@ -3,35 +3,15 @@ export interface ContactAdmin {
   id: number
   fullname: string
   email: string
-  phone?: string
-  subject?: string
   message: string
-  status: 'pending' | 'processing' | 'resolved' | 'closed'
-  priority?: 'low' | 'normal' | 'high' | 'urgent'
-  assigned_to?: null | {
-    id: number
-    name: string
-    email: string
-  }
-  replied_at?: string | null
+  status: 'pending' | 'resolved'
   created_at: string
   updated_at: string
   deleted_at?: string | null
 }
 
 export interface ContactAdminDetail extends ContactAdmin {
-  replies: any[]
-  attachments: any[]
-  notes: Array<{
-    id: number
-    content: string
-    admin: {
-      id: number
-      name: string
-      email: string
-    }
-    created_at: string
-  }>
+  // Detail view có thể có thêm thông tin nếu cần
 }
 
 export interface ContactAdminListResponse {
