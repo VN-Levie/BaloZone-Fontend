@@ -1,185 +1,150 @@
 <template>
-  <div class="search-page">
-    <!-- Search Header -->
-    <section class="search-header">
-      <div class="container-fluid px-4">
-        <div class="search-content">
-          <h1 class="search-title">Tìm kiếm sản phẩm</h1>
-          <div class="search-form">
-            <EnhancedSearchBar
-              v-model="searchQuery"
-              :suggestions="suggestions"
-              :search-history="searchHistory"
-              :is-loading="isLoading"
-              :show-filters="true"
-              @search="handleEnhancedSearch"
-              @filter-change="handleFilterChange"
-              class="enhanced-search-bar"
-            />
-          </div>
-          <div v-if="searchQuery || hasActiveFilters" class="search-info mt-3">
-            <div class="search-summary">
-              <p v-if="searchQuery">
-                Kết quả tìm kiếm cho: <strong>"{{ searchQuery }}"</strong>
-              </p>
-              <p class="text-muted">
-                Tìm thấy {{ totalResults }} sản phẩm
-                <span v-if="hasActiveFilters"> (đã lọc)</span>
-              </p>
+  <UserLayout>
+    <div class="search-page">
+      <!-- Search Header -->
+      <section class="search-header">
+        <div class="container-fluid px-4">
+          <div class="search-content">
+            <h1 class="search-title">Tìm kiếm sản phẩm</h1>
+            <div class="search-form">
+              <EnhancedSearchBar v-model="searchQuery" :suggestions="suggestions" :search-history="searchHistory" :is-loading="isLoading" :show-filters="true" @search="handleEnhancedSearch" @filter-change="handleFilterChange" class="enhanced-search-bar" />
             </div>
-            <!-- Active Filters -->
-            <div v-if="hasActiveFilters" class="active-filters mt-2">
-              <div class="filter-chips">
-                <span v-if="filters.category" class="filter-chip">
-                  Danh mục: {{ getCategoryName(Number(filters.category)) }}
-                  <button @click="clearFilter('category_id')" class="btn-close-filter">×</button>
-                </span>
-                <span v-if="filters.brand" class="filter-chip">
-                  Thương hiệu: {{ getBrandName(Number(filters.brand)) }}
-                  <button @click="clearFilter('brand_id')" class="btn-close-filter">×</button>
-                </span>
-                <span v-if="filters.minPrice" class="filter-chip">
-                  Từ: {{ formatPrice(filters.minPrice) }}
-                  <button @click="clearFilter('min_price')" class="btn-close-filter">×</button>
-                </span>
-                <span v-if="filters.maxPrice" class="filter-chip">
-                  Đến: {{ formatPrice(filters.maxPrice) }}
-                  <button @click="clearFilter('max_price')" class="btn-close-filter">×</button>
-                </span>
-                <span v-if="filters.minRating" class="filter-chip">
-                  Đánh giá: {{ filters.minRating }}+ sao
-                  <button @click="clearFilter('min_rating')" class="btn-close-filter">×</button>
-                </span>
-                <button v-if="hasActiveFilters" @click="clearAllFilters" class="btn btn-outline-secondary btn-sm ms-2">
-                  Xóa tất cả bộ lọc
-                </button>
+            <div v-if="searchQuery || hasActiveFilters" class="search-info mt-3">
+              <div class="search-summary">
+                <p v-if="searchQuery">
+                  Kết quả tìm kiếm cho: <strong>"{{ searchQuery }}"</strong>
+                </p>
+                <p class="text-muted">
+                  Tìm thấy {{ totalResults }} sản phẩm
+                  <span v-if="hasActiveFilters"> (đã lọc)</span>
+                </p>
+              </div>
+              <!-- Active Filters -->
+              <div v-if="hasActiveFilters" class="active-filters mt-2">
+                <div class="filter-chips">
+                  <span v-if="filters.category" class="filter-chip">
+                    Danh mục: {{ getCategoryName(Number(filters.category)) }}
+                    <button @click="clearFilter('category_id')" class="btn-close-filter">×</button>
+                  </span>
+                  <span v-if="filters.brand" class="filter-chip">
+                    Thương hiệu: {{ getBrandName(Number(filters.brand)) }}
+                    <button @click="clearFilter('brand_id')" class="btn-close-filter">×</button>
+                  </span>
+                  <span v-if="filters.minPrice" class="filter-chip">
+                    Từ: {{ formatPrice(filters.minPrice) }}
+                    <button @click="clearFilter('min_price')" class="btn-close-filter">×</button>
+                  </span>
+                  <span v-if="filters.maxPrice" class="filter-chip">
+                    Đến: {{ formatPrice(filters.maxPrice) }}
+                    <button @click="clearFilter('max_price')" class="btn-close-filter">×</button>
+                  </span>
+                  <span v-if="filters.minRating" class="filter-chip">
+                    Đánh giá: {{ filters.minRating }}+ sao
+                    <button @click="clearFilter('min_rating')" class="btn-close-filter">×</button>
+                  </span>
+                  <button v-if="hasActiveFilters" @click="clearAllFilters" class="btn btn-outline-secondary btn-sm ms-2">
+                    Xóa tất cả bộ lọc
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Search Results -->
-    <section class="search-results">
-      <div class="container-fluid px-4">
-        <!-- Sort Options -->
-        <div v-if="searchResults.length > 0" class="sort-options mb-3">
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="sort-controls">
-              <label for="sort-select" class="form-label me-2">Sắp xếp theo:</label>
-              <select 
-                id="sort-select" 
-                v-model="sortByModel" 
-                @change="handleSortChange"
-                class="form-select d-inline-block w-auto"
-              >
-                <option value="">Mặc định</option>
-                <option value="price_asc">Giá: Thấp đến cao</option>
-                <option value="price_desc">Giá: Cao đến thấp</option>
-                <option value="name_asc">Tên: A-Z</option>
-                <option value="name_desc">Tên: Z-A</option>
-                <option value="rating_desc">Đánh giá cao nhất</option>
-                <option value="created_at_desc">Mới nhất</option>
-              </select>
+      <!-- Search Results -->
+      <section class="search-results">
+        <div class="container-fluid px-4">
+          <!-- Sort Options -->
+          <div v-if="searchResults.length > 0" class="sort-options mb-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="sort-controls">
+                <label for="sort-select" class="form-label me-2">Sắp xếp theo:</label>
+                <select id="sort-select" v-model="sortByModel" @change="handleSortChange" class="form-select d-inline-block w-auto">
+                  <option value="">Mặc định</option>
+                  <option value="price_asc">Giá: Thấp đến cao</option>
+                  <option value="price_desc">Giá: Cao đến thấp</option>
+                  <option value="name_asc">Tên: A-Z</option>
+                  <option value="name_desc">Tên: Z-A</option>
+                  <option value="rating_desc">Đánh giá cao nhất</option>
+                  <option value="created_at_desc">Mới nhất</option>
+                </select>
+              </div>
+              <div class="view-options">
+                <button @click="showFiltersPanel = !showFiltersPanel" class="btn btn-outline-secondary btn-sm me-2" :class="{ active: showFiltersPanel }">
+                  <i class="bi bi-funnel"></i>
+                  {{ showFiltersPanel ? 'Ẩn bộ lọc' : 'Hiện bộ lọc' }}
+                </button>
+                <span class="text-muted">{{ searchResults.length }} / {{ totalResults }} sản phẩm</span>
+              </div>
             </div>
-            <div class="view-options">
-              <button 
-                @click="showFiltersPanel = !showFiltersPanel"
-                class="btn btn-outline-secondary btn-sm me-2"
-                :class="{ active: showFiltersPanel }"
-              >
-                <i class="bi bi-funnel"></i>
-                {{ showFiltersPanel ? 'Ẩn bộ lọc' : 'Hiện bộ lọc' }}
+          </div>
+
+          <!-- Advanced Filters Panel -->
+          <div v-if="showFiltersPanel" class="filters-panel mb-4">
+            <SearchFilters v-model="filters" :categories="categories" :brands="brands" @change="handleAdvancedFilterChange" />
+          </div>
+
+          <LoadingSpinner v-if="loading" text="Đang tìm kiếm..." />
+
+          <div v-else-if="(searchQuery || hasActiveFilters) && searchResults.length === 0" class="no-results">
+            <div class="text-center py-5">
+              <i class="bi bi-search fs-1 text-muted"></i>
+              <h3 class="mt-3">Không tìm thấy sản phẩm nào</h3>
+              <p class="text-muted">Thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc</p>
+              <button v-if="hasActiveFilters" @click="clearAllFilters" class="btn btn-outline-primary">
+                Xóa tất cả bộ lọc
               </button>
-              <span class="text-muted">{{ searchResults.length }} / {{ totalResults }} sản phẩm</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Advanced Filters Panel -->
-        <div v-if="showFiltersPanel" class="filters-panel mb-4">
-          <SearchFilters
-            v-model="filters"
-            :categories="categories"
-            :brands="brands"
-            @change="handleAdvancedFilterChange"
-          />
-        </div>
-
-        <LoadingSpinner v-if="loading" text="Đang tìm kiếm..." />
-        
-        <div v-else-if="(searchQuery || hasActiveFilters) && searchResults.length === 0" class="no-results">
-          <div class="text-center py-5">
-            <i class="bi bi-search fs-1 text-muted"></i>
-            <h3 class="mt-3">Không tìm thấy sản phẩm nào</h3>
-            <p class="text-muted">Thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc</p>
-            <button v-if="hasActiveFilters" @click="clearAllFilters" class="btn btn-outline-primary">
-              Xóa tất cả bộ lọc
-            </button>
-          </div>
-        </div>
-
-        <div v-else-if="searchResults.length > 0" class="results-grid">
-          <div class="row g-3">
-            <div 
-              v-for="product in searchResults" 
-              :key="product.id"
-              class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4"
-            >
-              <ProductCard :product="product" />
             </div>
           </div>
 
-          <!-- Pagination -->
-          <div v-if="totalResults > searchResults.length" class="pagination-container mt-4">
-            <nav aria-label="Search results pagination">
-              <ul class="pagination justify-content-center">
-                <li class="page-item" :class="{ disabled: currentPage <= 1 }">
-                  <button class="page-link" @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1">
-                    <i class="bi bi-chevron-left"></i>
-                  </button>
-                </li>
-                <li 
-                  v-for="page in visiblePages" 
-                  :key="page"
-                  class="page-item" 
-                  :class="{ active: page === currentPage }"
-                >
-                  <button class="page-link" @click="goToPage(page)">{{ page }}</button>
-                </li>
-                <li class="page-item" :class="{ disabled: currentPage >= totalPages }">
-                  <button class="page-link" @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages">
-                    <i class="bi bi-chevron-right"></i>
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </div>
+          <div v-else-if="searchResults.length > 0" class="results-grid">
+            <div class="row g-3">
+              <div v-for="product in searchResults" :key="product.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
+                <ProductCard :product="product" />
+              </div>
+            </div>
 
-        <div v-else class="search-suggestions">
-          <div class="text-center py-5">
-            <h3>Tìm kiếm sản phẩm yêu thích</h3>
-            <p class="text-muted">Nhập từ khóa để tìm kiếm sản phẩm bạn muốn</p>
-            <div class="popular-searches mt-4">
-              <h5>Từ khóa phổ biến:</h5>
-              <div class="d-flex flex-wrap gap-2 justify-content-center">
-                <button 
-                  v-for="keyword in popularKeywords" 
-                  :key="keyword"
-                  class="btn btn-outline-primary btn-sm"
-                  @click="searchByKeyword(keyword)"
-                >
-                  {{ keyword }}
-                </button>
+            <!-- Pagination -->
+            <div v-if="totalResults > searchResults.length" class="pagination-container mt-4">
+              <nav aria-label="Search results pagination">
+                <ul class="pagination justify-content-center">
+                  <li class="page-item" :class="{ disabled: currentPage <= 1 }">
+                    <button class="page-link" @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1">
+                      <i class="bi bi-chevron-left"></i>
+                    </button>
+                  </li>
+                  <li v-for="page in visiblePages" :key="page" class="page-item" :class="{ active: page === currentPage }">
+                    <button class="page-link" @click="goToPage(page)">{{ page }}</button>
+                  </li>
+                  <li class="page-item" :class="{ disabled: currentPage >= totalPages }">
+                    <button class="page-link" @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+
+          <div v-else class="search-suggestions">
+            <div class="text-center py-5">
+              <h3>Tìm kiếm sản phẩm yêu thích</h3>
+              <p class="text-muted">Nhập từ khóa để tìm kiếm sản phẩm bạn muốn</p>
+              <div class="popular-searches mt-4">
+                <h5>Từ khóa phổ biến:</h5>
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                  <button v-for="keyword in popularKeywords" :key="keyword" class="btn btn-outline-primary btn-sm" @click="searchByKeyword(keyword)">
+                    {{ keyword }}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
+      </section>
+    </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -192,6 +157,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import ProductCard from '@/components/ProductCard.vue'
 import EnhancedSearchBar from '@/components/EnhancedSearchBar.vue'
 import SearchFilters from '@/components/SearchFilters.vue'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -247,7 +213,7 @@ const searchParams = computed(() => ({
   min_price: filters.value.minPrice,
   max_price: filters.value.maxPrice,
   min_rating: filters.value.minRating,
-  sort_by: filters.value.sortBy && filters.value.sortOrder 
+  sort_by: filters.value.sortBy && filters.value.sortOrder
     ? `${filters.value.sortBy}_${filters.value.sortOrder}`
     : undefined,
   page: currentPage.value
@@ -276,11 +242,11 @@ const visiblePages = computed(() => {
   const pages = []
   const start = Math.max(1, currentPage.value - 2)
   const end = Math.min(totalPages.value, start + 4)
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
-  
+
   return pages
 })
 
@@ -302,7 +268,7 @@ const handleFilterChange = async (newFilters: any) => {
     sortBy: newFilters.sort_by?.split('_')[0] as any,
     sortOrder: newFilters.sort_by?.split('_')[1] as any
   }
-  
+
   await applyFilters(convertedFilters)
   updateUrlParams()
 }
@@ -319,7 +285,7 @@ const handleSortChange = async () => {
 
 const clearFilter = async (filterKey: string) => {
   const newFilters = { ...filters.value }
-  
+
   switch (filterKey) {
     case 'category_id':
       newFilters.category = undefined
@@ -337,7 +303,7 @@ const clearFilter = async (filterKey: string) => {
       newFilters.minRating = undefined
       break
   }
-  
+
   await applyFilters(newFilters)
   updateUrlParams()
 }
@@ -376,7 +342,7 @@ const formatPrice = (price: number) => {
 
 const updateUrlParams = () => {
   const query: any = {}
-  
+
   if (searchQuery.value) query.q = searchQuery.value
   if (filters.value.category) query.category = filters.value.category
   if (filters.value.brand) query.brand = filters.value.brand
@@ -398,10 +364,10 @@ const loadInitialData = async () => {
       categoriesApi.getCategories(),
       brandsApi.getBrands()
     ])
-    
+
     categories.value = categoriesResponse.data
     brands.value = brandsResponse.data
-    
+
     // Also load into the composable
     await loadFilterData()
   } catch (error) {
@@ -411,7 +377,7 @@ const loadInitialData = async () => {
 
 const initializeFromUrl = async () => {
   await initializeFromRoute()
-  
+
   // Sync local state with composable
   const urlQuery = route.query.q as string
   if (urlQuery) {
@@ -566,6 +532,7 @@ watch(
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

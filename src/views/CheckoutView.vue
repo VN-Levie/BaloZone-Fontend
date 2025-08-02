@@ -1,352 +1,354 @@
 <template>
-  <div class="checkout-page">
-    <div class="container py-4">
-      <!-- Loading state -->
-      <LoadingSpinner v-if="isLoading" text="Đang tải thông tin..." size="lg" />
+  <UserLayout>
+    <div class="checkout-page">
+      <div class="container py-4">
+        <!-- Loading state -->
+        <LoadingSpinner v-if="isLoading" text="Đang tải thông tin..." size="lg" />
 
-      <!-- Checkout content -->
-      <div v-else>
-        <!-- Header -->
-        <div class="checkout-header">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h1 class="page-title mb-2">
-                <i class="bi bi-credit-card me-3"></i>
-                Thanh toán đơn hàng
-              </h1>
-              <nav aria-label="breadcrumb" class="mt-2">
-                <ol class="breadcrumb custom-breadcrumb">
-                  <li class="breadcrumb-item">
-                    <router-link to="/" class="text-decoration-none">
-                      <i class="bi bi-house me-1"></i>
-                      Trang chủ
-                    </router-link>
-                  </li>
-                  <li class="breadcrumb-item">
-                    <router-link to="/cart" class="text-decoration-none">
-                      <i class="bi bi-cart me-1"></i>
-                      Giỏ hàng
-                    </router-link>
-                  </li>
-                  <li class="breadcrumb-item active">
-                    <i class="bi bi-credit-card me-1"></i>
-                    Thanh toán
-                  </li>
-                </ol>
-              </nav>
-            </div>
-            <div class="checkout-actions">
-              <router-link to="/cart" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i>
-                Quay lại giỏ hàng
-              </router-link>
+        <!-- Checkout content -->
+        <div v-else>
+          <!-- Header -->
+          <div class="checkout-header">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h1 class="page-title mb-2">
+                  <i class="bi bi-credit-card me-3"></i>
+                  Thanh toán đơn hàng
+                </h1>
+                <nav aria-label="breadcrumb" class="mt-2">
+                  <ol class="breadcrumb custom-breadcrumb">
+                    <li class="breadcrumb-item">
+                      <router-link to="/" class="text-decoration-none">
+                        <i class="bi bi-house me-1"></i>
+                        Trang chủ
+                      </router-link>
+                    </li>
+                    <li class="breadcrumb-item">
+                      <router-link to="/cart" class="text-decoration-none">
+                        <i class="bi bi-cart me-1"></i>
+                        Giỏ hàng
+                      </router-link>
+                    </li>
+                    <li class="breadcrumb-item active">
+                      <i class="bi bi-credit-card me-1"></i>
+                      Thanh toán
+                    </li>
+                  </ol>
+                </nav>
+              </div>
+              <div class="checkout-actions">
+                <router-link to="/cart" class="btn btn-outline-secondary">
+                  <i class="bi bi-arrow-left me-2"></i>
+                  Quay lại giỏ hàng
+                </router-link>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="row g-4">
-          <!-- Checkout form -->
-          <div class="col-lg-8">
-            <!-- Delivery Address -->
-            <div class="checkout-section">
-              <div class="section-header">
-                <h4 class="section-title">
-                  <i class="bi bi-geo-alt"></i>
-                  Địa chỉ giao hàng
-                </h4>
-                <div class="section-badge">
-                  <i class="bi bi-1-circle-fill"></i>
-                </div>
-              </div>
-
-              <div class="section-content">
-                <div v-if="addresses.length === 0" class="empty-state">
-                  <div class="empty-icon">
+          <div class="row g-4">
+            <!-- Checkout form -->
+            <div class="col-lg-8">
+              <!-- Delivery Address -->
+              <div class="checkout-section">
+                <div class="section-header">
+                  <h4 class="section-title">
                     <i class="bi bi-geo-alt"></i>
+                    Địa chỉ giao hàng
+                  </h4>
+                  <div class="section-badge">
+                    <i class="bi bi-1-circle-fill"></i>
                   </div>
-                  <h5 class="empty-title">Chưa có địa chỉ giao hàng</h5>
-                  <p class="empty-subtitle">Vui lòng thêm địa chỉ để tiếp tục đặt hàng</p>
-                  <button class="btn btn-primary btn-add-address" @click="showAddAddressModal = true">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    Thêm địa chỉ mới
-                  </button>
                 </div>
 
-                <div v-else>
-                  <div class="address-list">
-                    <div v-for="address in addresses" :key="address.id" class="address-item" :class="{ active: selectedAddress?.id === address.id }" @click="selectedAddress = address">
-                      <div class="address-radio">
-                        <input type="radio" :id="`address-${address.id}`" :value="address.id" :checked="selectedAddress?.id === address.id" @change="selectedAddress = address" />
-                        <label :for="`address-${address.id}`" class="radio-label"></label>
-                      </div>
-                      <div class="address-content">
-                        <div class="address-header">
-                          <div class="address-name">
-                            <strong>{{ address.recipient_name }}</strong>
-                            <span class="phone-number">{{ address.recipient_phone }}</span>
+                <div class="section-content">
+                  <div v-if="addresses.length === 0" class="empty-state">
+                    <div class="empty-icon">
+                      <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <h5 class="empty-title">Chưa có địa chỉ giao hàng</h5>
+                    <p class="empty-subtitle">Vui lòng thêm địa chỉ để tiếp tục đặt hàng</p>
+                    <button class="btn btn-primary btn-add-address" @click="showAddAddressModal = true">
+                      <i class="bi bi-plus-circle me-2"></i>
+                      Thêm địa chỉ mới
+                    </button>
+                  </div>
+
+                  <div v-else>
+                    <div class="address-list">
+                      <div v-for="address in addresses" :key="address.id" class="address-item" :class="{ active: selectedAddress?.id === address.id }" @click="selectedAddress = address">
+                        <div class="address-radio">
+                          <input type="radio" :id="`address-${address.id}`" :value="address.id" :checked="selectedAddress?.id === address.id" @change="selectedAddress = address" />
+                          <label :for="`address-${address.id}`" class="radio-label"></label>
+                        </div>
+                        <div class="address-content">
+                          <div class="address-header">
+                            <div class="address-name">
+                              <strong>{{ address.recipient_name }}</strong>
+                              <span class="phone-number">{{ address.recipient_phone }}</span>
+                            </div>
+                            <div class="address-badges">
+                              <span v-if="address.is_default" class="badge badge-default">
+                                <i class="bi bi-star-fill me-1"></i>
+                                Mặc định
+                              </span>
+                            </div>
                           </div>
-                          <div class="address-badges">
-                            <span v-if="address.is_default" class="badge badge-default">
-                              <i class="bi bi-star-fill me-1"></i>
-                              Mặc định
-                            </span>
+                          <div class="address-text">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            {{ address.address }}, {{ address.ward }}, {{ address.district }}, {{ address.province }}
                           </div>
                         </div>
-                        <div class="address-text">
-                          <i class="bi bi-geo-alt me-2"></i>
-                          {{ address.address }}, {{ address.ward }}, {{ address.district }}, {{ address.province }}
+                        <div class="address-actions">
+                          <button class="btn-icon" title="Chọn địa chỉ này">
+                            <i class="bi bi-check-circle"></i>
+                          </button>
                         </div>
                       </div>
-                      <div class="address-actions">
-                        <button class="btn-icon" title="Chọn địa chỉ này">
-                          <i class="bi bi-check-circle"></i>
-                        </button>
-                      </div>
                     </div>
-                  </div>
 
-                  <button class="btn btn-outline-primary btn-add-more" @click="showAddAddressModal = true">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    Thêm địa chỉ mới
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Payment Method -->
-            <div class="checkout-section">
-              <div class="section-header">
-                <h4 class="section-title">
-                  <i class="bi bi-credit-card"></i>
-                  Phương thức thanh toán
-                </h4>
-                <div class="section-badge">
-                  <i class="bi bi-2-circle-fill"></i>
-                </div>
-              </div>
-
-              <div class="section-content">
-                <div class="payment-methods">
-                  <div v-for="method in paymentMethods" :key="method.id" class="payment-item" :class="{ active: selectedPaymentMethod?.id === method.id }" @click="selectedPaymentMethod = method">
-                    <div class="payment-radio">
-                      <input type="radio" :id="`payment-${method.id}`" :value="method.id" :checked="selectedPaymentMethod?.id === method.id" @change="selectedPaymentMethod = method" />
-                      <label :for="`payment-${method.id}`" class="radio-label"></label>
-                    </div>
-                    <div class="payment-icon">
-                      <i v-if="method.name === 'cod'" class="bi bi-cash-coin"></i>
-                      <i v-else-if="method.name === 'bank_transfer'" class="bi bi-bank"></i>
-                      <i v-else-if="method.name === 'momo'" class="bi bi-wallet2"></i>
-                      <i v-else class="bi bi-credit-card"></i>
-                    </div>
-                    <div class="payment-content">
-                      <div class="payment-name">{{ method.display_name }}</div>
-                      <div class="payment-description">
-                        <span v-if="method.name === 'cod'">Thanh toán khi nhận hàng - An toàn, tiện lợi</span>
-                        <span v-else-if="method.name === 'bank_transfer'">Chuyển khoản ngân hàng - Nhanh chóng</span>
-                        <span v-else-if="method.name === 'momo'">Ví điện tử MoMo - Thanh toán online</span>
-                        <span v-else>{{ method.display_name }}</span>
-                      </div>
-                    </div>
-                    <div class="payment-check">
-                      <i class="bi bi-check-circle-fill"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Voucher -->
-            <div class="checkout-section">
-              <div class="section-header">
-                <h4 class="section-title">
-                  <i class="bi bi-ticket-perforated"></i>
-                  Mã giảm giá
-                </h4>
-                <div class="section-badge">
-                  <i class="bi bi-3-circle-fill"></i>
-                </div>
-              </div>
-
-              <div class="section-content">
-                <div v-if="selectedVoucher" class="voucher-applied">
-                  <div class="voucher-icon">
-                    <i class="bi bi-ticket-perforated-fill"></i>
-                  </div>
-                  <div class="voucher-info">
-                    <div class="voucher-code">{{ selectedVoucher.code }}</div>
-                    <div class="voucher-discount">
-                      Giảm {{ formatVoucherPrice(selectedVoucher) }}{{ selectedVoucher.discount_type === 'percentage' ? '' : 'đ' }}
-                    </div>
-                  </div>
-                  <button class="btn-remove-voucher" @click="removeVoucher" title="Xóa voucher">
-                    <i class="bi bi-x-lg"></i>
-                  </button>
-                </div>
-
-                <div v-else class="voucher-input">
-                  <div class="input-group custom-input-group">
-                    <span class="input-group-text">
-                      <i class="bi bi-ticket-perforated"></i>
-                    </span>
-                    <input type="text" class="form-control" placeholder="Nhập mã giảm giá của bạn" v-model="voucherCode" @keyup.enter="applyVoucher" />
-                    <button class="btn btn-primary" type="button" @click="applyVoucher" :disabled="!voucherCode.trim()">
-                      <i class="bi bi-check me-1"></i>
-                      Áp dụng
+                    <button class="btn btn-outline-primary btn-add-more" @click="showAddAddressModal = true">
+                      <i class="bi bi-plus-circle me-2"></i>
+                      Thêm địa chỉ mới
                     </button>
                   </div>
                 </div>
+              </div>
 
-                <!-- Available vouchers -->
-                <div v-if="availableVouchers.length > 0" class="available-vouchers">
-                  <div class="vouchers-header">
-                    <i class="bi bi-gift me-2"></i>
-                    <small class="vouchers-title">Voucher có sẵn:</small>
+              <!-- Payment Method -->
+              <div class="checkout-section">
+                <div class="section-header">
+                  <h4 class="section-title">
+                    <i class="bi bi-credit-card"></i>
+                    Phương thức thanh toán
+                  </h4>
+                  <div class="section-badge">
+                    <i class="bi bi-2-circle-fill"></i>
                   </div>
-                  <div class="voucher-list">
-                    <button v-for="voucher in availableVouchers.slice(0, 3)" :key="voucher.id" class="voucher-chip" @click="applyAvailableVoucher(voucher)">
-                      <span class="voucher-chip-code">{{ voucher.code }}</span>
-                      <span class="voucher-chip-discount">
-                        -{{ formatVoucherPrice(voucher) }}{{ voucher.discount_type === 'percentage' ? '' : 'đ' }}
+                </div>
+
+                <div class="section-content">
+                  <div class="payment-methods">
+                    <div v-for="method in paymentMethods" :key="method.id" class="payment-item" :class="{ active: selectedPaymentMethod?.id === method.id }" @click="selectedPaymentMethod = method">
+                      <div class="payment-radio">
+                        <input type="radio" :id="`payment-${method.id}`" :value="method.id" :checked="selectedPaymentMethod?.id === method.id" @change="selectedPaymentMethod = method" />
+                        <label :for="`payment-${method.id}`" class="radio-label"></label>
+                      </div>
+                      <div class="payment-icon">
+                        <i v-if="method.name === 'cod'" class="bi bi-cash-coin"></i>
+                        <i v-else-if="method.name === 'bank_transfer'" class="bi bi-bank"></i>
+                        <i v-else-if="method.name === 'momo'" class="bi bi-wallet2"></i>
+                        <i v-else class="bi bi-credit-card"></i>
+                      </div>
+                      <div class="payment-content">
+                        <div class="payment-name">{{ method.display_name }}</div>
+                        <div class="payment-description">
+                          <span v-if="method.name === 'cod'">Thanh toán khi nhận hàng - An toàn, tiện lợi</span>
+                          <span v-else-if="method.name === 'bank_transfer'">Chuyển khoản ngân hàng - Nhanh chóng</span>
+                          <span v-else-if="method.name === 'momo'">Ví điện tử MoMo - Thanh toán online</span>
+                          <span v-else>{{ method.display_name }}</span>
+                        </div>
+                      </div>
+                      <div class="payment-check">
+                        <i class="bi bi-check-circle-fill"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Voucher -->
+              <div class="checkout-section">
+                <div class="section-header">
+                  <h4 class="section-title">
+                    <i class="bi bi-ticket-perforated"></i>
+                    Mã giảm giá
+                  </h4>
+                  <div class="section-badge">
+                    <i class="bi bi-3-circle-fill"></i>
+                  </div>
+                </div>
+
+                <div class="section-content">
+                  <div v-if="selectedVoucher" class="voucher-applied">
+                    <div class="voucher-icon">
+                      <i class="bi bi-ticket-perforated-fill"></i>
+                    </div>
+                    <div class="voucher-info">
+                      <div class="voucher-code">{{ selectedVoucher.code }}</div>
+                      <div class="voucher-discount">
+                        Giảm {{ formatVoucherPrice(selectedVoucher) }}{{ selectedVoucher.discount_type === 'percentage' ? '' : 'đ' }}
+                      </div>
+                    </div>
+                    <button class="btn-remove-voucher" @click="removeVoucher" title="Xóa voucher">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+
+                  <div v-else class="voucher-input">
+                    <div class="input-group custom-input-group">
+                      <span class="input-group-text">
+                        <i class="bi bi-ticket-perforated"></i>
                       </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Order Notes -->
-            <div class="checkout-section">
-              <div class="section-header">
-                <h4 class="section-title">
-                  <i class="bi bi-chat-left-text"></i>
-                  Ghi chú đơn hàng
-                </h4>
-                <div class="section-badge optional">
-                  <i class="bi bi-4-circle"></i>
-                </div>
-              </div>
-
-              <div class="section-content">
-                <div class="notes-input">
-                  <textarea class="form-control custom-textarea" rows="4" placeholder="Thêm ghi chú cho đơn hàng (không bắt buộc)..." v-model="orderComment"></textarea>
-                  <div class="notes-hint">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Ví dụ: Giao hàng vào buổi sáng, gọi trước khi giao...
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Order Summary -->
-          <div class="col-lg-4">
-            <div class="order-summary">
-              <div class="summary-header">
-                <h4 class="summary-title">
-                  <i class="bi bi-receipt me-2"></i>
-                  Tóm tắt đơn hàng
-                </h4>
-                <div class="summary-count">{{ cartItems.length }} sản phẩm</div>
-              </div>
-
-              <!-- Cart items -->
-              <div class="summary-items">
-                <div v-for="item in cartItems" :key="`${item.product.id}-${item.selectedSize || 'default'}`" class="summary-item">
-                  <div class="item-image">
-                    <img :src="item.product.image" :alt="item.product.name" />
-                    <div class="item-quantity-badge">{{ item.quantity }}</div>
-                  </div>
-                  <div class="item-details">
-                    <div class="item-name">{{ item.product.name }}</div>
-                    <div class="item-meta">
-                      <span class="item-price">{{ formatProductPrice(item.product.price) }}</span>
-                      <span v-if="item.selectedSize" class="item-size">Size: {{ item.selectedSize }}</span>
+                      <input type="text" class="form-control" placeholder="Nhập mã giảm giá của bạn" v-model="voucherCode" @keyup.enter="applyVoucher" />
+                      <button class="btn btn-primary" type="button" @click="applyVoucher" :disabled="!voucherCode.trim()">
+                        <i class="bi bi-check me-1"></i>
+                        Áp dụng
+                      </button>
                     </div>
                   </div>
-                  <div class="item-total">
-                    {{ calculateProductTotal(item.product.price, item.quantity) }}
+
+                  <!-- Available vouchers -->
+                  <div v-if="availableVouchers.length > 0" class="available-vouchers">
+                    <div class="vouchers-header">
+                      <i class="bi bi-gift me-2"></i>
+                      <small class="vouchers-title">Voucher có sẵn:</small>
+                    </div>
+                    <div class="voucher-list">
+                      <button v-for="voucher in availableVouchers.slice(0, 3)" :key="voucher.id" class="voucher-chip" @click="applyAvailableVoucher(voucher)">
+                        <span class="voucher-chip-code">{{ voucher.code }}</span>
+                        <span class="voucher-chip-discount">
+                          -{{ formatVoucherPrice(voucher) }}{{ voucher.discount_type === 'percentage' ? '' : 'đ' }}
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Price breakdown -->
-              <div class="summary-totals">
-                <div class="total-row">
-                  <span class="total-label">
-                    <i class="bi bi-calculator me-1"></i>
-                    Tạm tính:
-                  </span>
-                  <span class="total-value">{{ formatPrice(subtotal) }}</span>
-                </div>
-                <div class="total-row">
-                  <span class="total-label">
-                    <i class="bi bi-truck me-1"></i>
-                    Phí vận chuyển:
-                  </span>
-                  <span class="total-value shipping-free">
-                    <i class="bi bi-check-circle me-1"></i>
-                    Miễn phí
-                  </span>
-                </div>
-                <div v-if="selectedVoucher" class="total-row discount-row">
-                  <span class="total-label">
-                    <i class="bi bi-ticket-perforated me-1"></i>
-                    Giảm giá:
-                  </span>
-                  <span class="total-value discount-value">-{{ formatPrice(Number(discount)) }}</span>
+              <!-- Order Notes -->
+              <div class="checkout-section">
+                <div class="section-header">
+                  <h4 class="section-title">
+                    <i class="bi bi-chat-left-text"></i>
+                    Ghi chú đơn hàng
+                  </h4>
+                  <div class="section-badge optional">
+                    <i class="bi bi-4-circle"></i>
+                  </div>
                 </div>
 
-                <div class="summary-divider"></div>
-
-                <div class="total-row final-total">
-                  <span class="total-label final-label">Tổng thanh toán:</span>
-                  <span class="total-value final-value">{{ formatPrice(total) }}</span>
+                <div class="section-content">
+                  <div class="notes-input">
+                    <textarea class="form-control custom-textarea" rows="4" placeholder="Thêm ghi chú cho đơn hàng (không bắt buộc)..." v-model="orderComment"></textarea>
+                    <div class="notes-hint">
+                      <i class="bi bi-info-circle me-1"></i>
+                      Ví dụ: Giao hàng vào buổi sáng, gọi trước khi giao...
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Security info -->
-              <div class="security-info">
-                <div class="security-item">
-                  <i class="bi bi-shield-check"></i>
-                  <span>Thanh toán an toàn & bảo mật</span>
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+              <div class="order-summary">
+                <div class="summary-header">
+                  <h4 class="summary-title">
+                    <i class="bi bi-receipt me-2"></i>
+                    Tóm tắt đơn hàng
+                  </h4>
+                  <div class="summary-count">{{ cartItems.length }} sản phẩm</div>
                 </div>
-                <div class="security-item">
-                  <i class="bi bi-truck"></i>
-                  <span>Giao hàng nhanh chóng</span>
+
+                <!-- Cart items -->
+                <div class="summary-items">
+                  <div v-for="item in cartItems" :key="`${item.product.id}-${item.selectedSize || 'default'}`" class="summary-item">
+                    <div class="item-image">
+                      <img :src="item.product.image" :alt="item.product.name" />
+                      <div class="item-quantity-badge">{{ item.quantity }}</div>
+                    </div>
+                    <div class="item-details">
+                      <div class="item-name">{{ item.product.name }}</div>
+                      <div class="item-meta">
+                        <span class="item-price">{{ formatProductPrice(item.product.price) }}</span>
+                        <span v-if="item.selectedSize" class="item-size">Size: {{ item.selectedSize }}</span>
+                      </div>
+                    </div>
+                    <div class="item-total">
+                      {{ calculateProductTotal(item.product.price, item.quantity) }}
+                    </div>
+                  </div>
                 </div>
-                <div class="security-item">
-                  <i class="bi bi-arrow-clockwise"></i>
-                  <span>Đổi trả trong 7 ngày</span>
+
+                <!-- Price breakdown -->
+                <div class="summary-totals">
+                  <div class="total-row">
+                    <span class="total-label">
+                      <i class="bi bi-calculator me-1"></i>
+                      Tạm tính:
+                    </span>
+                    <span class="total-value">{{ formatPrice(subtotal) }}</span>
+                  </div>
+                  <div class="total-row">
+                    <span class="total-label">
+                      <i class="bi bi-truck me-1"></i>
+                      Phí vận chuyển:
+                    </span>
+                    <span class="total-value shipping-free">
+                      <i class="bi bi-check-circle me-1"></i>
+                      Miễn phí
+                    </span>
+                  </div>
+                  <div v-if="selectedVoucher" class="total-row discount-row">
+                    <span class="total-label">
+                      <i class="bi bi-ticket-perforated me-1"></i>
+                      Giảm giá:
+                    </span>
+                    <span class="total-value discount-value">-{{ formatPrice(Number(discount)) }}</span>
+                  </div>
+
+                  <div class="summary-divider"></div>
+
+                  <div class="total-row final-total">
+                    <span class="total-label final-label">Tổng thanh toán:</span>
+                    <span class="total-value final-value">{{ formatPrice(total) }}</span>
+                  </div>
                 </div>
-              </div>
-              <div class="place-order-section">
-                <!-- Place order button -->
-                <button class="btn btn-primary btn-place-order w-90" @click="handlePlaceOrder" :disabled="!canPlaceOrder || isPlacingOrder">
-                  <span v-if="isPlacingOrder" class="button-loading">
-                    <span class="spinner-border spinner-border-sm me-2"></span>
-                    Đang xử lý...
-                  </span>
-                  <span v-else class="button-content">
-                    <i class="bi bi-check-circle me-2"></i>
-                    Đặt hàng ngay
-                  </span>
-                </button>
-              </div>
+
+                <!-- Security info -->
+                <div class="security-info">
+                  <div class="security-item">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Thanh toán an toàn & bảo mật</span>
+                  </div>
+                  <div class="security-item">
+                    <i class="bi bi-truck"></i>
+                    <span>Giao hàng nhanh chóng</span>
+                  </div>
+                  <div class="security-item">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    <span>Đổi trả trong 7 ngày</span>
+                  </div>
+                </div>
+                <div class="place-order-section">
+                  <!-- Place order button -->
+                  <button class="btn btn-primary btn-place-order w-90" @click="handlePlaceOrder" :disabled="!canPlaceOrder || isPlacingOrder">
+                    <span v-if="isPlacingOrder" class="button-loading">
+                      <span class="spinner-border spinner-border-sm me-2"></span>
+                      Đang xử lý...
+                    </span>
+                    <span v-else class="button-content">
+                      <i class="bi bi-check-circle me-2"></i>
+                      Đặt hàng ngay
+                    </span>
+                  </button>
+                </div>
 
 
-              <div class="order-note">
-                <i class="bi bi-info-circle me-1"></i>
-                Bạn sẽ không bị tính phí cho đến khi xem lại đơn hàng
+                <div class="order-note">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Bạn sẽ không bị tính phí cho đến khi xem lại đơn hàng
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Add Address Modal -->
-    <AddressFormModal v-if="showAddAddressModal" :isEdit="false" @submit="handleAddressAdded" @cancel="showAddAddressModal = false" />
-  </div>
+      <!-- Add Address Modal -->
+      <AddressFormModal v-if="showAddAddressModal" :isEdit="false" @submit="handleAddressAdded" @cancel="showAddAddressModal = false" />
+    </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -358,6 +360,7 @@ import { formatPrice } from '@/utils'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import AddressFormModal from '@/components/AddressFormModal.vue'
 import type { Address, Voucher } from '@/types'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const router = useRouter()
 const { cartItems } = useCart()

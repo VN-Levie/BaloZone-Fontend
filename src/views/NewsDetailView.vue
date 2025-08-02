@@ -1,145 +1,147 @@
 <template>
-  <div class="news-detail-view">
-    <div class="container mt-4">
-      <Breadcrumb :items="breadcrumbItems" />
+  <UserLayout>
+    <div class="news-detail-view">
+      <div class="container mt-4">
+        <Breadcrumb :items="breadcrumbItems" />
 
-      <LoadingSpinner v-if="loading" />
+        <LoadingSpinner v-if="loading" />
 
-      <div v-else-if="error" class="alert alert-danger">
-        {{ error }}
-      </div>
-
-      <div v-else-if="article" class="row">
-        <div class="col-lg-8">
-          <!-- Article Header -->
-          <div class="article-header mb-4">
-            <span v-if="article.category" class="badge bg-primary mb-2">
-              {{ article.category }}
-            </span>
-            <h1 class="display-4 mb-3">{{ article.title }}</h1>
-
-            <div class="article-meta d-flex flex-wrap align-items-center mb-4">
-              <div class="me-4">
-                <i class="fas fa-calendar-alt me-1"></i>
-                {{ formatDate(article.created_at) }}
-              </div>
-              <div v-if="article.read_time" class="me-4">
-                <i class="fas fa-clock me-1"></i>
-                {{ article.read_time }} phút đọc
-              </div>
-              <div v-if="article.views" class="me-4">
-                <i class="fas fa-eye me-1"></i>
-                {{ article.views }} lượt xem
-              </div>
-              <div v-if="article.author" class="me-4">
-                <i class="fas fa-user me-1"></i>
-                {{ article.author }}
-              </div>
-            </div>
-
-            <!-- Social Share -->
-            <div class="social-share mb-4">
-              <span class="me-3">Chia sẻ:</span>
-              <button @click="shareOnFacebook" class="btn btn-primary btn-sm me-2">
-                <i class="fab fa-facebook-f me-1"></i>
-                Facebook
-              </button>
-              <button @click="shareOnTwitter" class="btn btn-info btn-sm me-2">
-                <i class="fab fa-twitter me-1"></i>
-                Twitter
-              </button>
-              <button @click="copyLink" class="btn btn-secondary btn-sm">
-                <i class="fas fa-link me-1"></i>
-                Sao chép
-              </button>
-            </div>
-          </div>
-
-          <!-- Featured Image -->
-          <div v-if="article.thumbnail" class="featured-image mb-4 rounded-3 overflow-hidden">
-            <img :src="article.thumbnail" :alt="article.title" class="img-fluid">
-          </div>
-
-          <!-- Article Content -->
-          <div class="article-content mb-5">
-            <!-- If content is available, use it, otherwise use description -->
-            <div v-if="article.content" v-html="article.content"></div>
-            <div v-else>
-              <p>{{ article.description }}</p>
-            </div>
-          </div>
-
-          <!-- Tags -->
-          <div v-if="article.tags && article.tags.length" class="article-tags mb-4">
-            <h6>Tags:</h6>
-            <span v-for="tag in article.tags" :key="tag" class="badge bg-light text-dark me-2">
-              {{ tag }}
-            </span>
-          </div>
-
-          <!-- Related Articles -->
-          <div v-if="relatedArticles.length" class="related-articles mt-5">
-            <h4 class="mb-4">Bài viết liên quan</h4>
-            <div class="row">
-              <div v-for="related in relatedArticles" :key="related.id" class="col-md-6 mb-3">
-                <div class="card h-100 shadow-sm">
-                  <img :src="related.thumbnail || related.image_url || '/placeholder-news.jpg'" :alt="related.title" class="card-img-top">
-                  <div class="card-body">
-                    <h6 class="card-title">{{ related.title }}</h6>
-                    <p class="card-text">{{ related.description || related.excerpt }}</p>
-                    <router-link :to="`/news/${related.id}`" class="btn btn-outline-primary btn-sm">
-                      Đọc thêm
-                    </router-link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div v-else-if="error" class="alert alert-danger">
+          {{ error }}
         </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-          <div class="sidebar">
-            <!-- Recent Articles -->
-            <div class="card mb-4 shadow-sm">
-              <div class="card-header bg-white">
-                <h5 class="mb-0">Đọc nhiều nhất</h5>
+        <div v-else-if="article" class="row">
+          <div class="col-lg-8">
+            <!-- Article Header -->
+            <div class="article-header mb-4">
+              <span v-if="article.category" class="badge bg-primary mb-2">
+                {{ article.category }}
+              </span>
+              <h1 class="display-4 mb-3">{{ article.title }}</h1>
+
+              <div class="article-meta d-flex flex-wrap align-items-center mb-4">
+                <div class="me-4">
+                  <i class="fas fa-calendar-alt me-1"></i>
+                  {{ formatDate(article.created_at) }}
+                </div>
+                <div v-if="article.read_time" class="me-4">
+                  <i class="fas fa-clock me-1"></i>
+                  {{ article.read_time }} phút đọc
+                </div>
+                <div v-if="article.views" class="me-4">
+                  <i class="fas fa-eye me-1"></i>
+                  {{ article.views }} lượt xem
+                </div>
+                <div v-if="article.author" class="me-4">
+                  <i class="fas fa-user me-1"></i>
+                  {{ article.author }}
+                </div>
               </div>
-              <div class="card-body">
-                <div v-for="recent in recentArticles" :key="recent.id" class="d-flex mb-3">
-                  <img :src="recent.thumbnail || recent.image_url || '/placeholder-news.jpg'" :alt="recent.title" class="recent-thumb me-3">
-                  <div>
-                    <h6 class="mb-1">
-                      <router-link :to="`/news/${recent.id}`" class="text-decoration-none text-dark">
-                        {{ recent.title }}
+
+              <!-- Social Share -->
+              <div class="social-share mb-4">
+                <span class="me-3">Chia sẻ:</span>
+                <button @click="shareOnFacebook" class="btn btn-primary btn-sm me-2">
+                  <i class="fab fa-facebook-f me-1"></i>
+                  Facebook
+                </button>
+                <button @click="shareOnTwitter" class="btn btn-info btn-sm me-2">
+                  <i class="fab fa-twitter me-1"></i>
+                  Twitter
+                </button>
+                <button @click="copyLink" class="btn btn-secondary btn-sm">
+                  <i class="fas fa-link me-1"></i>
+                  Sao chép
+                </button>
+              </div>
+            </div>
+
+            <!-- Featured Image -->
+            <div v-if="article.thumbnail" class="featured-image mb-4 rounded-3 overflow-hidden">
+              <img :src="article.thumbnail" :alt="article.title" class="img-fluid">
+            </div>
+
+            <!-- Article Content -->
+            <div class="article-content mb-5">
+              <!-- If content is available, use it, otherwise use description -->
+              <div v-if="article.content" v-html="article.content"></div>
+              <div v-else>
+                <p>{{ article.description }}</p>
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div v-if="article.tags && article.tags.length" class="article-tags mb-4">
+              <h6>Tags:</h6>
+              <span v-for="tag in article.tags" :key="tag" class="badge bg-light text-dark me-2">
+                {{ tag }}
+              </span>
+            </div>
+
+            <!-- Related Articles -->
+            <div v-if="relatedArticles.length" class="related-articles mt-5">
+              <h4 class="mb-4">Bài viết liên quan</h4>
+              <div class="row">
+                <div v-for="related in relatedArticles" :key="related.id" class="col-md-6 mb-3">
+                  <div class="card h-100 shadow-sm">
+                    <img :src="related.thumbnail || related.image_url || '/placeholder-news.jpg'" :alt="related.title" class="card-img-top">
+                    <div class="card-body">
+                      <h6 class="card-title">{{ related.title }}</h6>
+                      <p class="card-text">{{ related.description || related.excerpt }}</p>
+                      <router-link :to="`/news/${related.id}`" class="btn btn-outline-primary btn-sm">
+                        Đọc thêm
                       </router-link>
-                    </h6>
-                    <small class="text-muted">
-                      {{ formatDate(recent.created_at) }}
-                    </small>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="col-lg-4">
+            <div class="sidebar">
+              <!-- Recent Articles -->
+              <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-white">
+                  <h5 class="mb-0">Đọc nhiều nhất</h5>
+                </div>
+                <div class="card-body">
+                  <div v-for="recent in recentArticles" :key="recent.id" class="d-flex mb-3">
+                    <img :src="recent.thumbnail || recent.image_url || '/placeholder-news.jpg'" :alt="recent.title" class="recent-thumb me-3">
+                    <div>
+                      <h6 class="mb-1">
+                        <router-link :to="`/news/${recent.id}`" class="text-decoration-none text-dark">
+                          {{ recent.title }}
+                        </router-link>
+                      </h6>
+                      <small class="text-muted">
+                        {{ formatDate(recent.created_at) }}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
 
 
 
 
+            </div>
           </div>
         </div>
-      </div>
 
-      <div v-else class="text-center py-5">
-        <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
-        <h3>Không tìm thấy bài viết</h3>
-        <p class="text-muted">Bài viết bạn đang tìm không tồn tại hoặc đã bị xóa.</p>
-        <router-link to="/news" class="btn btn-primary">
-          Quay lại trang tin tức
-        </router-link>
+        <div v-else class="text-center py-5">
+          <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+          <h3>Không tìm thấy bài viết</h3>
+          <p class="text-muted">Bài viết bạn đang tìm không tồn tại hoặc đã bị xóa.</p>
+          <router-link to="/news" class="btn btn-primary">
+            Quay lại trang tin tức
+          </router-link>
+        </div>
       </div>
     </div>
-  </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -150,6 +152,7 @@ import type { News } from '../types'
 import { formatDate } from '../utils'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import Breadcrumb from '../components/Breadcrumb.vue'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const route = useRoute()
 

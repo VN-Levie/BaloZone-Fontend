@@ -1,350 +1,334 @@
 <template>
-  <div class="order-detail-page" style="background:linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); min-height:100vh; padding: 2rem 0;">
-    <div class="container-fluid px-4">
-      <Breadcrumb :items="breadcrumbItems" class="mb-4" />
-      
-      <!-- Loading State -->
-      <div v-if="loading" class="loading-state">
-        <div class="loading-spinner">
-          <div class="spinner"></div>
-          <p>Đang tải chi tiết đơn hàng...</p>
-        </div>
-      </div>
-      
-      <!-- Error State -->
-      <div v-else-if="error" class="error-state">
-        <div class="error-content">
-          <i class="bi bi-exclamation-triangle"></i>
-          <h5>Có lỗi xảy ra</h5>
-          <p>{{ error }}</p>
-          <div class="error-actions">
-            <button @click="fetchOrderDetail" class="btn-retry">
-              <i class="bi bi-arrow-clockwise me-2"></i>
-              Thử lại
-            </button>
-            <router-link to="/orders" class="btn-back">
-              <i class="bi bi-arrow-left me-2"></i>
-              Quay lại danh sách
-            </router-link>
+  <UserLayout>
+    <div class="order-detail-page" style="background:linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); min-height:100vh; padding: 2rem 0;">
+      <div class="container-fluid px-4">
+        <Breadcrumb :items="breadcrumbItems" class="mb-4" />
+
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-state">
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Đang tải chi tiết đơn hàng...</p>
           </div>
         </div>
-      </div>
-      
-      <!-- Order Detail Content -->
-      <div v-else-if="order" class="order-detail-content">
-        <!-- Order Header Card -->
-        <div class="order-header-card mb-4">
-          <div class="order-header-content">
-            <div class="order-info">
-              <div class="order-number">
-                <i class="bi bi-receipt-cutoff me-3"></i>
-                {{ order.order_number || `Đơn hàng #${order.id}` }}
+
+        <!-- Error State -->
+        <div v-else-if="error" class="error-state">
+          <div class="error-content">
+            <i class="bi bi-exclamation-triangle"></i>
+            <h5>Có lỗi xảy ra</h5>
+            <p>{{ error }}</p>
+            <div class="error-actions">
+              <button @click="fetchOrderDetail" class="btn-retry">
+                <i class="bi bi-arrow-clockwise me-2"></i>
+                Thử lại
+              </button>
+              <router-link to="/orders" class="btn-back">
+                <i class="bi bi-arrow-left me-2"></i>
+                Quay lại danh sách
+              </router-link>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Detail Content -->
+        <div v-else-if="order" class="order-detail-content">
+          <!-- Order Header Card -->
+          <div class="order-header-card mb-4">
+            <div class="order-header-content">
+              <div class="order-info">
+                <div class="order-number">
+                  <i class="bi bi-receipt-cutoff me-3"></i>
+                  {{ order.order_number || `Đơn hàng #${order.id}` }}
+                </div>
+                <div class="order-meta">
+                  <span class="order-date">
+                    <i class="bi bi-calendar3 me-2"></i>
+                    {{ formatDate(order.created_at) }}
+                  </span>
+                </div>
               </div>
-              <div class="order-meta">
-                <span class="order-date">
-                  <i class="bi bi-calendar3 me-2"></i>
-                  {{ formatDate(order.created_at) }}
+              <div class="order-badges">
+                <span class="status-badge" :class="getStatusClass(order.status)">
+                  <i :class="getStatusIcon(order.status)" class="me-2"></i>
+                  {{ getStatusText(order.status) }}
+                </span>
+                <span class="payment-badge" :class="getPaymentStatusClass(order.payment_status)">
+                  <i :class="getPaymentStatusIcon(order.payment_status)" class="me-2"></i>
+                  {{ getPaymentStatusText(order.payment_status) }}
                 </span>
               </div>
             </div>
-            <div class="order-badges">
-              <span class="status-badge" :class="getStatusClass(order.status)">
-                <i :class="getStatusIcon(order.status)" class="me-2"></i>
-                {{ getStatusText(order.status) }}
-              </span>
-              <span class="payment-badge" :class="getPaymentStatusClass(order.payment_status)">
-                <i :class="getPaymentStatusIcon(order.payment_status)" class="me-2"></i>
-                {{ getPaymentStatusText(order.payment_status) }}
-              </span>
-            </div>
           </div>
-        </div>
 
-        <div class="row">
-          <!-- Left Column -->
-          <div class="col-lg-8 mb-4">
-            <!-- Order Items Card -->
-            <div class="detail-card mb-4">
-              <div class="card-header">
-                <h5 class="card-title">
-                  <i class="bi bi-bag-check me-2"></i>
-                  Sản phẩm đã đặt
-                </h5>
-              </div>
-              <div class="card-body">
-                <div class="order-items">
-                  <div v-for="item in order.items" :key="item.id" class="order-item">
-                    <div class="item-image">
-                      <img 
-                        :src="item.product_image || '/placeholder.jpg'"
-                        :alt="item.product_name"
-                      />
-                    </div>
-                    <div class="item-details">
-                      <h6 class="item-name">
-                        <router-link 
-                          :to="`/product/${item.product_id}`" 
-                          class="product-link"
-                        >
-                          {{ item.product_name }}
-                        </router-link>
-                      </h6>
-                      <p class="item-id">ID: {{ item.product_id }}</p>
-                    </div>
-                    <div class="item-quantity">
-                      <span class="quantity-badge">{{ item.quantity }}</span>
-                    </div>
-                    <div class="item-price">
-                      <div class="unit-price">{{ formatPrice(Number(item.price)) }}</div>
-                      <div class="total-price">{{ formatPrice(item.total) }}</div>
-                    </div>
-                  </div>
+          <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8 mb-4">
+              <!-- Order Items Card -->
+              <div class="detail-card mb-4">
+                <div class="card-header">
+                  <h5 class="card-title">
+                    <i class="bi bi-bag-check me-2"></i>
+                    Sản phẩm đã đặt
+                  </h5>
                 </div>
-              </div>
-            </div>
-
-            <!-- Shipping Address Card -->
-            <div class="detail-card mb-4">
-              <div class="card-header">
-                <h5 class="card-title">
-                  <i class="bi bi-geo-alt me-2"></i>
-                  Địa chỉ giao hàng
-                </h5>
-              </div>
-              <div class="card-body">
-                <div class="address-card">
-                  <div class="address-header">
-                    <div v-if="order.shipping_address?.recipient_name" class="recipient-name">
-                      <i class="bi bi-person-fill me-2"></i>
-                      {{ order.shipping_address.recipient_name }}
-                    </div>
-                    <div v-if="order.shipping_address?.recipient_phone" class="recipient-phone">
-                      <i class="bi bi-telephone-fill me-2"></i>
-                      {{ order.shipping_address.recipient_phone }}
-                    </div>
-                  </div>
-                  <div class="address-details">
-                    <i class="bi bi-geo-alt-fill me-2"></i>
-                    <div class="address-text">
-                      <div>{{ order.shipping_address?.address }}</div>
-                      <div class="address-location">
-                        {{ order.shipping_address?.ward }}, {{ order.shipping_address?.district }}, {{ order.shipping_address?.province }}
+                <div class="card-body">
+                  <div class="order-items">
+                    <div v-for="item in order.items" :key="item.id" class="order-item">
+                      <div class="item-image">
+                        <img :src="item.product_image || '/placeholder.jpg'" :alt="item.product_name" />
+                      </div>
+                      <div class="item-details">
+                        <h6 class="item-name">
+                          <router-link :to="`/product/${item.product_id}`" class="product-link">
+                            {{ item.product_name }}
+                          </router-link>
+                        </h6>
+                        <p class="item-id">ID: {{ item.product_id }}</p>
+                      </div>
+                      <div class="item-quantity">
+                        <span class="quantity-badge">{{ item.quantity }}</span>
+                      </div>
+                      <div class="item-price">
+                        <div class="unit-price">{{ formatPrice(Number(item.price)) }}</div>
+                        <div class="total-price">{{ formatPrice(item.total) }}</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Order Timeline Card -->
-            <div class="detail-card">
-              <div class="card-header">
-                <h5 class="card-title">
-                  <i class="bi bi-clock-history me-2"></i>
-                  Lịch sử đơn hàng
-                </h5>
-              </div>
-              <div class="card-body">
-                <div v-if="order.order_history && order.order_history.length > 0" class="timeline">
-                  <div 
-                    v-for="(history, index) in order.order_history" 
-                    :key="index"
-                    class="timeline-item"
-                  >
-                    <div class="timeline-marker">
-                      <i :class="getStatusIcon(history.status)"></i>
-                    </div>
-                    <div class="timeline-content">
-                      <div class="timeline-header">
-                        <span class="timeline-status">{{ getStatusText(history.status) }}</span>
-                        <span class="timeline-date">{{ formatDate(history.created_at) }}</span>
+              <!-- Shipping Address Card -->
+              <div class="detail-card mb-4">
+                <div class="card-header">
+                  <h5 class="card-title">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    Địa chỉ giao hàng
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="address-card">
+                    <div class="address-header">
+                      <div v-if="order.shipping_address?.recipient_name" class="recipient-name">
+                        <i class="bi bi-person-fill me-2"></i>
+                        {{ order.shipping_address.recipient_name }}
                       </div>
-                      <p v-if="history.note" class="timeline-note">{{ history.note }}</p>
+                      <div v-if="order.shipping_address?.recipient_phone" class="recipient-phone">
+                        <i class="bi bi-telephone-fill me-2"></i>
+                        {{ order.shipping_address.recipient_phone }}
+                      </div>
+                    </div>
+                    <div class="address-details">
+                      <i class="bi bi-geo-alt-fill me-2"></i>
+                      <div class="address-text">
+                        <div>{{ order.shipping_address?.address }}</div>
+                        <div class="address-location">
+                          {{ order.shipping_address?.ward }}, {{ order.shipping_address?.district }}, {{ order.shipping_address?.province }}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div v-else class="empty-timeline">
-                  <div class="empty-icon">
-                    <i class="bi bi-clock"></i>
-                  </div>
-                  <p>Chưa có lịch sử cập nhật cho đơn hàng này</p>
-                </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Right Column -->
-          <div class="col-lg-4">
-            <!-- Order Summary Card -->
-            <div class="detail-card mb-4">
-              <div class="card-header">
-                <h5 class="card-title">
-                  <i class="bi bi-calculator me-2"></i>
-                  Tóm tắt đơn hàng
-                </h5>
-              </div>
-              <div class="card-body">
-                <div class="summary-section">
-                  <div class="summary-row">
-                    <span class="summary-label">Tạm tính:</span>
-                    <span class="summary-value">{{ formatPrice(Number(order.total_amount)) }}</span>
-                  </div>
-                  <div class="summary-row">
-                    <span class="summary-label">Phí vận chuyển:</span>
-                    <span class="summary-value">{{ formatPrice(Number(order.shipping_fee)) }}</span>
-                  </div>
-                  <div v-if="Number(order.voucher_discount) > 0" class="summary-row discount">
-                    <span class="summary-label">
-                      <i class="bi bi-tag me-1"></i>Giảm giá:
-                    </span>
-                    <span class="summary-value">-{{ formatPrice(Number(order.voucher_discount)) }}</span>
-                  </div>
-                  <div class="summary-divider"></div>
-                  <div class="summary-total">
-                    <span class="total-label">Tổng cộng:</span>
-                    <span class="total-value">{{ formatPrice(Number(order.final_amount)) }}</span>
-                  </div>
+              <!-- Order Timeline Card -->
+              <div class="detail-card">
+                <div class="card-header">
+                  <h5 class="card-title">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Lịch sử đơn hàng
+                  </h5>
                 </div>
-
-                <div class="payment-section">
-                  <div class="payment-method">
-                    <span class="payment-label">Phương thức thanh toán:</span>
-                    <span class="payment-value">
-                      <i :class="getPaymentMethodIcon(order.payment_method)" class="me-2"></i>
-                      {{ getPaymentMethodText(order.payment_method) }}
-                    </span>
+                <div class="card-body">
+                  <div v-if="order.order_history && order.order_history.length > 0" class="timeline">
+                    <div v-for="(history, index) in order.order_history" :key="index" class="timeline-item">
+                      <div class="timeline-marker">
+                        <i :class="getStatusIcon(history.status)"></i>
+                      </div>
+                      <div class="timeline-content">
+                        <div class="timeline-header">
+                          <span class="timeline-status">{{ getStatusText(history.status) }}</span>
+                          <span class="timeline-date">{{ formatDate(history.created_at) }}</span>
+                        </div>
+                        <p v-if="history.note" class="timeline-note">{{ history.note }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="empty-timeline">
+                    <div class="empty-icon">
+                      <i class="bi bi-clock"></i>
+                    </div>
+                    <p>Chưa có lịch sử cập nhật cho đơn hàng này</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Actions Card -->
-            <div class="detail-card">
-              <div class="card-header">
-                <h5 class="card-title">
-                  <i class="bi bi-gear me-2"></i>
-                  Thao tác
-                </h5>
+            <!-- Right Column -->
+            <div class="col-lg-4">
+              <!-- Order Summary Card -->
+              <div class="detail-card mb-4">
+                <div class="card-header">
+                  <h5 class="card-title">
+                    <i class="bi bi-calculator me-2"></i>
+                    Tóm tắt đơn hàng
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="summary-section">
+                    <div class="summary-row">
+                      <span class="summary-label">Tạm tính:</span>
+                      <span class="summary-value">{{ formatPrice(Number(order.total_amount)) }}</span>
+                    </div>
+                    <div class="summary-row">
+                      <span class="summary-label">Phí vận chuyển:</span>
+                      <span class="summary-value">{{ formatPrice(Number(order.shipping_fee)) }}</span>
+                    </div>
+                    <div v-if="Number(order.voucher_discount) > 0" class="summary-row discount">
+                      <span class="summary-label">
+                        <i class="bi bi-tag me-1"></i>Giảm giá:
+                      </span>
+                      <span class="summary-value">-{{ formatPrice(Number(order.voucher_discount)) }}</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-total">
+                      <span class="total-label">Tổng cộng:</span>
+                      <span class="total-value">{{ formatPrice(Number(order.final_amount)) }}</span>
+                    </div>
+                  </div>
+
+                  <div class="payment-section">
+                    <div class="payment-method">
+                      <span class="payment-label">Phương thức thanh toán:</span>
+                      <span class="payment-value">
+                        <i :class="getPaymentMethodIcon(order.payment_method)" class="me-2"></i>
+                        {{ getPaymentMethodText(order.payment_method) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="card-body">
-                <div class="action-buttons">
-                  <button 
-                    v-if="canCancelOrder(order.status)"
-                    @click="showCancelModal"
-                    class="action-btn cancel-btn"
-                  >
-                    <i class="bi bi-x-circle me-2"></i>
-                    Hủy đơn hàng
-                  </button>
-                  <button 
-                    v-if="canReorder(order.status, order.payment_status)"
-                    @click="showReorderConfirmModal"
-                    class="action-btn reorder-btn"
-                  >
-                    <i class="bi bi-arrow-clockwise me-2"></i>
-                    Đặt lại lần nữa
-                  </button>
-                  <router-link to="/orders" class="action-btn back-btn">
-                    <i class="bi bi-arrow-left me-2"></i>
-                    Quay lại danh sách
-                  </router-link>
+
+              <!-- Actions Card -->
+              <div class="detail-card">
+                <div class="card-header">
+                  <h5 class="card-title">
+                    <i class="bi bi-gear me-2"></i>
+                    Thao tác
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="action-buttons">
+                    <button v-if="canCancelOrder(order.status)" @click="showCancelModal" class="action-btn cancel-btn">
+                      <i class="bi bi-x-circle me-2"></i>
+                      Hủy đơn hàng
+                    </button>
+                    <button v-if="canReorder(order.status, order.payment_status)" @click="showReorderConfirmModal" class="action-btn reorder-btn">
+                      <i class="bi bi-arrow-clockwise me-2"></i>
+                      Đặt lại lần nữa
+                    </button>
+                    <router-link to="/orders" class="action-btn back-btn">
+                      <i class="bi bi-arrow-left me-2"></i>
+                      Quay lại danh sách
+                    </router-link>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Reorder Confirmation Modal -->
-    <div v-if="showReorderModal" class="modal-overlay" @click="hideReorderModal">
-      <div class="reorder-modal" @click.stop>
-        <div class="modal-header">
-          <div class="modal-icon">
-            <i class="bi bi-arrow-clockwise"></i>
-          </div>
-          <h4 class="modal-title">Đặt lại đơn hàng</h4>
-        </div>
-        <div class="modal-body">
-          <p class="modal-message">Bạn có muốn thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?</p>
-          <div class="order-preview">
-            <div class="preview-header">
-              <i class="bi bi-bag-check me-2"></i>
-              {{ order?.items?.length || 0 }} sản phẩm
+      <!-- Reorder Confirmation Modal -->
+      <div v-if="showReorderModal" class="modal-overlay" @click="hideReorderModal">
+        <div class="reorder-modal" @click.stop>
+          <div class="modal-header">
+            <div class="modal-icon">
+              <i class="bi bi-arrow-clockwise"></i>
             </div>
-            <div class="reorder-items">
-              <div v-for="item in order?.items?.slice(0, 3)" :key="item.id" class="reorder-item">
-                <img :src="item.product_image || '/placeholder.jpg'" :alt="item.product_name" />
-                <div class="item-info">
-                  <span class="item-name">{{ item.product_name }}</span>
-                  <span class="item-quantity">x{{ item.quantity }}</span>
+            <h4 class="modal-title">Đặt lại đơn hàng</h4>
+          </div>
+          <div class="modal-body">
+            <p class="modal-message">Bạn có muốn thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?</p>
+            <div class="order-preview">
+              <div class="preview-header">
+                <i class="bi bi-bag-check me-2"></i>
+                {{ order?.items?.length || 0 }} sản phẩm
+              </div>
+              <div class="reorder-items">
+                <div v-for="item in order?.items?.slice(0, 3)" :key="item.id" class="reorder-item">
+                  <img :src="item.product_image || '/placeholder.jpg'" :alt="item.product_name" />
+                  <div class="item-info">
+                    <span class="item-name">{{ item.product_name }}</span>
+                    <span class="item-quantity">x{{ item.quantity }}</span>
+                  </div>
+                </div>
+                <div v-if="order?.items && order.items.length > 3" class="more-items">
+                  +{{ order.items.length - 3 }} sản phẩm khác
                 </div>
               </div>
-              <div v-if="order?.items && order.items.length > 3" class="more-items">
-                +{{ order.items.length - 3 }} sản phẩm khác
+            </div>
+            <p class="info-text">
+              <i class="bi bi-info-circle me-2"></i>
+              Sản phẩm sẽ được thêm vào giỏ hàng với giá hiện tại
+            </p>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-cancel" @click="hideReorderModal">
+              <i class="bi bi-x-circle me-2"></i>
+              Hủy bỏ
+            </button>
+            <button class="btn btn-confirm-reorder" @click="confirmReorder" :disabled="reordering">
+              <span v-if="reordering" class="spinner-border spinner-border-sm me-2"></span>
+              <i v-else class="bi bi-cart-plus me-2"></i>
+              {{ reordering ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cancel Order Modal -->
+      <div v-if="showCancelOrderModal" class="modal-overlay" @click="hideCancelModal">
+        <div class="cancel-modal" @click.stop>
+          <div class="modal-header">
+            <div class="modal-icon">
+              <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <h4 class="modal-title">Xác nhận hủy đơn hàng</h4>
+          </div>
+          <div class="modal-body">
+            <p class="modal-message">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
+            <div class="order-preview">
+              <div class="preview-header">
+                <i class="bi bi-receipt me-2"></i>
+                {{ order?.order_number || `#${order?.id}` }}
+              </div>
+              <div class="preview-info">
+                Tổng giá trị: {{ formatPrice(Number(order?.final_amount)) }}
               </div>
             </div>
+            <p class="warning-text">
+              <i class="bi bi-info-circle me-2"></i>
+              Hành động này không thể hoàn tác
+            </p>
           </div>
-          <p class="info-text">
-            <i class="bi bi-info-circle me-2"></i>
-            Sản phẩm sẽ được thêm vào giỏ hàng với giá hiện tại
-          </p>
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-cancel" @click="hideReorderModal">
-            <i class="bi bi-x-circle me-2"></i>
-            Hủy bỏ
-          </button>
-          <button class="btn btn-confirm-reorder" @click="confirmReorder" :disabled="reordering">
-            <span v-if="reordering" class="spinner-border spinner-border-sm me-2"></span>
-            <i v-else class="bi bi-cart-plus me-2"></i>
-            {{ reordering ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}
-          </button>
+          <div class="modal-actions">
+            <button class="btn btn-cancel" @click="hideCancelModal">
+              <i class="bi bi-x-circle me-2"></i>
+              Giữ đơn hàng
+            </button>
+            <button class="btn btn-confirm-cancel" @click="confirmCancelOrder" :disabled="cancelling">
+              <span v-if="cancelling" class="spinner-border spinner-border-sm me-2"></span>
+              <i v-else class="bi bi-trash me-2"></i>
+              {{ cancelling ? 'Đang hủy...' : 'Xác nhận hủy' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Cancel Order Modal -->
-    <div v-if="showCancelOrderModal" class="modal-overlay" @click="hideCancelModal">
-      <div class="cancel-modal" @click.stop>
-        <div class="modal-header">
-          <div class="modal-icon">
-            <i class="bi bi-exclamation-triangle"></i>
-          </div>
-          <h4 class="modal-title">Xác nhận hủy đơn hàng</h4>
-        </div>
-        <div class="modal-body">
-          <p class="modal-message">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
-          <div class="order-preview">
-            <div class="preview-header">
-              <i class="bi bi-receipt me-2"></i>
-              {{ order?.order_number || `#${order?.id}` }}
-            </div>
-            <div class="preview-info">
-              Tổng giá trị: {{ formatPrice(Number(order?.final_amount)) }}
-            </div>
-          </div>
-          <p class="warning-text">
-            <i class="bi bi-info-circle me-2"></i>
-            Hành động này không thể hoàn tác
-          </p>
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-cancel" @click="hideCancelModal">
-            <i class="bi bi-x-circle me-2"></i>
-            Giữ đơn hàng
-          </button>
-          <button class="btn btn-confirm-cancel" @click="confirmCancelOrder" :disabled="cancelling">
-            <span v-if="cancelling" class="spinner-border spinner-border-sm me-2"></span>
-            <i v-else class="bi bi-trash me-2"></i>
-            {{ cancelling ? 'Đang hủy...' : 'Xác nhận hủy' }}
-          </button>
-        </div>
-      </div>
+      <ToastContainer />
     </div>
-
-    <ToastContainer />
-  </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -357,6 +341,7 @@ import { useCart } from '../composables/useCart'
 import { useToast } from '../composables/useToast'
 import Breadcrumb from '../components/Breadcrumb.vue'
 import ToastContainer from '../components/ToastContainer.vue'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -479,7 +464,7 @@ const fetchOrderDetail = async () => {
   try {
     loading.value = true
     error.value = null
-    
+
     const response = await ordersApi.getOrder(orderId.value)
     order.value = response.data
   } catch (err: any) {
@@ -508,7 +493,7 @@ const hideReorderModal = () => {
 
 const confirmCancelOrder = async () => {
   if (!order.value) return
-  
+
   try {
     cancelling.value = true
     await ordersApi.cancelOrder(order.value.id)
@@ -539,9 +524,9 @@ const reorderItems = async () => {
     showToast('Không có sản phẩm nào để đặt lại', 'warning')
     return
   }
-  
+
   let addedCount = 0
-  
+
   for (const item of order.value.items) {
     if (item.product_name && item.product_id) {
       try {
@@ -566,10 +551,10 @@ const reorderItems = async () => {
       }
     }
   }
-  
+
   if (addedCount > 0) {
     showToast(`Đã thêm ${addedCount} sản phẩm vào giỏ hàng`, 'success')
-    
+
     // Navigate to cart after a short delay
     setTimeout(() => {
       router.push('/cart')
@@ -617,8 +602,13 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-spinner p {
@@ -728,16 +718,50 @@ onMounted(() => {
   letter-spacing: 0.5px;
 }
 
-.status-pending { background: linear-gradient(135deg, #ffc107, #ffb300); color: #000; }
-.status-confirmed { background: linear-gradient(135deg, #17a2b8, #138496); color: white; }
-.status-shipped { background: linear-gradient(135deg, #007bff, #0056b3); color: white; }
-.status-delivered { background: linear-gradient(135deg, #28a745, #1e7e34); color: white; }
-.status-cancelled { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
+.status-pending {
+  background: linear-gradient(135deg, #ffc107, #ffb300);
+  color: #000;
+}
 
-.payment-pending { background: linear-gradient(135deg, #ffc107, #ffb300); color: #000; }
-.payment-paid { background: linear-gradient(135deg, #28a745, #1e7e34); color: white; }
-.payment-failed { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
-.payment-refunded { background: linear-gradient(135deg, #6c757d, #495057); color: white; }
+.status-confirmed {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+}
+
+.status-shipped {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+}
+
+.status-delivered {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: white;
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.payment-pending {
+  background: linear-gradient(135deg, #ffc107, #ffb300);
+  color: #000;
+}
+
+.payment-paid {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: white;
+}
+
+.payment-failed {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.payment-refunded {
+  background: linear-gradient(135deg, #6c757d, #495057);
+  color: white;
+}
 
 /* Detail Cards */
 .detail-card {
@@ -1175,8 +1199,13 @@ onMounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .cancel-modal,
@@ -1191,8 +1220,15 @@ onMounted(() => {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-header {
@@ -1383,7 +1419,7 @@ onMounted(() => {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .order-badges {
     justify-content: center;
   }
@@ -1393,42 +1429,42 @@ onMounted(() => {
   .order-detail-page {
     padding: 1rem 0;
   }
-  
+
   .order-header-card,
   .detail-card {
     border-radius: 12px;
   }
-  
+
   .order-item {
     flex-direction: column;
     text-align: center;
     gap: 1rem;
   }
-  
+
   .item-image img {
     width: 100px;
     height: 100px;
   }
-  
+
   .timeline {
     padding-left: 1.5rem;
   }
-  
+
   .timeline-marker {
     left: -1.75rem;
     width: 32px;
     height: 32px;
     font-size: 0.9rem;
   }
-  
+
   .timeline-item:not(:last-child)::before {
     left: -1.6rem;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
-  
+
   .modal-actions .btn {
     width: 100%;
   }
@@ -1439,28 +1475,28 @@ onMounted(() => {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .order-header-card,
   .card-body {
     padding: 1rem;
   }
-  
+
   .order-number {
     font-size: 1.4rem;
   }
-  
+
   .status-badge,
   .payment-badge {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
   }
-  
+
   .action-btn {
     padding: 1rem;
     font-size: 0.95rem;
     min-height: 45px;
   }
-  
+
   .action-btn i {
     margin-right: 0.5rem !important;
   }

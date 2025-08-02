@@ -1,148 +1,109 @@
 <template>
-  <div class="admin-create-category">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <h1 class="page-title">Tạo Danh Mục Mới</h1>
-          <p class="page-subtitle">Thêm danh mục sản phẩm mới vào hệ thống</p>
-        </div>
-        <div class="header-actions">
-          <button 
-            type="button" 
-            class="btn btn-outline"
-            @click="router.back()"
-          >
-            <i class="bi bi-arrow-left"></i>
-            Quay lại
-          </button>
+  <AdminLayout>
+    <div class="admin-create-category">
+      <!-- Header -->
+      <div class="page-header">
+        <div class="header-content">
+          <div class="header-left">
+            <h1 class="page-title">Tạo Danh Mục Mới</h1>
+            <p class="page-subtitle">Thêm danh mục sản phẩm mới vào hệ thống</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn btn-outline" @click="router.back()">
+              <i class="bi bi-arrow-left"></i>
+              Quay lại
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Form Content -->
-    <div class="form-container">
-      <form @submit.prevent="handleSubmit" class="category-form">
-        <!-- Error Alert -->
-        <div v-if="Object.keys(errors).length > 0" class="alert alert-danger">
-          <div class="alert-content">
-            <i class="bi bi-exclamation-triangle"></i>
-            <div>
-              <h4>Có lỗi xảy ra:</h4>
-              <ul>
-                <li v-for="(errorList, field) in errors" :key="field">
-                  {{ errorList[0] }}
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <!-- Basic Information -->
-          <div class="form-section">
-            <h3 class="section-title">Thông Tin Cơ Bản</h3>
-            
-            <div class="form-group">
-              <label for="name" class="form-label required">Tên danh mục</label>
-              <input
-                id="name"
-                v-model="form.name"
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.name }"
-                placeholder="Nhập tên danh mục"
-                required
-                @input="generateSlug"
-              />
-              <div v-if="errors.name" class="invalid-feedback">{{ errors.name[0] }}</div>
-            </div>
-
-            <div class="form-group">
-              <label for="slug" class="form-label required">Slug URL</label>
-              <input
-                id="slug"
-                v-model="form.slug"
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.slug }"
-                placeholder="slug-url-friendly"
-                required
-              />
-              <div class="form-help">URL thân thiện, chỉ chứa chữ cái thường, số và dấu gạch ngang</div>
-              <div v-if="errors.slug" class="invalid-feedback">{{ errors.slug[0] }}</div>
-            </div>
-
-            <div class="form-group">
-              <label for="description" class="form-label">Mô tả</label>
-              <textarea
-                id="description"
-                v-model="form.description"
-                class="form-control"
-                :class="{ 'is-invalid': errors.description }"
-                placeholder="Nhập mô tả danh mục"
-                rows="4"
-              ></textarea>
-              <div v-if="errors.description" class="invalid-feedback">{{ errors.description[0] }}</div>
+      <!-- Form Content -->
+      <div class="form-container">
+        <form @submit.prevent="handleSubmit" class="category-form">
+          <!-- Error Alert -->
+          <div v-if="Object.keys(errors).length > 0" class="alert alert-danger">
+            <div class="alert-content">
+              <i class="bi bi-exclamation-triangle"></i>
+              <div>
+                <h4>Có lỗi xảy ra:</h4>
+                <ul>
+                  <li v-for="(errorList, field) in errors" :key="field">
+                    {{ errorList[0] }}
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          <!-- Image Upload -->
-          <div class="form-section">
-            <h3 class="section-title">Hình Ảnh Danh Mục</h3>
-            
-            <div class="form-group">
-              <label class="form-label">Hình ảnh đại diện</label>
-              <div class="image-upload-area">
-                <input
-                  type="file"
-                  class="file-input"
-                  accept="image/*"
-                  @change="handleImageChange"
-                />
-                <div class="upload-placeholder">
-                  <i class="bi bi-upload"></i>
-                  <span>Kéo thả file hoặc click để chọn</span>
-                  <small>JPEG, PNG, JPG, GIF, SVG (tối đa 2MB)</small>
+          <div class="form-grid">
+            <!-- Basic Information -->
+            <div class="form-section">
+              <h3 class="section-title">Thông Tin Cơ Bản</h3>
+
+              <div class="form-group">
+                <label for="name" class="form-label required">Tên danh mục</label>
+                <input id="name" v-model="form.name" type="text" class="form-control" :class="{ 'is-invalid': errors.name }" placeholder="Nhập tên danh mục" required @input="generateSlug" />
+                <div v-if="errors.name" class="invalid-feedback">{{ errors.name[0] }}</div>
+              </div>
+
+              <div class="form-group">
+                <label for="slug" class="form-label required">Slug URL</label>
+                <input id="slug" v-model="form.slug" type="text" class="form-control" :class="{ 'is-invalid': errors.slug }" placeholder="slug-url-friendly" required />
+                <div class="form-help">URL thân thiện, chỉ chứa chữ cái thường, số và dấu gạch ngang</div>
+                <div v-if="errors.slug" class="invalid-feedback">{{ errors.slug[0] }}</div>
+              </div>
+
+              <div class="form-group">
+                <label for="description" class="form-label">Mô tả</label>
+                <textarea id="description" v-model="form.description" class="form-control" :class="{ 'is-invalid': errors.description }" placeholder="Nhập mô tả danh mục" rows="4"></textarea>
+                <div v-if="errors.description" class="invalid-feedback">{{ errors.description[0] }}</div>
+              </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="form-section">
+              <h3 class="section-title">Hình Ảnh Danh Mục</h3>
+
+              <div class="form-group">
+                <label class="form-label">Hình ảnh đại diện</label>
+                <div class="image-upload-area">
+                  <input type="file" class="file-input" accept="image/*" @change="handleImageChange" />
+                  <div class="upload-placeholder">
+                    <i class="bi bi-upload"></i>
+                    <span>Kéo thả file hoặc click để chọn</span>
+                    <small>JPEG, PNG, JPG, GIF, SVG (tối đa 2MB)</small>
+                  </div>
+                </div>
+                <div v-if="errors.image" class="invalid-feedback">{{ errors.image[0] }}</div>
+              </div>
+
+              <!-- Image Preview -->
+              <div v-if="imagePreview" class="image-preview">
+                <div class="preview-container">
+                  <img :src="imagePreview" alt="Preview" class="preview-img" />
+                  <button type="button" class="remove-image-btn" @click="removeImage">
+                    <i class="bi bi-x"></i>
+                  </button>
                 </div>
               </div>
-              <div v-if="errors.image" class="invalid-feedback">{{ errors.image[0] }}</div>
-            </div>
-
-            <!-- Image Preview -->
-            <div v-if="imagePreview" class="image-preview">
-              <div class="preview-container">
-                <img :src="imagePreview" alt="Preview" class="preview-img" />
-                <button 
-                  type="button" 
-                  class="remove-image-btn"
-                  @click="removeImage"
-                >
-                  <i class="bi bi-x"></i>
-                </button>
-              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button type="button" class="btn btn-outline" @click="router.back()">
-            Hủy
-          </button>
-          <button 
-            type="submit" 
-            class="btn btn-primary"
-            :disabled="loading || !isFormValid"
-          >
-            <i v-if="loading" class="bi bi-arrow-repeat spin-animation"></i>
-            <i v-else class="bi bi-floppy"></i>
-            {{ loading ? 'Đang tạo...' : 'Tạo danh mục' }}
-          </button>
-        </div>
-      </form>
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" @click="router.back()">
+              Hủy
+            </button>
+            <button type="submit" class="btn btn-primary" :disabled="loading || !isFormValid">
+              <i v-if="loading" class="bi bi-arrow-repeat spin-animation"></i>
+              <i v-else class="bi bi-floppy"></i>
+              {{ loading ? 'Đang tạo...' : 'Tạo danh mục' }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
@@ -151,6 +112,7 @@ import { useRouter } from 'vue-router'
 import { adminCategoriesApi } from '@/services/api'
 import { useToast } from '@/composables/useToast'
 import { parseApiError } from '@/utils/errorHandler'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 const router = useRouter()
 const { showSuccess, showError } = useToast()
@@ -170,8 +132,8 @@ const imagePreview = ref<string | null>(null)
 
 // Computed
 const isFormValid = computed(() => {
-  return form.name.trim() !== '' && 
-         form.slug.trim() !== ''
+  return form.name.trim() !== '' &&
+    form.slug.trim() !== ''
 })
 
 // Methods
@@ -189,23 +151,23 @@ const generateSlug = () => {
 const handleImageChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
   if (file) {
     // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
       showError('Lỗi', 'Kích thước file không được vượt quá 2MB')
       return
     }
-    
+
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml']
     if (!allowedTypes.includes(file.type)) {
       showError('Lỗi', 'Chỉ hỗ trợ file ảnh: JPEG, PNG, JPG, GIF, SVG')
       return
     }
-    
+
     imageFile.value = file
-    
+
     // Create preview
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -218,7 +180,7 @@ const handleImageChange = (event: Event) => {
 const removeImage = () => {
   imageFile.value = null
   imagePreview.value = null
-  
+
   // Reset file input
   const fileInput = document.querySelector('.file-input') as HTMLInputElement
   if (fileInput) {
@@ -245,14 +207,14 @@ const handleSubmit = async () => {
     }
 
     const response = await adminCategoriesApi.createCategory(formData)
-    
+
     if (response) {
       showSuccess('Thành công', 'Tạo danh mục thành công')
       router.push('/admin/categories')
     }
   } catch (error: any) {
     console.error('Failed to create category:', error)
-    
+
     // Handle validation errors
     if (error.errors && Object.keys(error.errors).length > 0) {
       errors.value = error.errors
@@ -544,34 +506,39 @@ textarea.form-control {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
   .admin-create-category {
     padding: 15px;
   }
-  
+
   .header-content {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
-  
+
   .form-container {
     padding: 20px;
   }
-  
+
   .form-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
+
   .btn {
     width: 100%;
     justify-content: center;

@@ -1,297 +1,181 @@
 <template>
-  <div class="admin-create-product">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <h1 class="page-title">Thêm Sản Phẩm Mới</h1>
-          <p class="page-subtitle">Tạo sản phẩm mới cho cửa hàng</p>
-        </div>
-        <div class="header-actions">
-          <button 
-            type="button" 
-            class="btn btn-outline"
-            @click="router.back()"
-          >
-            <i class="bi bi-arrow-left"></i>
-            Quay lại
-          </button>
+  <AdminLayout>
+    <div class="admin-create-product">
+      <!-- Header -->
+      <div class="page-header">
+        <div class="header-content">
+          <div class="header-left">
+            <h1 class="page-title">Thêm Sản Phẩm Mới</h1>
+            <p class="page-subtitle">Tạo sản phẩm mới cho cửa hàng</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn btn-outline" @click="router.back()">
+              <i class="bi bi-arrow-left"></i>
+              Quay lại
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Form Content -->
-    <div class="form-container">
-      <form @submit.prevent="handleSubmit" class="product-form">
-        <div class="form-grid">
-          <!-- Basic Information -->
-          <div class="form-section">
-            <h3 class="section-title">Thông Tin Cơ Bản</h3>
-            
-            <div class="form-group">
-              <label for="name" class="form-label required">Tên sản phẩm</label>
-              <input
-                id="name"
-                v-model="form.name"
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.name }"
-                placeholder="Nhập tên sản phẩm"
-                required
-                @input="generateSlug"
-              />
-              <div v-if="errors.name" class="invalid-feedback">{{ errors.name[0] }}</div>
-            </div>
+      <!-- Form Content -->
+      <div class="form-container">
+        <form @submit.prevent="handleSubmit" class="product-form">
+          <div class="form-grid">
+            <!-- Basic Information -->
+            <div class="form-section">
+              <h3 class="section-title">Thông Tin Cơ Bản</h3>
 
-            <div class="form-group">
-              <label for="slug" class="form-label required">Slug (URL)</label>
-              <input
-                id="slug"
-                v-model="form.slug"
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.slug }"
-                placeholder="ten-san-pham-url"
-                required
-                @blur="validateSlug"
-              />
-              <div v-if="errors.slug" class="invalid-feedback">{{ errors.slug[0] }}</div>
-              <div v-else-if="!form.slug.trim() && form.name.trim()" class="form-text text-warning">
-                <i class="bi bi-exclamation-triangle"></i>
-                Slug không được để trống. Nhấn vào đây để tự động tạo.
-                <button type="button" class="btn-link ml-2" @click="generateSlug">Tạo slug</button>
-              </div>
-              <small class="form-text text-muted">
-                Slug sẽ được tự động tạo từ tên sản phẩm. Bạn có thể chỉnh sửa nếu cần.
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="description" class="form-label">Mô tả</label>
-              <textarea
-                id="description"
-                v-model="form.description"
-                class="form-control"
-                :class="{ 'is-invalid': errors.description }"
-                rows="4"
-                placeholder="Mô tả chi tiết về sản phẩm"
-              ></textarea>
-              <div v-if="errors.description" class="invalid-feedback">{{ errors.description[0] }}</div>
-            </div>
-
-            <div class="form-row">
               <div class="form-group">
-                <label for="category_id" class="form-label required">Danh mục</label>
-                <select
-                  id="category_id"
-                  v-model="form.category_id"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.category_id }"
-                  required
-                >
-                  <option value="">Chọn danh mục</option>
-                  <option
-                    v-for="category in categories"
-                    :key="category.id"
-                    :value="category.id"
-                  >
-                    {{ category.name }}
-                  </option>
-                </select>
-                <div v-if="errors.category_id" class="invalid-feedback">{{ errors.category_id[0] }}</div>
+                <label for="name" class="form-label required">Tên sản phẩm</label>
+                <input id="name" v-model="form.name" type="text" class="form-control" :class="{ 'is-invalid': errors.name }" placeholder="Nhập tên sản phẩm" required @input="generateSlug" />
+                <div v-if="errors.name" class="invalid-feedback">{{ errors.name[0] }}</div>
               </div>
 
               <div class="form-group">
-                <label for="brand_id" class="form-label">Thương hiệu</label>
-                <select
-                  id="brand_id"
-                  v-model="form.brand_id"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.brand_id }"
-                >
-                  <option value="">Chọn thương hiệu</option>
-                  <option
-                    v-for="brand in brands"
-                    :key="brand.id"
-                    :value="brand.id"
-                  >
-                    {{ brand.name }}
-                  </option>
-                </select>
-                <div v-if="errors.brand_id" class="invalid-feedback">{{ errors.brand_id[0] }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pricing & Inventory -->
-          <div class="form-section">
-            <h3 class="section-title">Giá & Kho Hàng</h3>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label for="price" class="form-label required">Giá gốc (VNĐ)</label>
-                <input
-                  id="price"
-                  v-model.number="form.price"
-                  type="number"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.price }"
-                  min="0"
-                  step="1000"
-                  placeholder="0"
-                  required
-                />
-                <div v-if="errors.price" class="invalid-feedback">{{ errors.price[0] }}</div>
-              </div>
-
-              <div class="form-group">
-                <label for="discount_price" class="form-label">Giá khuyến mãi (VNĐ)</label>
-                <input
-                  id="discount_price"
-                  v-model.number="form.discount_price"
-                  type="number"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.discount_price }"
-                  min="0"
-                  step="1000"
-                  :max="form.price || undefined"
-                  placeholder="0 (tùy chọn)"
-                />
-                <div v-if="errors.discount_price" class="invalid-feedback">{{ errors.discount_price[0] }}</div>
-                <small v-if="form.discount_price && form.price && form.discount_price >= form.price" class="text-danger">
-                  Giá khuyến mãi phải nhỏ hơn giá gốc
+                <label for="slug" class="form-label required">Slug (URL)</label>
+                <input id="slug" v-model="form.slug" type="text" class="form-control" :class="{ 'is-invalid': errors.slug }" placeholder="ten-san-pham-url" required @blur="validateSlug" />
+                <div v-if="errors.slug" class="invalid-feedback">{{ errors.slug[0] }}</div>
+                <div v-else-if="!form.slug.trim() && form.name.trim()" class="form-text text-warning">
+                  <i class="bi bi-exclamation-triangle"></i>
+                  Slug không được để trống. Nhấn vào đây để tự động tạo.
+                  <button type="button" class="btn-link ml-2" @click="generateSlug">Tạo slug</button>
+                </div>
+                <small class="form-text text-muted">
+                  Slug sẽ được tự động tạo từ tên sản phẩm. Bạn có thể chỉnh sửa nếu cần.
                 </small>
               </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="stock" class="form-label required">Số lượng tồn kho</label>
-                <input
-                  id="stock"
-                  v-model.number="form.stock"
-                  type="number"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.stock }"
-                  min="0"
-                  placeholder="0"
-                  required
-                />
-                <div v-if="errors.stock" class="invalid-feedback">{{ errors.stock[0] }}</div>
-              </div>
 
               <div class="form-group">
-                <label for="color" class="form-label">Màu sắc</label>
-                <input
-                  id="color"
-                  v-model="form.color"
-                  type="text"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.color }"
-                  placeholder="Ví dụ: Đen, Xanh Navy"
-                />
-                <div v-if="errors.color" class="invalid-feedback">{{ errors.color[0] }}</div>
+                <label for="description" class="form-label">Mô tả</label>
+                <textarea id="description" v-model="form.description" class="form-control" :class="{ 'is-invalid': errors.description }" rows="4" placeholder="Mô tả chi tiết về sản phẩm"></textarea>
+                <div v-if="errors.description" class="invalid-feedback">{{ errors.description[0] }}</div>
               </div>
-            </div>
-          </div>
 
-          <!-- Images -->
-          <div class="form-section">
-            <h3 class="section-title">Hình Ảnh</h3>
-            
-            <div class="form-group">
-              <label for="image" class="form-label">Ảnh chính</label>
-              <div class="file-upload-container">
-                <input
-                  id="image"
-                  type="file"
-                  class="file-input"
-                  accept="image/*"
-                  @change="handleImageChange"
-                />
-                <label for="image" class="file-upload-btn">
-                  <i class="bi bi-upload"></i>
-                  Chọn ảnh chính
-                </label>
-                <div v-if="errors.image" class="invalid-feedback">{{ errors.image[0] }}</div>
-              </div>
-              <div v-if="imagePreview" class="image-preview mt-2">
-                <img :src="imagePreview" alt="Preview" class="preview-img" />
-                <button 
-                  type="button" 
-                  class="remove-image-btn"
-                  @click="removeMainImage"
-                >
-                  <i class="bi bi-x"></i>
-                </button>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="category_id" class="form-label required">Danh mục</label>
+                  <select id="category_id" v-model="form.category_id" class="form-control" :class="{ 'is-invalid': errors.category_id }" required>
+                    <option value="">Chọn danh mục</option>
+                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                      {{ category.name }}
+                    </option>
+                  </select>
+                  <div v-if="errors.category_id" class="invalid-feedback">{{ errors.category_id[0] }}</div>
+                </div>
+
+                <div class="form-group">
+                  <label for="brand_id" class="form-label">Thương hiệu</label>
+                  <select id="brand_id" v-model="form.brand_id" class="form-control" :class="{ 'is-invalid': errors.brand_id }">
+                    <option value="">Chọn thương hiệu</option>
+                    <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+                      {{ brand.name }}
+                    </option>
+                  </select>
+                  <div v-if="errors.brand_id" class="invalid-feedback">{{ errors.brand_id[0] }}</div>
+                </div>
               </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Thư viện ảnh</label>
-              <div class="gallery-upload">
-                <div class="gallery-grid">
-                  <div
-                    v-for="(preview, index) in galleryPreviews"
-                    :key="index"
-                    class="gallery-item"
-                  >
-                    <div class="gallery-image-container">
-                      <img :src="preview" alt="Gallery preview" class="gallery-preview-img" />
-                      <button
-                        type="button"
-                        class="remove-gallery-btn"
-                        @click="removeGalleryImage(index)"
-                      >
-                        <i class="bi bi-x"></i>
-                      </button>
+            <!-- Pricing & Inventory -->
+            <div class="form-section">
+              <h3 class="section-title">Giá & Kho Hàng</h3>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="price" class="form-label required">Giá gốc (VNĐ)</label>
+                  <input id="price" v-model.number="form.price" type="number" class="form-control" :class="{ 'is-invalid': errors.price }" min="0" step="1000" placeholder="0" required />
+                  <div v-if="errors.price" class="invalid-feedback">{{ errors.price[0] }}</div>
+                </div>
+
+                <div class="form-group">
+                  <label for="discount_price" class="form-label">Giá khuyến mãi (VNĐ)</label>
+                  <input id="discount_price" v-model.number="form.discount_price" type="number" class="form-control" :class="{ 'is-invalid': errors.discount_price }" min="0" step="1000" :max="form.price || undefined" placeholder="0 (tùy chọn)" />
+                  <div v-if="errors.discount_price" class="invalid-feedback">{{ errors.discount_price[0] }}</div>
+                  <small v-if="form.discount_price && form.price && form.discount_price >= form.price" class="text-danger">
+                    Giá khuyến mãi phải nhỏ hơn giá gốc
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="stock" class="form-label required">Số lượng tồn kho</label>
+                  <input id="stock" v-model.number="form.stock" type="number" class="form-control" :class="{ 'is-invalid': errors.stock }" min="0" placeholder="0" required />
+                  <div v-if="errors.stock" class="invalid-feedback">{{ errors.stock[0] }}</div>
+                </div>
+
+                <div class="form-group">
+                  <label for="color" class="form-label">Màu sắc</label>
+                  <input id="color" v-model="form.color" type="text" class="form-control" :class="{ 'is-invalid': errors.color }" placeholder="Ví dụ: Đen, Xanh Navy" />
+                  <div v-if="errors.color" class="invalid-feedback">{{ errors.color[0] }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Images -->
+            <div class="form-section">
+              <h3 class="section-title">Hình Ảnh</h3>
+
+              <div class="form-group">
+                <label for="image" class="form-label">Ảnh chính</label>
+                <div class="file-upload-container">
+                  <input id="image" type="file" class="file-input" accept="image/*" @change="handleImageChange" />
+                  <label for="image" class="file-upload-btn">
+                    <i class="bi bi-upload"></i>
+                    Chọn ảnh chính
+                  </label>
+                  <div v-if="errors.image" class="invalid-feedback">{{ errors.image[0] }}</div>
+                </div>
+                <div v-if="imagePreview" class="image-preview mt-2">
+                  <img :src="imagePreview" alt="Preview" class="preview-img" />
+                  <button type="button" class="remove-image-btn" @click="removeMainImage">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Thư viện ảnh</label>
+                <div class="gallery-upload">
+                  <div class="gallery-grid">
+                    <div v-for="(preview, index) in galleryPreviews" :key="index" class="gallery-item">
+                      <div class="gallery-image-container">
+                        <img :src="preview" alt="Gallery preview" class="gallery-preview-img" />
+                        <button type="button" class="remove-gallery-btn" @click="removeGalleryImage(index)">
+                          <i class="bi bi-x"></i>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div class="add-gallery-item">
-                    <input
-                      type="file"
-                      class="file-input"
-                      accept="image/*"
-                      multiple
-                      @change="handleGalleryChange"
-                      :id="`gallery-${galleryPreviews.length}`"
-                    />
-                    <label :for="`gallery-${galleryPreviews.length}`" class="add-gallery-btn">
-                      <i class="bi bi-plus"></i>
-                      <span>Thêm ảnh</span>
-                    </label>
+                    <div class="add-gallery-item">
+                      <input type="file" class="file-input" accept="image/*" multiple @change="handleGalleryChange" :id="`gallery-${galleryPreviews.length}`" />
+                      <label :for="`gallery-${galleryPreviews.length}`" class="add-gallery-btn">
+                        <i class="bi bi-plus"></i>
+                        <span>Thêm ảnh</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button 
-            type="button" 
-            class="btn btn-outline"
-            @click="router.back()"
-            :disabled="loading"
-          >
-            Hủy
-          </button>
-          <button 
-            type="submit" 
-            class="btn btn-primary"
-            :disabled="loading || !isFormValid"
-          >
-            <i v-if="loading" class="bi bi-arrow-repeat spin-animation"></i>
-            <i v-else class="bi bi-floppy"></i>
-            {{ loading ? 'Đang tạo...' : 'Tạo sản phẩm' }}
-          </button>
-        </div>
-      </form>
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" @click="router.back()" :disabled="loading">
+              Hủy
+            </button>
+            <button type="submit" class="btn btn-primary" :disabled="loading || !isFormValid">
+              <i v-if="loading" class="bi bi-arrow-repeat spin-animation"></i>
+              <i v-else class="bi bi-floppy"></i>
+              {{ loading ? 'Đang tạo...' : 'Tạo sản phẩm' }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Toast notifications will be handled by ToastContainer -->
     </div>
-
-    <!-- Toast notifications will be handled by ToastContainer -->
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
@@ -301,6 +185,7 @@ import { adminProductsApi, categoriesApi, brandsApi } from '@/services/api'
 import { useToast } from '@/composables/useToast'
 import { parseApiError } from '@/utils/errorHandler'
 import type { CreateProductRequest, Category, Brand } from '@/types'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 const router = useRouter()
 const { showSuccess, showError } = useToast()
@@ -354,12 +239,12 @@ const brands = ref<Brand[]>([])
 
 // Computed
 const isFormValid = computed(() => {
-  return form.name.trim() !== '' && 
-         form.slug.trim() !== '' &&
-         form.category_id > 0 && 
-         Number(form.price) > 0 && 
-         Number(form.stock) >= 0 &&
-         (!form.discount_price || Number(form.discount_price) < Number(form.price))
+  return form.name.trim() !== '' &&
+    form.slug.trim() !== '' &&
+    form.category_id > 0 &&
+    Number(form.price) > 0 &&
+    Number(form.stock) >= 0 &&
+    (!form.discount_price || Number(form.discount_price) < Number(form.price))
 })
 
 // Methods
@@ -376,7 +261,7 @@ const generateSlug = () => {
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single
       .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
-    
+
     form.slug = slug
     console.log('Generated slug:', slug) // Debug log
   }
@@ -422,10 +307,10 @@ const removeGalleryImage = (index: number) => {
 const handleImageChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
   if (file) {
     mainImageFile.value = file
-    
+
     // Create preview
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -448,10 +333,10 @@ const removeMainImage = () => {
 const handleGalleryChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const files = Array.from(target.files || [])
-  
+
   files.forEach(file => {
     galleryFiles.value.push(file)
-    
+
     // Create preview
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -459,7 +344,7 @@ const handleGalleryChange = (event: Event) => {
     }
     reader.readAsDataURL(file)
   })
-  
+
   // Clear the input for next selection
   target.value = ''
 }
@@ -502,7 +387,7 @@ const handleSubmit = async () => {
     console.log('Submitting files:', files)
 
     const response = await adminProductsApi.createProduct(productData, files)
-    
+
     if (response.success) {
       showSuccess('Thành công', 'Tạo sản phẩm thành công!')
       router.push('/admin/products')
@@ -511,7 +396,7 @@ const handleSubmit = async () => {
     }
   } catch (error: any) {
     console.error('Failed to create product:', error)
-    
+
     // Handle validation errors
     if (error.errors && Object.keys(error.errors).length > 0) {
       errors.value = error.errors
@@ -920,33 +805,38 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
   .admin-create-product {
     padding: 15px;
   }
-  
+
   .header-content {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
-  
+
   .form-container {
     padding: 20px;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .form-actions {
     flex-direction: column-reverse;
   }
-  
+
   .gallery-item {
     flex-direction: column;
   }

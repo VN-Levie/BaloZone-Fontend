@@ -1,235 +1,171 @@
 <template>
-  <div class="admin-edit-brand">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <nav class="breadcrumb">
-            <router-link to="/admin" class="breadcrumb-item">Dashboard</router-link>
-            <router-link to="/admin/brands" class="breadcrumb-item">Thương hiệu</router-link>
-            <span class="breadcrumb-item active">Chỉnh sửa thương hiệu</span>
-          </nav>
-          <h1 class="page-title">Chỉnh Sửa Thương Hiệu</h1>
-          <p class="page-subtitle">Cập nhật thông tin thương hiệu</p>
-        </div>
-        <div class="header-actions">
-          <button 
-            type="button" 
-            class="btn btn-outline"
-            @click="router.push('/admin/brands')"
-          >
-            <i class="bi bi-arrow-left"></i>
-            Quay lại
-          </button>
+  <AdminLayout>
+    <div class="admin-edit-brand">
+      <!-- Header -->
+      <div class="page-header">
+        <div class="header-content">
+          <div class="header-left">
+            <nav class="breadcrumb">
+              <router-link to="/admin" class="breadcrumb-item">Dashboard</router-link>
+              <router-link to="/admin/brands" class="breadcrumb-item">Thương hiệu</router-link>
+              <span class="breadcrumb-item active">Chỉnh sửa thương hiệu</span>
+            </nav>
+            <h1 class="page-title">Chỉnh Sửa Thương Hiệu</h1>
+            <p class="page-subtitle">Cập nhật thông tin thương hiệu</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn btn-outline" @click="router.push('/admin/brands')">
+              <i class="bi bi-arrow-left"></i>
+              Quay lại
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Loading State -->
-    <div v-if="pageLoading" class="loading-section">
-      <LoadingSpinner />
-    </div>
+      <!-- Loading State -->
+      <div v-if="pageLoading" class="loading-section">
+        <LoadingSpinner />
+      </div>
 
-    <!-- Form -->
-    <div v-else class="form-section">
-      <div class="form-container">
-        <!-- Brand Stats -->
-        <div v-if="brandStats" class="stats-section">
-          <h3 class="section-title">
-            <i class="bi bi-graph-up"></i>
-            Thống kê thương hiệu
-          </h3>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-icon products">
-                <i class="bi bi-box-seam"></i>
+      <!-- Form -->
+      <div v-else class="form-section">
+        <div class="form-container">
+          <!-- Brand Stats -->
+          <div v-if="brandStats" class="stats-section">
+            <h3 class="section-title">
+              <i class="bi bi-graph-up"></i>
+              Thống kê thương hiệu
+            </h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon products">
+                  <i class="bi bi-box-seam"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-number">{{ brandStats.products_count || 0 }}</div>
+                  <div class="stat-label">Sản phẩm</div>
+                </div>
               </div>
-              <div class="stat-content">
-                <div class="stat-number">{{ brandStats.products_count || 0 }}</div>
-                <div class="stat-label">Sản phẩm</div>
+              <div class="stat-card">
+                <div class="stat-icon revenue">
+                  <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-number">{{ formatPrice(brandStats.total_revenue || 0) }}</div>
+                  <div class="stat-label">Doanh thu</div>
+                </div>
               </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon revenue">
-                <i class="bi bi-currency-dollar"></i>
-              </div>
-              <div class="stat-content">
-                <div class="stat-number">{{ formatPrice(brandStats.total_revenue || 0) }}</div>
-                <div class="stat-label">Doanh thu</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon active">
-                <i class="bi bi-check-circle"></i>
-              </div>
-              <div class="stat-content">
-                <div class="stat-number">{{ brandStats.active_products_count || 0 }}</div>
-                <div class="stat-label">SP hoạt động</div>
+              <div class="stat-card">
+                <div class="stat-icon active">
+                  <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-number">{{ brandStats.active_products_count || 0 }}</div>
+                  <div class="stat-label">SP hoạt động</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <form @submit.prevent="submitForm" class="brand-form">
-          <!-- Basic Information -->
-          <div class="form-group">
-            <h3 class="section-title">
-              <i class="bi bi-info-circle"></i>
-              Thông tin cơ bản
-            </h3>
-            
-            <div class="row">
-              <div class="col-md-8">
-                <div class="form-field">
-                  <label for="name" class="form-label required">Tên thương hiệu</label>
-                  <input
-                    id="name"
-                    v-model="form.name"
-                    type="text"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.name }"
-                    placeholder="Nhập tên thương hiệu..."
-                    @input="generateSlug"
-                  >
-                  <div v-if="errors.name" class="invalid-feedback">
-                    {{ errors.name[0] }}
+          <form @submit.prevent="submitForm" class="brand-form">
+            <!-- Basic Information -->
+            <div class="form-group">
+              <h3 class="section-title">
+                <i class="bi bi-info-circle"></i>
+                Thông tin cơ bản
+              </h3>
+
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="form-field">
+                    <label for="name" class="form-label required">Tên thương hiệu</label>
+                    <input id="name" v-model="form.name" type="text" class="form-control" :class="{ 'is-invalid': errors.name }" placeholder="Nhập tên thương hiệu..." @input="generateSlug">
+                    <div v-if="errors.name" class="invalid-feedback">
+                      {{ errors.name[0] }}
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="slug" class="form-label required">Slug URL</label>
+                    <div class="slug-group">
+                      <input id="slug" v-model="form.slug" type="text" class="form-control" :class="{ 'is-invalid': errors.slug }" placeholder="slug-url-thuan-hieu">
+                      <button type="button" class="btn btn-outline-secondary" @click="generateSlug" title="Tạo lại slug">
+                        <i class="bi bi-arrow-clockwise"></i>
+                      </button>
+                    </div>
+                    <div v-if="errors.slug" class="invalid-feedback">
+                      {{ errors.slug[0] }}
+                    </div>
+                    <small class="form-text">URL thân thiện cho thương hiệu</small>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="description" class="form-label">Mô tả</label>
+                    <textarea id="description" v-model="form.description" class="form-control" :class="{ 'is-invalid': errors.description }" rows="4" placeholder="Mô tả về thương hiệu..."></textarea>
+                    <div v-if="errors.description" class="invalid-feedback">
+                      {{ errors.description[0] }}
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="status" class="form-label required">Trạng thái</label>
+                    <select id="status" v-model="form.status" class="form-control" :class="{ 'is-invalid': errors.status }">
+                      <option value="">Chọn trạng thái</option>
+                      <option value="active">Hoạt động</option>
+                      <option value="inactive">Không hoạt động</option>
+                    </select>
+                    <div v-if="errors.status" class="invalid-feedback">
+                      {{ errors.status[0] }}
+                    </div>
                   </div>
                 </div>
 
-                <div class="form-field">
-                  <label for="slug" class="form-label required">Slug URL</label>
-                  <div class="slug-group">
-                    <input
-                      id="slug"
-                      v-model="form.slug"
-                      type="text"
-                      class="form-control"
-                      :class="{ 'is-invalid': errors.slug }"
-                      placeholder="slug-url-thuan-hieu"
-                    >
-                    <button 
-                      type="button" 
-                      class="btn btn-outline-secondary"
-                      @click="generateSlug"
-                      title="Tạo lại slug"
-                    >
-                      <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-                  </div>
-                  <div v-if="errors.slug" class="invalid-feedback">
-                    {{ errors.slug[0] }}
-                  </div>
-                  <small class="form-text">URL thân thiện cho thương hiệu</small>
-                </div>
-
-                <div class="form-field">
-                  <label for="description" class="form-label">Mô tả</label>
-                  <textarea
-                    id="description"
-                    v-model="form.description"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.description }"
-                    rows="4"
-                    placeholder="Mô tả về thương hiệu..."
-                  ></textarea>
-                  <div v-if="errors.description" class="invalid-feedback">
-                    {{ errors.description[0] }}
-                  </div>
-                </div>
-
-                <div class="form-field">
-                  <label for="status" class="form-label required">Trạng thái</label>
-                  <select
-                    id="status"
-                    v-model="form.status"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.status }"
-                  >
-                    <option value="">Chọn trạng thái</option>
-                    <option value="active">Hoạt động</option>
-                    <option value="inactive">Không hoạt động</option>
-                  </select>
-                  <div v-if="errors.status" class="invalid-feedback">
-                    {{ errors.status[0] }}
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <!-- Logo Upload -->
-                <div class="form-field">
-                  <label class="form-label">Logo thương hiệu</label>
-                  <div class="logo-upload">
-                    <div 
-                      class="upload-area"
-                      :class="{ 'has-image': imagePreview || currentImage }"
-                      @click="logoInput?.click()"
-                      @dragover.prevent
-                      @drop="handleDrop"
-                    >
-                      <div v-if="!imagePreview && !currentImage" class="upload-placeholder">
-                        <i class="bi bi-cloud-upload upload-icon"></i>
-                        <p class="upload-text">Nhấn để chọn hoặc kéo thả logo</p>
-                        <small class="upload-hint">PNG, JPG, GIF, SVG (tối đa 2MB)</small>
-                      </div>
-                      <div v-else class="image-preview">
-                        <img 
-                          :src="imagePreview || currentImage" 
-                          alt="Preview" 
-                          class="preview-image"
-                        >
-                        <div class="image-overlay">
-                          <button 
-                            type="button" 
-                            class="btn btn-danger btn-sm"
-                            @click.stop="removeImage"
-                            title="Xóa ảnh"
-                          >
-                            <i class="bi bi-trash"></i>
-                          </button>
+                <div class="col-md-4">
+                  <!-- Logo Upload -->
+                  <div class="form-field">
+                    <label class="form-label">Logo thương hiệu</label>
+                    <div class="logo-upload">
+                      <div class="upload-area" :class="{ 'has-image': imagePreview || currentImage }" @click="logoInput?.click()" @dragover.prevent @drop="handleDrop">
+                        <div v-if="!imagePreview && !currentImage" class="upload-placeholder">
+                          <i class="bi bi-cloud-upload upload-icon"></i>
+                          <p class="upload-text">Nhấn để chọn hoặc kéo thả logo</p>
+                          <small class="upload-hint">PNG, JPG, GIF, SVG (tối đa 2MB)</small>
+                        </div>
+                        <div v-else class="image-preview">
+                          <img :src="imagePreview || currentImage" alt="Preview" class="preview-image">
+                          <div class="image-overlay">
+                            <button type="button" class="btn btn-danger btn-sm" @click.stop="removeImage" title="Xóa ảnh">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <input
-                      ref="logoInput"
-                      type="file"
-                      accept="image/*"
-                      style="display: none"
-                      @change="handleFileChange"
-                    >
-                    <div v-if="errors.logo" class="invalid-feedback d-block">
-                      {{ errors.logo[0] }}
+                      <input ref="logoInput" type="file" accept="image/*" style="display: none" @change="handleFileChange">
+                      <div v-if="errors.logo" class="invalid-feedback d-block">
+                        {{ errors.logo[0] }}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Form Actions -->
-          <div class="form-actions">
-            <button 
-              type="button" 
-              class="btn btn-outline"
-              @click="router.push('/admin/brands')"
-              :disabled="loading"
-            >
-              Hủy
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              :disabled="loading"
-            >
-              <i v-if="loading" class="bi bi-arrow-repeat spin-animation"></i>
-              <i v-else class="bi bi-check"></i>
-              {{ loading ? 'Đang cập nhật...' : 'Cập nhật thương hiệu' }}
-            </button>
-          </div>
-        </form>
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" @click="router.push('/admin/brands')" :disabled="loading">
+                Hủy
+              </button>
+              <button type="submit" class="btn btn-primary" :disabled="loading">
+                <i v-if="loading" class="bi bi-arrow-repeat spin-animation"></i>
+                <i v-else class="bi bi-check"></i>
+                {{ loading ? 'Đang cập nhật...' : 'Cập nhật thương hiệu' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
@@ -240,6 +176,7 @@ import { useToast } from '@/composables/useToast'
 import { parseApiError } from '@/utils/errorHandler'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { Brand } from '@/types'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -273,22 +210,22 @@ const loadBrand = async () => {
   try {
     pageLoading.value = true
     const response = await adminBrandsApi.getBrand(brandId)
-    
+
     if (response.success && response.data) {
       const brand = response.data
       originalBrand.value = brand
-      
+
       // Populate form
       form.name = brand.name
       form.slug = brand.slug
       form.description = brand.description || ''
       form.status = brand.status
-      
+
       // Set current image
       if (brand.logo) {
         currentImage.value = brand.logo
       }
-      
+
       // Set brand stats
       brandStats.value = {
         products_count: brand.products_count || 0,
@@ -324,7 +261,7 @@ const generateSlug = () => {
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
   if (file) {
     // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
@@ -339,7 +276,7 @@ const handleFileChange = (event: Event) => {
     }
 
     form.logo = file
-    
+
     // Create preview
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -357,7 +294,7 @@ const handleDrop = (event: DragEvent) => {
     const file = files[0]
     if (file.type.startsWith('image/')) {
       form.logo = file
-      
+
       const reader = new FileReader()
       reader.onload = (e) => {
         imagePreview.value = e.target?.result as string
@@ -404,7 +341,7 @@ const submitForm = async () => {
 
   try {
     let response
-    
+
     if (form.logo) {
       // If there's a new file, use FormData
       const formData = new FormData()
@@ -412,13 +349,13 @@ const submitForm = async () => {
       formData.append('slug', form.slug.trim())
       formData.append('status', form.status)
       formData.append('_method', 'PUT') // For Laravel to handle PUT with file
-      
+
       if (form.description?.trim()) {
         formData.append('description', form.description.trim())
       }
-      
+
       formData.append('logo', form.logo)
-      
+
       response = await adminBrandsApi.updateBrandWithFile(brandId, formData)
     } else {
       // If no new file, use regular JSON update
@@ -428,10 +365,10 @@ const submitForm = async () => {
         status: form.status,
         description: form.description?.trim() || ''
       }
-      
+
       response = await adminBrandsApi.updateBrand(brandId, updateData)
     }
-    
+
     if (response.success) {
       showSuccess('Thành công', 'Cập nhật thương hiệu thành công')
       router.push('/admin/brands')
@@ -440,7 +377,7 @@ const submitForm = async () => {
     }
   } catch (error: any) {
     console.error('Failed to update brand:', error)
-    
+
     if (error.response?.data?.errors) {
       errors.value = error.response.data.errors
     } else {
@@ -518,7 +455,7 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.breadcrumb-item + .breadcrumb-item::before {
+.breadcrumb-item+.breadcrumb-item::before {
   content: "/";
   margin: 0 8px;
   color: #ccc;
@@ -842,8 +779,13 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .row {
@@ -863,35 +805,35 @@ onMounted(() => {
   .admin-edit-brand {
     padding: 15px;
   }
-  
+
   .header-content {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
-  
+
   .form-section {
     padding: 20px;
   }
-  
+
   .row {
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .col-md-8,
   .col-md-4 {
     flex: 1 1 100%;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
+
   .slug-group {
     flex-direction: column;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }

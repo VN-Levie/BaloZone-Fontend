@@ -1,255 +1,257 @@
 <template>
-  <div class="product-detail">
-    <!-- Loading spinner -->
-    <LoadingSpinner v-if="loading" text="Đang tải thông tin sản phẩm..." size="lg" />
+  <UserLayout>
+    <div class="product-detail">
+      <!-- Loading spinner -->
+      <LoadingSpinner v-if="loading" text="Đang tải thông tin sản phẩm..." size="lg" />
 
-    <!-- Product not found -->
-    <div v-else-if="!product" class="container text-center py-5">
-      <div class="alert alert-warning">
-        <h4>Sản phẩm không tồn tại</h4>
-        <p>Sản phẩm bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
-        <router-link to="/" class="btn btn-primary">Về trang chủ</router-link>
+      <!-- Product not found -->
+      <div v-else-if="!product" class="container text-center py-5">
+        <div class="alert alert-warning">
+          <h4>Sản phẩm không tồn tại</h4>
+          <p>Sản phẩm bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+          <router-link to="/" class="btn btn-primary">Về trang chủ</router-link>
+        </div>
       </div>
-    </div>
 
-    <!-- Product content -->
-    <div v-else class="container py-4">
-      <!-- Navigation breadcrumb -->
-      <nav aria-label="breadcrumb" class="py-3">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item">
-            <router-link to="/" class="text-decoration-none">Trang chủ</router-link>
-          </li>
-          <li class="breadcrumb-item" v-if="product.category">
-            <router-link :to="`/category/${product.category.slug}`" class="text-decoration-none">
-              {{ product.category.name }}
-            </router-link>
-          </li>
-          <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
-        </ol>
-      </nav>
+      <!-- Product content -->
+      <div v-else class="container py-4">
+        <!-- Navigation breadcrumb -->
+        <nav aria-label="breadcrumb" class="py-3">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <router-link to="/" class="text-decoration-none">Trang chủ</router-link>
+            </li>
+            <li class="breadcrumb-item" v-if="product.category">
+              <router-link :to="`/category/${product.category.slug}`" class="text-decoration-none">
+                {{ product.category.name }}
+              </router-link>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+          </ol>
+        </nav>
 
-      <!-- Product main content -->
-      <div class="product-detail-card">
-        <div class="row g-4">
-          <!-- Product images -->
-          <div class="col-lg-6">
-            <div class="product-images-section">
-              <ImageZoom :images="productImages" :alt="product.name" :initial-index="0" />
+        <!-- Product main content -->
+        <div class="product-detail-card">
+          <div class="row g-4">
+            <!-- Product images -->
+            <div class="col-lg-6">
+              <div class="product-images-section">
+                <ImageZoom :images="productImages" :alt="product.name" :initial-index="0" />
+              </div>
             </div>
-          </div>
 
-          <!-- Product info -->
-          <div class="col-lg-6">
-            <div class="product-info-section">
-              <!-- Product title -->
-              <div class="product-header mb-4">
-                <h1 class="product-title">{{ product.name }}</h1>
+            <!-- Product info -->
+            <div class="col-lg-6">
+              <div class="product-info-section">
+                <!-- Product title -->
+                <div class="product-header mb-4">
+                  <h1 class="product-title">{{ product.name }}</h1>
 
-                <!-- Brand -->
-                <div v-if="product.brand" class="product-brand mb-3">
-                  <span class="brand-badge">{{ product.brand.name }}</span>
-                </div>
+                  <!-- Brand -->
+                  <div v-if="product.brand" class="product-brand mb-3">
+                    <span class="brand-badge">{{ product.brand.name }}</span>
+                  </div>
 
-                <!-- Rating -->
-                <div class="product-rating-display mb-3">
-                  <template v-if="totalComments > 0">
-                    <div class="rating-content">
-                      <div class="rating-stars">
-                        <i v-for="i in 5" :key="i" class="bi bi-star-fill" :class="{ 'filled': i <= Math.floor(averageRating) }"></i>
+                  <!-- Rating -->
+                  <div class="product-rating-display mb-3">
+                    <template v-if="totalComments > 0">
+                      <div class="rating-content">
+                        <div class="rating-stars">
+                          <i v-for="i in 5" :key="i" class="bi bi-star-fill" :class="{ 'filled': i <= Math.floor(averageRating) }"></i>
+                        </div>
+                        <span class="rating-score">{{ averageRating.toFixed(1) }}</span>
+                        <span class="rating-count">({{ totalComments }} đánh giá)</span>
                       </div>
-                      <span class="rating-score">{{ averageRating.toFixed(1) }}</span>
-                      <span class="rating-count">({{ totalComments }} đánh giá)</span>
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div class="no-rating">
-                      <span class="text-muted">Chưa có đánh giá</span>
-                    </div>
-                  </template>
-                </div>
-              </div>
-
-              <!-- Price -->
-              <div class="product-pricing mb-4">
-                <!-- Check for discount_price from new backend structure -->
-                <template v-if="product.discount_price && Number(product.discount_price) < Number(product.price)">
-                  <div class="price-container">
-                    <div class="current-price">
-                      {{ formatPrice(Number(product.discount_price)) }}
-                    </div>
-                    <div class="original-price">
-                      {{ formatPrice(Number(product.price)) }}
-                    </div>
-                    <div class="discount-badge">
-                      -{{ Math.round(((Number(product.price) - Number(product.discount_price)) / Number(product.price)) * 100) }}%
-                    </div>
-                  </div>
-                  <div class="save-amount">
-                    Tiết kiệm {{ formatPrice(Number(product.price) - Number(product.discount_price)) }}
-                  </div>
-                </template>
-                <!-- Regular pricing -->
-                <template v-else>
-                  <div class="price-container">
-                    <div class="current-price">
-                      {{ formatPrice(Number(product.price)) }}
-                    </div>
-                  </div>
-                </template>
-              </div>
-
-              <!-- Stock status -->
-              <div class="stock-status mb-4">
-                <div class="stock-info" :class="{ 'in-stock': product.stock > 0, 'out-of-stock': product.stock === 0 }">
-                  <i class="bi bi-box-seam"></i>
-                  <span>{{ product.stock > 0 ? `Còn ${product.stock} sản phẩm` : 'Hết hàng' }}</span>
-                </div>
-              </div>
-
-              <!-- Product options -->
-              <div class="product-options mb-4">
-                <!-- Quantity -->
-                <div class="option-group">
-                  <label class="option-label">Số lượng:</label>
-                  <div class="quantity-selector">
-                    <button class="quantity-btn" @click="decreaseQuantity" :disabled="quantity <= 1">
-                      <i class="bi bi-dash"></i>
-                    </button>
-                    <input type="number" v-model="quantity" class="quantity-input" min="1" :max="product.stock" />
-                    <button class="quantity-btn" @click="increaseQuantity" :disabled="quantity >= product.stock">
-                      <i class="bi bi-plus"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Action buttons -->
-              <div class="product-actions-detail mb-4"> <button class="btn-primary-action" @click="addToCartHandler" :disabled="product.stock === 0 || isAddingToCart">
-                  <span v-if="isAddingToCart" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                  <i v-else class="bi bi-cart-plus me-2"></i>
-                  {{ isAddingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}
-                </button>
-
-                <div class="secondary-actions">
-                  <button class="btn-secondary-action wishlist-btn" @click="toggleWishlistHandler" :class="{ 'active': isInWishlistComputed }">
-                    <i class="bi me-2" :class="isInWishlistComputed ? 'bi-heart-fill' : 'bi-heart'"></i>
-                    {{ isInWishlistComputed ? 'Đã yêu thích' : 'Yêu thích' }}
-                  </button>
-
-                  <button class="btn-secondary-action share-btn" @click="openShareModal">
-                    <i class="bi bi-share me-2"></i>
-                    Chia sẻ
-                  </button>
-                </div>
-              </div>
-
-              <!-- Product features -->
-              <div class="product-features">
-                <div class="feature-item">
-                  <i class="bi bi-truck"></i>
-                  <span>Miễn phí vận chuyển đơn hàng từ 500.000đ</span>
-                </div>
-                <div class="feature-item">
-                  <i class="bi bi-arrow-clockwise"></i>
-                  <span>Đổi trả miễn phí trong 30 ngày</span>
-                </div>
-                <div class="feature-item">
-                  <i class="bi bi-shield-check"></i>
-                  <span>Bảo hành chính hãng 12 tháng</span>
-                </div>
-                <div class="feature-item">
-                  <i class="bi bi-award"></i>
-                  <span>Cam kết 100% hàng chính hãng</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product tabs -->
-      <div class="product-tabs-section mt-5">
-        <div class="tabs-container">
-          <ul class="nav nav-tabs modern-tabs" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">
-                <i class="bi bi-file-text me-2"></i>
-                Mô tả sản phẩm
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
-                <i class="bi bi-star me-2"></i>
-                Đánh giá ({{ totalComments }})
-              </button>
-            </li>
-          </ul>
-
-          <div class="tab-content modern-tab-content">
-            <!-- Description tab -->
-            <div class="tab-pane fade show active" id="description" role="tabpanel">
-              <div class="description-content">
-                <div class="content-card">
-                  <div v-html="product.description"></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Reviews tab -->
-            <div class="tab-pane fade" id="reviews" role="tabpanel">
-              <div class="reviews-content">
-                <CommentsSection :product-id="product.id" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Related products -->
-      <div class="related-products-section mt-5">
-        <div class="section-header mb-4">
-          <h3 class="section-title">
-            <i class="bi bi-grid me-2"></i>
-            Sản phẩm liên quan
-          </h3>
-          <div class="section-subtitle">Khám phá thêm các sản phẩm tương tự</div>
-        </div>
-
-        <div class="related-products-grid">
-          <div v-for="relatedProd in relatedProducts" :key="relatedProd.id" class="related-product-item">
-            <div class="product-card modern-card">
-              <router-link :to="relatedProd.slug ? `/product/slug/${relatedProd.slug}` : `/product/${relatedProd.id}`" class="text-decoration-none">
-                <div class="card-image-container">
-                  <img :src="getImageUrl(relatedProd.image)" :alt="relatedProd.name" class="card-image" />
-                  <!-- Discount badge -->
-                  <div v-if="relatedProd.discount_price && Number(relatedProd.discount_price) < Number(relatedProd.price)" class="card-discount-badge">
-                    -{{ Math.round(((Number(relatedProd.price) - Number(relatedProd.discount_price)) / Number(relatedProd.price)) * 100) }}%
-                  </div>
-                </div>
-                <div class="card-content">
-                  <h6 class="card-title">{{ relatedProd.name }}</h6>
-                  <div class="card-pricing">
-                    <!-- Handle discount pricing -->
-                    <template v-if="relatedProd.discount_price && Number(relatedProd.discount_price) < Number(relatedProd.price)">
-                      <span class="current-price">{{ formatPrice(Number(relatedProd.discount_price)) }}</span>
-                      <span class="original-price">{{ formatPrice(Number(relatedProd.price)) }}</span>
                     </template>
                     <template v-else>
-                      <span class="current-price">{{ formatPrice(Number(relatedProd.price)) }}</span>
+                      <div class="no-rating">
+                        <span class="text-muted">Chưa có đánh giá</span>
+                      </div>
                     </template>
                   </div>
                 </div>
-              </router-link>
+
+                <!-- Price -->
+                <div class="product-pricing mb-4">
+                  <!-- Check for discount_price from new backend structure -->
+                  <template v-if="product.discount_price && Number(product.discount_price) < Number(product.price)">
+                    <div class="price-container">
+                      <div class="current-price">
+                        {{ formatPrice(Number(product.discount_price)) }}
+                      </div>
+                      <div class="original-price">
+                        {{ formatPrice(Number(product.price)) }}
+                      </div>
+                      <div class="discount-badge">
+                        -{{ Math.round(((Number(product.price) - Number(product.discount_price)) / Number(product.price)) * 100) }}%
+                      </div>
+                    </div>
+                    <div class="save-amount">
+                      Tiết kiệm {{ formatPrice(Number(product.price) - Number(product.discount_price)) }}
+                    </div>
+                  </template>
+                  <!-- Regular pricing -->
+                  <template v-else>
+                    <div class="price-container">
+                      <div class="current-price">
+                        {{ formatPrice(Number(product.price)) }}
+                      </div>
+                    </div>
+                  </template>
+                </div>
+
+                <!-- Stock status -->
+                <div class="stock-status mb-4">
+                  <div class="stock-info" :class="{ 'in-stock': product.stock > 0, 'out-of-stock': product.stock === 0 }">
+                    <i class="bi bi-box-seam"></i>
+                    <span>{{ product.stock > 0 ? `Còn ${product.stock} sản phẩm` : 'Hết hàng' }}</span>
+                  </div>
+                </div>
+
+                <!-- Product options -->
+                <div class="product-options mb-4">
+                  <!-- Quantity -->
+                  <div class="option-group">
+                    <label class="option-label">Số lượng:</label>
+                    <div class="quantity-selector">
+                      <button class="quantity-btn" @click="decreaseQuantity" :disabled="quantity <= 1">
+                        <i class="bi bi-dash"></i>
+                      </button>
+                      <input type="number" v-model="quantity" class="quantity-input" min="1" :max="product.stock" />
+                      <button class="quantity-btn" @click="increaseQuantity" :disabled="quantity >= product.stock">
+                        <i class="bi bi-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="product-actions-detail mb-4"> <button class="btn-primary-action" @click="addToCartHandler" :disabled="product.stock === 0 || isAddingToCart">
+                    <span v-if="isAddingToCart" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    <i v-else class="bi bi-cart-plus me-2"></i>
+                    {{ isAddingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}
+                  </button>
+
+                  <div class="secondary-actions">
+                    <button class="btn-secondary-action wishlist-btn" @click="toggleWishlistHandler" :class="{ 'active': isInWishlistComputed }">
+                      <i class="bi me-2" :class="isInWishlistComputed ? 'bi-heart-fill' : 'bi-heart'"></i>
+                      {{ isInWishlistComputed ? 'Đã yêu thích' : 'Yêu thích' }}
+                    </button>
+
+                    <button class="btn-secondary-action share-btn" @click="openShareModal">
+                      <i class="bi bi-share me-2"></i>
+                      Chia sẻ
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Product features -->
+                <div class="product-features">
+                  <div class="feature-item">
+                    <i class="bi bi-truck"></i>
+                    <span>Miễn phí vận chuyển đơn hàng từ 500.000đ</span>
+                  </div>
+                  <div class="feature-item">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    <span>Đổi trả miễn phí trong 30 ngày</span>
+                  </div>
+                  <div class="feature-item">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Bảo hành chính hãng 12 tháng</span>
+                  </div>
+                  <div class="feature-item">
+                    <i class="bi bi-award"></i>
+                    <span>Cam kết 100% hàng chính hãng</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product tabs -->
+        <div class="product-tabs-section mt-5">
+          <div class="tabs-container">
+            <ul class="nav nav-tabs modern-tabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">
+                  <i class="bi bi-file-text me-2"></i>
+                  Mô tả sản phẩm
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
+                  <i class="bi bi-star me-2"></i>
+                  Đánh giá ({{ totalComments }})
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content modern-tab-content">
+              <!-- Description tab -->
+              <div class="tab-pane fade show active" id="description" role="tabpanel">
+                <div class="description-content">
+                  <div class="content-card">
+                    <div v-html="product.description"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reviews tab -->
+              <div class="tab-pane fade" id="reviews" role="tabpanel">
+                <div class="reviews-content">
+                  <CommentsSection :product-id="product.id" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Related products -->
+        <div class="related-products-section mt-5">
+          <div class="section-header mb-4">
+            <h3 class="section-title">
+              <i class="bi bi-grid me-2"></i>
+              Sản phẩm liên quan
+            </h3>
+            <div class="section-subtitle">Khám phá thêm các sản phẩm tương tự</div>
+          </div>
+
+          <div class="related-products-grid">
+            <div v-for="relatedProd in relatedProducts" :key="relatedProd.id" class="related-product-item">
+              <div class="product-card modern-card">
+                <router-link :to="relatedProd.slug ? `/product/slug/${relatedProd.slug}` : `/product/${relatedProd.id}`" class="text-decoration-none">
+                  <div class="card-image-container">
+                    <img :src="getImageUrl(relatedProd.image)" :alt="relatedProd.name" class="card-image" />
+                    <!-- Discount badge -->
+                    <div v-if="relatedProd.discount_price && Number(relatedProd.discount_price) < Number(relatedProd.price)" class="card-discount-badge">
+                      -{{ Math.round(((Number(relatedProd.price) - Number(relatedProd.discount_price)) / Number(relatedProd.price)) * 100) }}%
+                    </div>
+                  </div>
+                  <div class="card-content">
+                    <h6 class="card-title">{{ relatedProd.name }}</h6>
+                    <div class="card-pricing">
+                      <!-- Handle discount pricing -->
+                      <template v-if="relatedProd.discount_price && Number(relatedProd.discount_price) < Number(relatedProd.price)">
+                        <span class="current-price">{{ formatPrice(Number(relatedProd.discount_price)) }}</span>
+                        <span class="original-price">{{ formatPrice(Number(relatedProd.price)) }}</span>
+                      </template>
+                      <template v-else>
+                        <span class="current-price">{{ formatPrice(Number(relatedProd.price)) }}</span>
+                      </template>
+                    </div>
+                  </div>
+                </router-link>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Share Modal -->
-  <ShareModal v-if="product" :product="product" modal-id="shareModal" />
+    <!-- Share Modal -->
+    <ShareModal v-if="product" :product="product" modal-id="shareModal" />
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -262,6 +264,7 @@ import { useCart } from '@/composables/useCart'
 import { useWishlist } from '@/composables/useWishlist'
 import { useComments } from '@/composables/useComments'
 import { useToast } from '@/composables/useToast'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import ShareModal from '@/components/ShareModal.vue'
 import ImageZoom from '@/components/ImageZoom.vue'

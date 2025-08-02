@@ -1,146 +1,104 @@
 <template>
-  <div class="login-page">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-          <div class="login-card position-relative">
-            <FormLoading :visible="loading" message="Đang đăng nhập..." />
-            
-            <div class="text-center mb-4">
-              <h2 class="login-title">Đăng nhập</h2>
-              <p class="text-muted">Chào mừng bạn quay trở lại!</p>
-              
-              <!-- Demo account info -->
-              <div class="demo-info">
-                <small class="text-info d-block mb-1">
-                  <i class="bi bi-info-circle"></i>
-                  <strong>Tài khoản demo:</strong>
-                </small>
-                <small class="text-muted d-block">
-                  📧 Admin: admin@balozone.com / admin123
-                </small>
-                <small class="text-muted d-block">
-                  👤 User: test@example.com / password
-                </small>
-                <div class="mt-2">
-                  <router-link to="/roles-demo" class="btn btn-sm btn-outline-info me-2">
-                    🎯 Demo Roles
-                  </router-link>
-                  <router-link to="/api-tester" class="btn btn-sm btn-outline-success">
-                    🔧 API Tester
-                  </router-link>
-                </div>
-              </div>
-            </div>
+  <UserLayout>
+    <div class="login-page">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-md-6 col-lg-5">
+            <div class="login-card position-relative">
+              <FormLoading :visible="loading" message="Đang đăng nhập..." />
 
-            <form @submit.prevent="handleLogin">
-              <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input
-                  id="email"
-                  v-model="form.email"
-                  type="email"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.email }"
-                  placeholder="Nhập email của bạn"
-                  required
-                />
-                <div v-if="errors.email" class="invalid-feedback">
-                  {{ errors.email }}
-                </div>
-              </div>
+              <div class="text-center mb-4">
+                <h2 class="login-title">Đăng nhập</h2>
+                <p class="text-muted">Chào mừng bạn quay trở lại!</p>
 
-              <div class="mb-3">
-                <label for="password" class="form-label">Mật khẩu</label>
-                <div class="input-group">
-                  <input
-                    id="password"
-                    v-model="form.password"
-                    :type="showPassword ? 'text' : 'password'"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.password }"
-                    placeholder="Nhập mật khẩu"
-                    required
-                  />
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    @click="showPassword = !showPassword"
-                  >
-                    <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-                  </button>
-                </div>
-                <div v-if="errors.password" class="invalid-feedback">
-                  {{ errors.password }}
-                </div>
-              </div>
-
-              <div class="mb-3 form-check">
-                <input
-                  id="remember"
-                  v-model="form.remember"
-                  type="checkbox"
-                  class="form-check-input"
-                />
-                <label for="remember" class="form-check-label">
-                  Ghi nhớ đăng nhập
-                </label>
-              </div>
-
-              <AlertComponent
-                v-if="generalError"
-                type="error"
-                :message="generalError"
-                @close="generalError = ''"
-              />
-
-              <button
-                type="submit"
-                class="btn btn-primary w-100"
-                :disabled="loading"
-              >
-                <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                {{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
-              </button>
-
-              <!-- Quick login buttons for demo -->
-              <div class="demo-login-buttons mt-3">
-                <div class="row g-2">
-                  <div class="col-6">
-                    <button 
-                      type="button" 
-                      class="btn btn-outline-warning btn-sm w-100"
-                      @click="quickLogin('admin')"
-                      :disabled="loading"
-                    >
-                      👑 Login Admin
-                    </button>
-                  </div>
-                  <div class="col-6">
-                    <button 
-                      type="button" 
-                      class="btn btn-outline-primary btn-sm w-100"
-                      @click="quickLogin('user')"
-                      :disabled="loading"
-                    >
-                      👤 Login User
-                    </button>
+                <!-- Demo account info -->
+                <div class="demo-info">
+                  <small class="text-info d-block mb-1">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Tài khoản demo:</strong>
+                  </small>
+                  <small class="text-muted d-block">
+                    📧 Admin: admin@balozone.com / admin123
+                  </small>
+                  <small class="text-muted d-block">
+                    👤 User: test@example.com / password
+                  </small>
+                  <div class="mt-2">
+                    <router-link to="/roles-demo" class="btn btn-sm btn-outline-info me-2">
+                      🎯 Demo Roles
+                    </router-link>
+                    <router-link to="/api-tester" class="btn btn-sm btn-outline-success">
+                      🔧 API Tester
+                    </router-link>
                   </div>
                 </div>
               </div>
-            </form>
 
-            <div class="text-center mt-4">
-              <p class="mb-0">
-                Chưa có tài khoản?
-                <router-link to="/register" class="link-primary">Đăng ký ngay</router-link>
-              </p>
+              <form @submit.prevent="handleLogin">
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input id="email" v-model="form.email" type="email" class="form-control" :class="{ 'is-invalid': errors.email }" placeholder="Nhập email của bạn" required />
+                  <div v-if="errors.email" class="invalid-feedback">
+                    {{ errors.email }}
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="password" class="form-label">Mật khẩu</label>
+                  <div class="input-group">
+                    <input id="password" v-model="form.password" :type="showPassword ? 'text' : 'password'" class="form-control" :class="{ 'is-invalid': errors.password }" placeholder="Nhập mật khẩu" required />
+                    <button class="btn btn-outline-secondary" type="button" @click="showPassword = !showPassword">
+                      <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                    </button>
+                  </div>
+                  <div v-if="errors.password" class="invalid-feedback">
+                    {{ errors.password }}
+                  </div>
+                </div>
+
+                <div class="mb-3 form-check">
+                  <input id="remember" v-model="form.remember" type="checkbox" class="form-check-input" />
+                  <label for="remember" class="form-check-label">
+                    Ghi nhớ đăng nhập
+                  </label>
+                </div>
+
+                <AlertComponent v-if="generalError" type="error" :message="generalError" @close="generalError = ''" />
+
+                <button type="submit" class="btn btn-primary w-100" :disabled="loading">
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
+                </button>
+
+                <!-- Quick login buttons for demo -->
+                <div class="demo-login-buttons mt-3">
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <button type="button" class="btn btn-outline-warning btn-sm w-100" @click="quickLogin('admin')" :disabled="loading">
+                        👑 Login Admin
+                      </button>
+                    </div>
+                    <div class="col-6">
+                      <button type="button" class="btn btn-outline-primary btn-sm w-100" @click="quickLogin('user')" :disabled="loading">
+                        👤 Login User
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+
+              <div class="text-center mt-4">
+                <p class="mb-0">
+                  Chưa có tài khoản?
+                  <router-link to="/register" class="link-primary">Đăng ký ngay</router-link>
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -152,6 +110,7 @@ import { parseAuthError } from '@/utils/errorHandler'
 import AlertComponent from '@/components/AlertComponent.vue'
 import FormLoading from '@/components/FormLoading.vue'
 import type { LoginCredentials } from '@/types'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -176,45 +135,45 @@ const errors = reactive({
 const validateForm = (): boolean => {
   errors.email = ''
   errors.password = ''
-  
+
   if (!form.email) {
     errors.email = 'Email là bắt buộc'
     return false
   }
-  
+
   if (!form.password) {
     errors.password = 'Mật khẩu là bắt buộc'
     return false
   }
-  
+
   if (form.password.length < 6) {
     errors.password = 'Mật khẩu phải có ít nhất 6 ký tự'
     return false
   }
-  
+
   return true
 }
 
 const handleLogin = async () => {
   if (!validateForm()) return
-  
+
   loading.value = true
   generalError.value = ''
-  
+
   try {
     const response = await login(form.email, form.password)
-    
+
     // Đảm bảo user state luôn mới nhất
     await refreshUser()
-    
+
     // Show success toast - get user name from auth store
     const userName = user.value?.name || 'User'
     showLoginSuccess(userName)
-    
+
     // Redirect to intended page or home
     const redirectTo = (route.query.redirect as string) || '/'
     router.push(redirectTo)
-    
+
   } catch (error: any) {
     console.error('Login failed:', error)
     generalError.value = parseAuthError(error)
@@ -231,7 +190,7 @@ const quickLogin = async (userType: 'admin' | 'user') => {
     form.email = 'test@example.com'
     form.password = 'password'
   }
-  
+
   await handleLogin()
 }
 </script>

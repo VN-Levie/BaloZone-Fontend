@@ -1,20 +1,12 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import AppHeader from './components/AppHeader.vue'
-import AppFooter from './components/AppFooter.vue'
 import ToastContainer from './components/ToastContainer.vue'
 </script>
 
 <template>
   <div id="app">
-    <AppHeader />
-    
-    <main class="main-content">
-      <RouterView />
-    </main>
-    
-    <AppFooter />
-    
+    <RouterView />
+
     <!-- Toast notifications -->
     <ToastContainer />
   </div>
@@ -23,12 +15,12 @@ import ToastContainer from './components/ToastContainer.vue'
 <style>
 #app {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
-.main-content {
-  flex: 1;
+/* Admin layouts take full viewport */
+.admin-layout {
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Global styles */

@@ -1,151 +1,94 @@
 <template>
-  <div class="register-page">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-          <div class="register-card position-relative">
-            <FormLoading :visible="loading" message="Đang đăng ký..." />
-            
-            <div class="text-center mb-4">
-              <h2 class="register-title">Đăng ký</h2>
-              <p class="text-muted">Tạo tài khoản mới để bắt đầu mua sắm</p>
-            </div>
+  <UserLayout>
+    <div class="register-page">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-md-6 col-lg-5">
+            <div class="register-card position-relative">
+              <FormLoading :visible="loading" message="Đang đăng ký..." />
 
-            <form @submit.prevent="handleRegister">
-              <div class="mb-3">
-                <label for="name" class="form-label">Họ và tên</label>
-                <input
-                  id="name"
-                  v-model="form.name"
-                  type="text"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.name }"
-                  placeholder="Nhập họ và tên"
-                  required
-                />
-                <div v-if="errors.name" class="invalid-feedback">
-                  {{ errors.name }}
-                </div>
+              <div class="text-center mb-4">
+                <h2 class="register-title">Đăng ký</h2>
+                <p class="text-muted">Tạo tài khoản mới để bắt đầu mua sắm</p>
               </div>
 
-              <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input
-                  id="email"
-                  v-model="form.email"
-                  type="email"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.email }"
-                  placeholder="Nhập email của bạn"
-                  required
-                />
-                <div v-if="errors.email" class="invalid-feedback">
-                  {{ errors.email }}
+              <form @submit.prevent="handleRegister">
+                <div class="mb-3">
+                  <label for="name" class="form-label">Họ và tên</label>
+                  <input id="name" v-model="form.name" type="text" class="form-control" :class="{ 'is-invalid': errors.name }" placeholder="Nhập họ và tên" required />
+                  <div v-if="errors.name" class="invalid-feedback">
+                    {{ errors.name }}
+                  </div>
                 </div>
+
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input id="email" v-model="form.email" type="email" class="form-control" :class="{ 'is-invalid': errors.email }" placeholder="Nhập email của bạn" required />
+                  <div v-if="errors.email" class="invalid-feedback">
+                    {{ errors.email }}
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="phone" class="form-label">Số điện thoại <span class="text-muted">(không bắt buộc)</span></label>
+                  <input id="phone" v-model="form.phone" type="tel" class="form-control" :class="{ 'is-invalid': errors.phone }" placeholder="Nhập số điện thoại" />
+                  <div v-if="errors.phone" class="invalid-feedback">
+                    {{ errors.phone }}
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="password" class="form-label">Mật khẩu</label>
+                  <div class="input-group">
+                    <input id="password" v-model="form.password" :type="showPassword ? 'text' : 'password'" class="form-control" :class="{ 'is-invalid': errors.password }" placeholder="Nhập mật khẩu" required />
+                    <button class="btn btn-outline-secondary" type="button" @click="showPassword = !showPassword">
+                      <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                    </button>
+                  </div>
+                  <div v-if="errors.password" class="invalid-feedback">
+                    {{ errors.password }}
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="confirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                  <input id="confirmPassword" v-model="form.confirmPassword" type="password" class="form-control" :class="{ 'is-invalid': errors.confirmPassword }" placeholder="Nhập lại mật khẩu" required />
+                  <div v-if="errors.confirmPassword" class="invalid-feedback">
+                    {{ errors.confirmPassword }}
+                  </div>
+                </div>
+
+                <div class="mb-3 form-check">
+                  <input id="terms" v-model="form.acceptTerms" type="checkbox" class="form-check-input" :class="{ 'is-invalid': errors.acceptTerms }" required />
+                  <label for="terms" class="form-check-label">
+                    Tôi đồng ý với <a href="#" class="link-primary">Điều khoản sử dụng</a>
+                    và <a href="#" class="link-primary">Chính sách bảo mật</a>
+                  </label>
+                  <div v-if="errors.acceptTerms" class="invalid-feedback">
+                    {{ errors.acceptTerms }}
+                  </div>
+                </div>
+
+                <AlertComponent v-if="generalError" type="error" :message="generalError" @close="generalError = ''" />
+
+                <button type="submit" class="btn btn-primary w-100" :disabled="loading">
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ loading ? 'Đang đăng ký...' : 'Đăng ký' }}
+                </button>
+              </form>
+
+              <div class="text-center mt-4">
+                <p class="mb-0">
+                  Đã có tài khoản?
+                  <router-link to="/login" class="link-primary">Đăng nhập ngay</router-link>
+                </p>
               </div>
-
-              <div class="mb-3">
-                <label for="phone" class="form-label">Số điện thoại <span class="text-muted">(không bắt buộc)</span></label>
-                <input
-                  id="phone"
-                  v-model="form.phone"
-                  type="tel"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.phone }"
-                  placeholder="Nhập số điện thoại"
-                />
-                <div v-if="errors.phone" class="invalid-feedback">
-                  {{ errors.phone }}
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <label for="password" class="form-label">Mật khẩu</label>
-                <div class="input-group">
-                  <input
-                    id="password"
-                    v-model="form.password"
-                    :type="showPassword ? 'text' : 'password'"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.password }"
-                    placeholder="Nhập mật khẩu"
-                    required
-                  />
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    @click="showPassword = !showPassword"
-                  >
-                    <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-                  </button>
-                </div>
-                <div v-if="errors.password" class="invalid-feedback">
-                  {{ errors.password }}
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Xác nhận mật khẩu</label>
-                <input
-                  id="confirmPassword"
-                  v-model="form.confirmPassword"
-                  type="password"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.confirmPassword }"
-                  placeholder="Nhập lại mật khẩu"
-                  required
-                />
-                <div v-if="errors.confirmPassword" class="invalid-feedback">
-                  {{ errors.confirmPassword }}
-                </div>
-              </div>
-
-              <div class="mb-3 form-check">
-                <input
-                  id="terms"
-                  v-model="form.acceptTerms"
-                  type="checkbox"
-                  class="form-check-input"
-                  :class="{ 'is-invalid': errors.acceptTerms }"
-                  required
-                />
-                <label for="terms" class="form-check-label">
-                  Tôi đồng ý với <a href="#" class="link-primary">Điều khoản sử dụng</a>
-                  và <a href="#" class="link-primary">Chính sách bảo mật</a>
-                </label>
-                <div v-if="errors.acceptTerms" class="invalid-feedback">
-                  {{ errors.acceptTerms }}
-                </div>
-              </div>
-
-              <AlertComponent
-                v-if="generalError"
-                type="error"
-                :message="generalError"
-                @close="generalError = ''"
-              />
-
-              <button
-                type="submit"
-                class="btn btn-primary w-100"
-                :disabled="loading"
-              >
-                <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                {{ loading ? 'Đang đăng ký...' : 'Đăng ký' }}
-              </button>
-            </form>
-
-            <div class="text-center mt-4">
-              <p class="mb-0">
-                Đã có tài khoản?
-                <router-link to="/login" class="link-primary">Đăng nhập ngay</router-link>
-              </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -156,6 +99,7 @@ import { useToast } from '@/composables/useToast'
 import { parseAuthError } from '@/utils/errorHandler'
 import AlertComponent from '@/components/AlertComponent.vue'
 import FormLoading from '@/components/FormLoading.vue'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const router = useRouter()
 const { register } = useAuth()
@@ -188,14 +132,14 @@ const validateForm = (): boolean => {
   Object.keys(errors).forEach(key => {
     errors[key as keyof typeof errors] = ''
   })
-  
+
   let isValid = true
-  
+
   if (!form.name.trim()) {
     errors.name = 'Họ và tên là bắt buộc'
     isValid = false
   }
-  
+
   if (!form.email) {
     errors.email = 'Email là bắt buộc'
     isValid = false
@@ -203,13 +147,13 @@ const validateForm = (): boolean => {
     errors.email = 'Email không hợp lệ'
     isValid = false
   }
-  
+
   // Phone validation (optional field)
   if (form.phone && !/^[0-9+\-\s()]*$/.test(form.phone)) {
     errors.phone = 'Số điện thoại không hợp lệ'
     isValid = false
   }
-  
+
   if (!form.password) {
     errors.password = 'Mật khẩu là bắt buộc'
     isValid = false
@@ -217,7 +161,7 @@ const validateForm = (): boolean => {
     errors.password = 'Mật khẩu phải có ít nhất 6 ký tự'
     isValid = false
   }
-  
+
   if (!form.confirmPassword) {
     errors.confirmPassword = 'Xác nhận mật khẩu là bắt buộc'
     isValid = false
@@ -225,40 +169,40 @@ const validateForm = (): boolean => {
     errors.confirmPassword = 'Mật khẩu xác nhận không khớp'
     isValid = false
   }
-  
+
   if (!form.acceptTerms) {
     errors.acceptTerms = 'Bạn phải đồng ý với điều khoản sử dụng'
     isValid = false
   }
-  
+
   return isValid
 }
 
 const handleRegister = async () => {
   if (!validateForm()) return
-  
+
   loading.value = true
   generalError.value = ''
-  
+
   try {
     const response = await register(form.name, form.email, form.password, form.phone || undefined)
-    
+
     // Show success toast
     showSuccess(
       'Đăng ký thành công!',
-      `Chào mừng ${response.data.user.name} đến với BaloZone!`
+      `Chào mừng ${response.user.name} đến với BaloZone!`
     )
-    
+
     // Redirect to home
     router.push('/')
-    
+
   } catch (error: any) {
     console.error('Registration failed:', error)
-    
+
     // Handle specific validation errors from API
     if (error.response?.data?.errors) {
       const apiErrors = error.response.data.errors
-      
+
       // Map API errors to form errors
       Object.keys(apiErrors).forEach(field => {
         if (field === 'name' && apiErrors[field]) {

@@ -1,188 +1,129 @@
 <template>
-  <div class="admin-create-brand">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <nav class="breadcrumb">
-            <router-link to="/admin" class="breadcrumb-item">Dashboard</router-link>
-            <router-link to="/admin/brands" class="breadcrumb-item">Thương hiệu</router-link>
-            <span class="breadcrumb-item active">Tạo thương hiệu mới</span>
-          </nav>
-          <h1 class="page-title">Tạo Thương Hiệu Mới</h1>
-          <p class="page-subtitle">Thêm thương hiệu mới vào hệ thống</p>
-        </div>
-        <div class="header-actions">
-          <button 
-            type="button" 
-            class="btn btn-outline"
-            @click="router.push('/admin/brands')"
-          >
-            <i class="bi bi-arrow-left"></i>
-            Quay lại
-          </button>
+  <AdminLayout>
+    <div class="admin-create-brand">
+      <!-- Header -->
+      <div class="page-header">
+        <div class="header-content">
+          <div class="header-left">
+            <nav class="breadcrumb">
+              <router-link to="/admin" class="breadcrumb-item">Dashboard</router-link>
+              <router-link to="/admin/brands" class="breadcrumb-item">Thương hiệu</router-link>
+              <span class="breadcrumb-item active">Tạo thương hiệu mới</span>
+            </nav>
+            <h1 class="page-title">Tạo Thương Hiệu Mới</h1>
+            <p class="page-subtitle">Thêm thương hiệu mới vào hệ thống</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn btn-outline" @click="router.push('/admin/brands')">
+              <i class="bi bi-arrow-left"></i>
+              Quay lại
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Form -->
-    <div class="form-section">
-      <div class="form-container">
-        <form @submit.prevent="submitForm" class="brand-form">
-          <!-- Basic Information -->
-          <div class="form-group">
-            <h3 class="section-title">
-              <i class="bi bi-info-circle"></i>
-              Thông tin cơ bản
-            </h3>
-            
-            <div class="row">
-              <div class="col-md-8">
-                <div class="form-field">
-                  <label for="name" class="form-label required">Tên thương hiệu</label>
-                  <input
-                    id="name"
-                    v-model="form.name"
-                    type="text"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.name }"
-                    placeholder="Nhập tên thương hiệu..."
-                    @input="generateSlug"
-                  >
-                  <div v-if="errors.name" class="invalid-feedback">
-                    {{ errors.name[0] }}
+      <!-- Form -->
+      <div class="form-section">
+        <div class="form-container">
+          <form @submit.prevent="submitForm" class="brand-form">
+            <!-- Basic Information -->
+            <div class="form-group">
+              <h3 class="section-title">
+                <i class="bi bi-info-circle"></i>
+                Thông tin cơ bản
+              </h3>
+
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="form-field">
+                    <label for="name" class="form-label required">Tên thương hiệu</label>
+                    <input id="name" v-model="form.name" type="text" class="form-control" :class="{ 'is-invalid': errors.name }" placeholder="Nhập tên thương hiệu..." @input="generateSlug">
+                    <div v-if="errors.name" class="invalid-feedback">
+                      {{ errors.name[0] }}
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="slug" class="form-label required">Slug URL</label>
+                    <div class="slug-group">
+                      <input id="slug" v-model="form.slug" type="text" class="form-control" :class="{ 'is-invalid': errors.slug }" placeholder="slug-url-thuan-hieu">
+                      <button type="button" class="btn btn-outline-secondary" @click="generateSlug" title="Tạo lại slug">
+                        <i class="bi bi-arrow-clockwise"></i>
+                      </button>
+                    </div>
+                    <div v-if="errors.slug" class="invalid-feedback">
+                      {{ errors.slug[0] }}
+                    </div>
+                    <small class="form-text">URL thân thiện cho thương hiệu</small>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="description" class="form-label">Mô tả</label>
+                    <textarea id="description" v-model="form.description" class="form-control" :class="{ 'is-invalid': errors.description }" rows="4" placeholder="Mô tả về thương hiệu..."></textarea>
+                    <div v-if="errors.description" class="invalid-feedback">
+                      {{ errors.description[0] }}
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="status" class="form-label required">Trạng thái</label>
+                    <select id="status" v-model="form.status" class="form-control" :class="{ 'is-invalid': errors.status }">
+                      <option value="">Chọn trạng thái</option>
+                      <option value="active">Hoạt động</option>
+                      <option value="inactive">Không hoạt động</option>
+                    </select>
+                    <div v-if="errors.status" class="invalid-feedback">
+                      {{ errors.status[0] }}
+                    </div>
                   </div>
                 </div>
 
-                <div class="form-field">
-                  <label for="slug" class="form-label required">Slug URL</label>
-                  <div class="slug-group">
-                    <input
-                      id="slug"
-                      v-model="form.slug"
-                      type="text"
-                      class="form-control"
-                      :class="{ 'is-invalid': errors.slug }"
-                      placeholder="slug-url-thuan-hieu"
-                    >
-                    <button 
-                      type="button" 
-                      class="btn btn-outline-secondary"
-                      @click="generateSlug"
-                      title="Tạo lại slug"
-                    >
-                      <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-                  </div>
-                  <div v-if="errors.slug" class="invalid-feedback">
-                    {{ errors.slug[0] }}
-                  </div>
-                  <small class="form-text">URL thân thiện cho thương hiệu</small>
-                </div>
-
-                <div class="form-field">
-                  <label for="description" class="form-label">Mô tả</label>
-                  <textarea
-                    id="description"
-                    v-model="form.description"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.description }"
-                    rows="4"
-                    placeholder="Mô tả về thương hiệu..."
-                  ></textarea>
-                  <div v-if="errors.description" class="invalid-feedback">
-                    {{ errors.description[0] }}
-                  </div>
-                </div>
-
-                <div class="form-field">
-                  <label for="status" class="form-label required">Trạng thái</label>
-                  <select
-                    id="status"
-                    v-model="form.status"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.status }"
-                  >
-                    <option value="">Chọn trạng thái</option>
-                    <option value="active">Hoạt động</option>
-                    <option value="inactive">Không hoạt động</option>
-                  </select>
-                  <div v-if="errors.status" class="invalid-feedback">
-                    {{ errors.status[0] }}
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <!-- Logo Upload -->
-                <div class="form-field">
-                  <label class="form-label">Logo thương hiệu</label>
-                  <div class="logo-upload">
-                    <div 
-                      class="upload-area"
-                      :class="{ 'has-image': imagePreview }"
-                      @click="logoInput?.click()"
-                      @dragover.prevent
-                      @drop="handleDrop"
-                    >
-                      <div v-if="!imagePreview" class="upload-placeholder">
-                        <i class="bi bi-cloud-upload upload-icon"></i>
-                        <p class="upload-text">Nhấn để chọn hoặc kéo thả logo</p>
-                        <small class="upload-hint">PNG, JPG, GIF, SVG (tối đa 2MB)</small>
-                      </div>
-                      <div v-else class="image-preview">
-                        <img :src="imagePreview" alt="Preview" class="preview-image">
-                        <div class="image-overlay">
-                          <button 
-                            type="button" 
-                            class="btn btn-danger btn-sm"
-                            @click.stop="removeImage"
-                          >
-                            <i class="bi bi-trash"></i>
-                          </button>
+                <div class="col-md-4">
+                  <!-- Logo Upload -->
+                  <div class="form-field">
+                    <label class="form-label">Logo thương hiệu</label>
+                    <div class="logo-upload">
+                      <div class="upload-area" :class="{ 'has-image': imagePreview }" @click="logoInput?.click()" @dragover.prevent @drop="handleDrop">
+                        <div v-if="!imagePreview" class="upload-placeholder">
+                          <i class="bi bi-cloud-upload upload-icon"></i>
+                          <p class="upload-text">Nhấn để chọn hoặc kéo thả logo</p>
+                          <small class="upload-hint">PNG, JPG, GIF, SVG (tối đa 2MB)</small>
+                        </div>
+                        <div v-else class="image-preview">
+                          <img :src="imagePreview" alt="Preview" class="preview-image">
+                          <div class="image-overlay">
+                            <button type="button" class="btn btn-danger btn-sm" @click.stop="removeImage">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <input
-                      ref="logoInput"
-                      type="file"
-                      accept="image/*"
-                      style="display: none"
-                      @change="handleFileChange"
-                    >
-                    <div v-if="errors.logo" class="invalid-feedback d-block">
-                      {{ errors.logo[0] }}
+                      <input ref="logoInput" type="file" accept="image/*" style="display: none" @change="handleFileChange">
+                      <div v-if="errors.logo" class="invalid-feedback d-block">
+                        {{ errors.logo[0] }}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Form Actions -->
-          <div class="form-actions">
-            <button 
-              type="button" 
-              class="btn btn-outline"
-              @click="router.push('/admin/brands')"
-              :disabled="loading"
-            >
-              Hủy
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              :disabled="loading"
-            >
-              <i v-if="loading" class="bi bi-arrow-repeat spin-animation"></i>
-              <i v-else class="bi bi-check"></i>
-              {{ loading ? 'Đang tạo...' : 'Tạo thương hiệu' }}
-            </button>
-          </div>
-        </form>
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" @click="router.push('/admin/brands')" :disabled="loading">
+                Hủy
+              </button>
+              <button type="submit" class="btn btn-primary" :disabled="loading">
+                <i v-if="loading" class="bi bi-arrow-repeat spin-animation"></i>
+                <i v-else class="bi bi-check"></i>
+                {{ loading ? 'Đang tạo...' : 'Tạo thương hiệu' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
@@ -191,6 +132,7 @@ import { useRouter } from 'vue-router'
 import { adminBrandsApi } from '@/services/api'
 import { useToast } from '@/composables/useToast'
 import { parseApiError } from '@/utils/errorHandler'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 const router = useRouter()
 const { showSuccess, showError } = useToast()
@@ -228,7 +170,7 @@ const generateSlug = () => {
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  
+
   if (file) {
     // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
@@ -243,7 +185,7 @@ const handleFileChange = (event: Event) => {
     }
 
     form.logo = file
-    
+
     // Create preview
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -260,7 +202,7 @@ const handleDrop = (event: DragEvent) => {
     const file = files[0]
     if (file.type.startsWith('image/')) {
       form.logo = file
-      
+
       const reader = new FileReader()
       reader.onload = (e) => {
         imagePreview.value = e.target?.result as string
@@ -308,17 +250,17 @@ const submitForm = async () => {
     formData.append('name', form.name.trim())
     formData.append('slug', form.slug.trim())
     formData.append('status', form.status)
-    
+
     if (form.description?.trim()) {
       formData.append('description', form.description.trim())
     }
-    
+
     if (form.logo) {
       formData.append('logo', form.logo)
     }
 
     const response = await adminBrandsApi.createBrand(formData)
-    
+
     if (response.success) {
       showSuccess('Thành công', 'Tạo thương hiệu thành công')
       router.push('/admin/brands')
@@ -327,7 +269,7 @@ const submitForm = async () => {
     }
   } catch (error: any) {
     console.error('Failed to create brand:', error)
-    
+
     if (error.response?.data?.errors) {
       errors.value = error.response.data.errors
     } else {
@@ -381,7 +323,7 @@ const submitForm = async () => {
   font-weight: 500;
 }
 
-.breadcrumb-item + .breadcrumb-item::before {
+.breadcrumb-item+.breadcrumb-item::before {
   content: "/";
   margin: 0 8px;
   color: #ccc;
@@ -627,8 +569,13 @@ const submitForm = async () => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .row {
@@ -648,31 +595,31 @@ const submitForm = async () => {
   .admin-create-brand {
     padding: 15px;
   }
-  
+
   .header-content {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
-  
+
   .form-section {
     padding: 20px;
   }
-  
+
   .row {
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .col-md-8,
   .col-md-4 {
     flex: 1 1 100%;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
+
   .slug-group {
     flex-direction: column;
   }

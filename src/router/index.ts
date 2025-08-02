@@ -132,98 +132,104 @@ const router = createRouter({
     {
       path: '/admin',
       name: 'admin-dashboard',
-      component: () => import('../views/AdminDashboardView.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('../views/admin/AdminDashboardNewView.vue'),
+      meta: { requiresAuth: true, title: 'Dashboard' }
+    },
+    {
+      path: '/admin/dashboard',
+      name: 'admin-dashboard-main',
+      component: () => import('../views/admin/AdminDashboardNewView.vue'),
+      meta: { requiresAuth: true, title: 'Dashboard' }
     },
     {
       path: '/admin/products',
       name: 'admin-products',
-      component: () => import('../views/AdminProductsView.vue'),
+      component: () => import('../views/admin/AdminProductsView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/products/create',
       name: 'admin-create-product',
-      component: () => import('../views/AdminCreateProductView.vue'),
+      component: () => import('../views/admin/AdminCreateProductView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/products/:id/edit',
       name: 'admin-edit-product',
-      component: () => import('../views/AdminEditProductView.vue'),
+      component: () => import('../views/admin/AdminEditProductView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/categories',
       name: 'admin-categories',
-      component: () => import('../views/AdminCategoriesView.vue'),
+      component: () => import('../views/admin/AdminCategoriesView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/categories/create',
       name: 'admin-create-category',
-      component: () => import('../views/AdminCreateCategoryView.vue'),
+      component: () => import('../views/admin/AdminCreateCategoryView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/categories/:id/edit',
       name: 'admin-edit-category',
-      component: () => import('../views/AdminEditCategoryView.vue'),
+      component: () => import('../views/admin/AdminEditCategoryView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/categories/trashed',
       name: 'admin-categories-trashed',
-      component: () => import('../views/AdminCategoriesTrashedView.vue'),
+      component: () => import('../views/admin/AdminCategoriesTrashedView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/brands',
       name: 'admin-brands',
-      component: () => import('../views/AdminBrandsView.vue'),
+      component: () => import('../views/admin/AdminBrandsView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/brands/create',
       name: 'admin-create-brand',
-      component: () => import('../views/AdminCreateBrandView.vue'),
+      component: () => import('../views/admin/AdminCreateBrandView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/brands/:id/edit',
       name: 'admin-edit-brand',
-      component: () => import('../views/AdminEditBrandView.vue'),
+      component: () => import('../views/admin/AdminEditBrandView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/brands/trashed',
       name: 'admin-brands-trashed',
-      component: () => import('../views/AdminBrandsTrashedView.vue'),
+      component: () => import('../views/admin/AdminBrandsTrashedView.vue'),
       meta: { requiresAuth: true }
     },
     // Sale Campaigns Admin Routes
     {
       path: '/admin/sale-campaigns',
       name: 'admin-sale-campaigns',
-      component: () => import('../views/AdminSaleCampaignsView.vue'),
+      component: () => import('../views/admin/AdminSaleCampaignsView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/sale-campaigns/create',
       name: 'admin-create-sale-campaign',
-      component: () => import('../views/AdminCreateSaleCampaignView.vue'),
+      component: () => import('../views/admin/AdminCreateSaleCampaignView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/sale-campaigns/:id/edit',
       name: 'admin-edit-sale-campaign',
-      component: () => import('../views/AdminEditSaleCampaignView.vue'),
+      component: () => import('../views/admin/AdminEditSaleCampaignView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin/sale-campaigns/:id/products',
       name: 'admin-sale-campaign-products',
-      component: () => import('../views/AdminSaleCampaignProductsView.vue'),
+      component: () => import('../views/admin/AdminSaleCampaignProductsView.vue'),
       meta: { requiresAuth: true }
     },
     {
@@ -280,7 +286,7 @@ router.beforeEach(async (to, from, next) => {
   // Import here to avoid circular dependency
   const { useAuthStore } = await import('@/stores/auth')
   const authStore = useAuthStore()
-  
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else {

@@ -1,165 +1,169 @@
 <template>
-  <div class="policy-page">
-    <!-- Breadcrumb -->
-    <div class="breadcrumb-section">
-      <div class="container">
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-              <router-link to="/">Trang chủ</router-link>
-            </li>
-            <li class="breadcrumb-item active">Chính sách bảo hành</li>
-          </ol>
-        </nav>
+  <UserLayout>
+    <div class="policy-page">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb-section">
+        <div class="container">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <router-link to="/">Trang chủ</router-link>
+              </li>
+              <li class="breadcrumb-item active">Chính sách bảo hành</li>
+            </ol>
+          </nav>
+        </div>
       </div>
-    </div>
 
-    <!-- Main Content -->
-    <div class="container py-5">
-      <div class="row">
-        <div class="col-lg-8 mx-auto">
-          <div class="policy-content">
-            <h1 class="page-title text-center mb-5">Chính Sách Bảo Hành</h1>
-            
-            <div class="policy-section">
-              <h3 class="section-title">
-                <i class="bi bi-shield-check text-primary me-2"></i>
-                Cam Kết Bảo Hành Trọn Đời
-              </h3>
-              <p class="section-content">
-                BaloZone.vn tự hào là thương hiệu đầu tiên tại Việt Nam cam kết bảo hành trọn đời cho tất cả sản phẩm vali, balo và túi xách. Chúng tôi tin rằng chất lượng sản phẩm chính là nền tảng để xây dựng niềm tin với khách hàng.
-              </p>
-            </div>
+      <!-- Main Content -->
+      <div class="container py-5">
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <div class="policy-content">
+              <h1 class="page-title text-center mb-5">Chính Sách Bảo Hành</h1>
 
-            <div class="policy-section">
-              <h3 class="section-title">
-                <i class="bi bi-gear text-success me-2"></i>
-                Phạm Vi Bảo Hành
-              </h3>
-              <div class="warranty-list">
-                <div class="warranty-item">
-                  <h5><i class="bi bi-check-circle text-success me-2"></i>Bảo hành cấu trúc sản phẩm</h5>
-                  <ul>
-                    <li>Lỗi khóa kéo bị gãy, hỏng do lỗi sản xuất</li>
-                    <li>Bánh xe bị gãy, tuột do lỗi kỹ thuật</li>
-                    <li>Tay kéo bị gãy, lỏng do lỗi sản xuất</li>
-                    <li>Vải bị rách do lỗi chất liệu</li>
-                  </ul>
-                </div>
-                
-                <div class="warranty-item">
-                  <h5><i class="bi bi-check-circle text-success me-2"></i>Bảo hành phụ kiện</h5>
-                  <ul>
-                    <li>Thay thế khóa số TSA miễn phí</li>
-                    <li>Sửa chữa dây đeo, quai xách</li>
-                    <li>Thay thế nút bấm, móc khóa</li>
-                  </ul>
-                </div>
+              <div class="policy-section">
+                <h3 class="section-title">
+                  <i class="bi bi-shield-check text-primary me-2"></i>
+                  Cam Kết Bảo Hành Trọn Đời
+                </h3>
+                <p class="section-content">
+                  BaloZone.vn tự hào là thương hiệu đầu tiên tại Việt Nam cam kết bảo hành trọn đời cho tất cả sản phẩm vali, balo và túi xách. Chúng tôi tin rằng chất lượng sản phẩm chính là nền tảng để xây dựng niềm tin với khách hàng.
+                </p>
               </div>
-            </div>
 
-            <div class="policy-section">
-              <h3 class="section-title">
-                <i class="bi bi-x-circle text-danger me-2"></i>
-                Trường Hợp Không Được Bảo Hành
-              </h3>
-              <div class="exclusion-list">
-                <div class="alert alert-warning">
-                  <h6><i class="bi bi-exclamation-triangle me-2"></i>Lưu ý quan trọng:</h6>
-                  <ul class="mb-0">
-                    <li>Hư hỏng do sử dụng sai mục đích (vượt quá trọng lượng cho phép)</li>
-                    <li>Hư hỏng do tai nạn, va đập mạnh bất thường</li>
-                    <li>Hư hỏng do tác động của động vật (cắn, cào)</li>
-                    <li>Mài mòn tự nhiên sau thời gian sử dụng lâu dài</li>
-                    <li>Sản phẩm đã qua sửa chữa bởi bên thứ ba</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+              <div class="policy-section">
+                <h3 class="section-title">
+                  <i class="bi bi-gear text-success me-2"></i>
+                  Phạm Vi Bảo Hành
+                </h3>
+                <div class="warranty-list">
+                  <div class="warranty-item">
+                    <h5><i class="bi bi-check-circle text-success me-2"></i>Bảo hành cấu trúc sản phẩm</h5>
+                    <ul>
+                      <li>Lỗi khóa kéo bị gãy, hỏng do lỗi sản xuất</li>
+                      <li>Bánh xe bị gãy, tuột do lỗi kỹ thuật</li>
+                      <li>Tay kéo bị gãy, lỏng do lỗi sản xuất</li>
+                      <li>Vải bị rách do lỗi chất liệu</li>
+                    </ul>
+                  </div>
 
-            <div class="policy-section">
-              <h3 class="section-title">
-                <i class="bi bi-clipboard-check text-info me-2"></i>
-                Quy Trình Bảo Hành
-              </h3>
-              <div class="process-steps">
-                <div class="step-item">
-                  <div class="step-number">1</div>
-                  <div class="step-content">
-                    <h6>Liên hệ bảo hành</h6>
-                    <p>Gọi hotline: <strong>1900 6750</strong> hoặc gửi email về <strong>baohanh@balozone.vn</strong></p>
-                  </div>
-                </div>
-                
-                <div class="step-item">
-                  <div class="step-number">2</div>
-                  <div class="step-content">
-                    <h6>Kiểm tra và xác nhận</h6>
-                    <p>Đội ngũ kỹ thuật sẽ kiểm tra và xác nhận tình trạng sản phẩm</p>
-                  </div>
-                </div>
-                
-                <div class="step-item">
-                  <div class="step-number">3</div>
-                  <div class="step-content">
-                    <h6>Thực hiện bảo hành</h6>
-                    <p>Sửa chữa hoặc thay thế sản phẩm trong vòng 3-7 ngày làm việc</p>
-                  </div>
-                </div>
-                
-                <div class="step-item">
-                  <div class="step-number">4</div>
-                  <div class="step-content">
-                    <h6>Giao hàng</h6>
-                    <p>Giao sản phẩm đã được bảo hành về tận nơi miễn phí</p>
+                  <div class="warranty-item">
+                    <h5><i class="bi bi-check-circle text-success me-2"></i>Bảo hành phụ kiện</h5>
+                    <ul>
+                      <li>Thay thế khóa số TSA miễn phí</li>
+                      <li>Sửa chữa dây đeo, quai xách</li>
+                      <li>Thay thế nút bấm, móc khóa</li>
+                    </ul>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="policy-section">
-              <h3 class="section-title">
-                <i class="bi bi-telephone text-primary me-2"></i>
-                Thông Tin Liên Hệ Bảo Hành
-              </h3>
-              <div class="contact-info">
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="contact-card">
-                      <h6><i class="bi bi-phone me-2"></i>Hotline Bảo Hành</h6>
-                      <p class="contact-detail">1900 6750 (8:00 - 22:00)</p>
+              <div class="policy-section">
+                <h3 class="section-title">
+                  <i class="bi bi-x-circle text-danger me-2"></i>
+                  Trường Hợp Không Được Bảo Hành
+                </h3>
+                <div class="exclusion-list">
+                  <div class="alert alert-warning">
+                    <h6><i class="bi bi-exclamation-triangle me-2"></i>Lưu ý quan trọng:</h6>
+                    <ul class="mb-0">
+                      <li>Hư hỏng do sử dụng sai mục đích (vượt quá trọng lượng cho phép)</li>
+                      <li>Hư hỏng do tai nạn, va đập mạnh bất thường</li>
+                      <li>Hư hỏng do tác động của động vật (cắn, cào)</li>
+                      <li>Mài mòn tự nhiên sau thời gian sử dụng lâu dài</li>
+                      <li>Sản phẩm đã qua sửa chữa bởi bên thứ ba</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="policy-section">
+                <h3 class="section-title">
+                  <i class="bi bi-clipboard-check text-info me-2"></i>
+                  Quy Trình Bảo Hành
+                </h3>
+                <div class="process-steps">
+                  <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                      <h6>Liên hệ bảo hành</h6>
+                      <p>Gọi hotline: <strong>1900 6750</strong> hoặc gửi email về <strong>baohanh@balozone.vn</strong></p>
                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <div class="contact-card">
-                      <h6><i class="bi bi-envelope me-2"></i>Email Bảo Hành</h6>
-                      <p class="contact-detail">baohanh@balozone.vn</p>
+
+                  <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                      <h6>Kiểm tra và xác nhận</h6>
+                      <p>Đội ngũ kỹ thuật sẽ kiểm tra và xác nhận tình trạng sản phẩm</p>
+                    </div>
+                  </div>
+
+                  <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                      <h6>Thực hiện bảo hành</h6>
+                      <p>Sửa chữa hoặc thay thế sản phẩm trong vòng 3-7 ngày làm việc</p>
+                    </div>
+                  </div>
+
+                  <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                      <h6>Giao hàng</h6>
+                      <p>Giao sản phẩm đã được bảo hành về tận nơi miễn phí</p>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="cta-section text-center mt-5">
-              <div class="alert alert-info">
-                <h5><i class="bi bi-info-circle me-2"></i>Cần hỗ trợ bảo hành?</h5>
-                <p class="mb-3">Đội ngũ tư vấn của chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7</p>
-                <router-link to="/contact" class="btn btn-primary me-3">
-                  <i class="bi bi-telephone me-2"></i>Liên hệ ngay
-                </router-link>
-                <router-link to="/" class="btn btn-outline-primary">
-                  <i class="bi bi-house me-2"></i>Về trang chủ
-                </router-link>
+              <div class="policy-section">
+                <h3 class="section-title">
+                  <i class="bi bi-telephone text-primary me-2"></i>
+                  Thông Tin Liên Hệ Bảo Hành
+                </h3>
+                <div class="contact-info">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="contact-card">
+                        <h6><i class="bi bi-phone me-2"></i>Hotline Bảo Hành</h6>
+                        <p class="contact-detail">1900 6750 (8:00 - 22:00)</p>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="contact-card">
+                        <h6><i class="bi bi-envelope me-2"></i>Email Bảo Hành</h6>
+                        <p class="contact-detail">baohanh@balozone.vn</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cta-section text-center mt-5">
+                <div class="alert alert-info">
+                  <h5><i class="bi bi-info-circle me-2"></i>Cần hỗ trợ bảo hành?</h5>
+                  <p class="mb-3">Đội ngũ tư vấn của chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7</p>
+                  <router-link to="/contact" class="btn btn-primary me-3">
+                    <i class="bi bi-telephone me-2"></i>Liên hệ ngay
+                  </router-link>
+                  <router-link to="/" class="btn btn-outline-primary">
+                    <i class="bi bi-house me-2"></i>Về trang chủ
+                  </router-link>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
+import UserLayout from '@/components/layouts/UserLayout.vue';
+
 // Meta information for SEO
 document.title = 'Chính Sách Bảo Hành - BaloZone.vn'
 </script>
@@ -230,7 +234,8 @@ document.title = 'Chính Sách Bảo Hành - BaloZone.vn'
   color: #555;
 }
 
-.warranty-list, .exclusion-list {
+.warranty-list,
+.exclusion-list {
   margin-top: 1.5rem;
 }
 
@@ -391,16 +396,16 @@ document.title = 'Chính Sách Bảo Hành - BaloZone.vn'
   .policy-content {
     padding: 2rem 1.5rem;
   }
-  
+
   .page-title {
     font-size: 2rem;
   }
-  
+
   .step-item {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .step-number {
     margin-right: 0;
     margin-bottom: 1rem;

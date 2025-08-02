@@ -81,6 +81,7 @@ export interface User {
   email_verified_at?: string | null
   phone?: string
   address?: string
+  avatar?: string
   status: 'active' | 'inactive'
   created_at: string
   updated_at: string
@@ -135,7 +136,7 @@ export interface Address {
   user_id: number
   recipient_name: string // recipient_name in API
   recipient_phone: string
-  address: string // street_address in API  
+  address: string // street_address in API
   ward: string
   district: string
   province: string // state_province in API
@@ -200,7 +201,7 @@ export interface Order {
   }[]
   created_at: string
   updated_at: string
-  
+
   // Legacy fields for backward compatibility
   address_id?: number
   payment_method_id?: number
@@ -480,8 +481,32 @@ export interface TopProduct {
 
 export interface ChartDataPoint {
   date: string
-  revenue: number | string
+  revenue?: number | string
   orders?: number
+}
+
+export interface DashboardOverview {
+  total_users: number
+  total_orders: number
+  total_products: number
+  total_contacts: number
+  total_revenue: string
+  monthly_revenue: string
+  new_users_this_month: number
+  orders_this_month: number
+}
+
+export interface OrderStats {
+  shipped: number
+  delivered: number
+  pending: number
+  processing: number
+  cancelled: number
+}
+
+export interface ContactStats {
+  resolved: number
+  pending: number
 }
 
 export interface DashboardStats {
@@ -501,19 +526,31 @@ export interface MonthlyRevenueData {
 }
 
 export interface DashboardRevenue {
-  year: number
+  year: string
   monthly_data: MonthlyRevenueData[]
+}
+
+export interface UsersByMonth {
+  month: number
+  month_name: string
+  new_users: number
+}
+
+export interface UsersByRole {
+  admin: number
+  user: number
+  contributor: number
 }
 
 export interface UsersByStatus {
   active: number
-  inactive: number
+  inactive?: number
 }
 
 export interface DashboardUsers {
-  total_users: number
-  new_users_this_week: number
-  new_users_this_month: number
+  year: string
+  users_by_month: UsersByMonth[]
+  users_by_role: UsersByRole
   users_by_status: UsersByStatus
 }
 

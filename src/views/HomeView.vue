@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useAppData } from '@/composables/useAppData'
 import { useSaleCampaigns } from '@/composables/useSaleCampaigns'
 import { getImageUrl } from '@/utils'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 import SaleBadge from '@/components/SaleBadge.vue'
 import ProductCard from '@/components/ProductCard.vue'
 import type { Category, Product } from '@/types'
@@ -55,7 +56,7 @@ const selectCategory = (categoryId: string) => {
 
 const getMaxDiscount = (campaign: any) => {
   if (!campaign.sale_products || campaign.sale_products.length === 0) return 0
-  
+
   const discounts = campaign.sale_products.map((sp: any) => sp.discount_percentage || 0)
   return Math.max(...discounts)
 }
@@ -68,16 +69,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container homepage mt-5">
-    <!-- Hero Banner Section -->
-    <section class="hero-section">
-      <div class="container-fluid px-4">
-        <div class="hero-banner">
-          <div class="banner-content">
-            <div class="discount-badge">
-              <span class="discount-text">ƯU ĐÃI X3</span>
-            </div>
-            <h1 class="hero-title">Sale Giữa Tháng</h1>
+  <UserLayout>
+    <div class="container homepage mt-5">
+      <!-- Hero Banner Section -->
+      <section class="hero-section">
+        <div class="container-fluid px-4">
+          <div class="hero-banner">
+            <div class="banner-content">
+              <div class="discount-badge">
+                <span class="discount-text">ƯU ĐÃI X3</span>
+              </div>
+              <h1 class="hero-title">Sale Giữa Tháng</h1>
             <div class="promotion-tags">
               <span class="tag">Giảm giá 3 SIZE</span>
               <span class="tag">Mua được 3</span>
@@ -141,24 +143,24 @@ onMounted(() => {
             Xem tất cả →
           </router-link>
         </div>
-        
+
         <!-- Loading state -->
         <div v-if="saleCampaignsLoading" class="text-center py-4">
           <div class="spinner-border text-danger" role="status">
             <span class="visually-hidden">Đang tải khuyến mãi...</span>
           </div>
         </div>
-        
+
         <!-- Campaign cards -->
         <div v-else class="campaigns-grid">
           <div class="row g-4">
-            <div 
-              v-for="campaign in activeCampaigns.slice(0, 3)" 
+            <div
+              v-for="campaign in activeCampaigns.slice(0, 3)"
               :key="campaign.id"
               class="col-lg-4 col-md-6"
             >
-              <router-link 
-                :to="`/sale-campaigns/slug/${campaign.slug}`" 
+              <router-link
+                :to="`/sale-campaigns/slug/${campaign.slug}`"
                 class="campaign-card-link"
               >
                 <div class="campaign-card">
@@ -168,11 +170,11 @@ onMounted(() => {
                       <span class="priority-badge">SALE</span>
                     </div>
                   </div>
-                  
+
                   <div class="campaign-content">
                     <h4 class="campaign-title">{{ campaign.name }}</h4>
                     <p class="campaign-description">{{ campaign.description }}</p>
-                    
+
                     <div class="campaign-stats" v-if="campaign.sale_products && campaign.sale_products.length > 0">
                       <span class="product-count">
                         {{ campaign.sale_products.length }} sản phẩm
@@ -181,20 +183,20 @@ onMounted(() => {
                         Giảm đến {{ getMaxDiscount(campaign) }}%
                       </span>
                     </div>
-                    
+
                     <div class="campaign-cta">
                       <span class="cta-text">Mua ngay</span>
                       <span class="cta-arrow">→</span>
                     </div>
                   </div>
-                  
+
                   <!-- Preview products -->
                   <div class="campaign-preview" v-if="campaign.sale_products && campaign.sale_products.length > 0">
                     <div class="preview-products">
                       <template v-for="(saleProduct, index) in campaign.sale_products.slice(0, 3)" :key="index">
-                        <img 
+                        <img
                           v-if="saleProduct.product"
-                          :src="saleProduct.product ? getImageUrl(saleProduct.product.image) : ''" 
+                          :src="saleProduct.product ? getImageUrl(saleProduct.product.image) : ''"
                           :alt="saleProduct.product ? saleProduct.product.name : ''"
                           class="preview-image"
                         />
@@ -245,8 +247,8 @@ onMounted(() => {
         <div class="section-header">
           <h2 class="section-title">🔥 ƯU ĐÃI X3</h2>
           <div class="filter-tabs">
-            <button 
-              v-for="tab in categoryTabs" 
+            <button
+              v-for="tab in categoryTabs"
               :key="tab.id"
               class="filter-tab"
               :class="{ 'active': selectedCategory === tab.id }"
@@ -256,7 +258,7 @@ onMounted(() => {
             </button>
           </div>
         </div>
-        
+
         <!-- Loading state -->
         <div v-if="isLoading" class="text-center py-5">
           <div class="spinner-border text-primary" role="status">
@@ -264,19 +266,19 @@ onMounted(() => {
           </div>
           <p class="mt-2">Đang tải sản phẩm...</p>
         </div>
-        
+
         <!-- Products grid -->
         <div v-else class="product-grid">
           <div class="row g-3">
-            <div 
-              v-for="product in displayProducts" 
-              :key="product.id" 
+            <div
+              v-for="product in displayProducts"
+              :key="product.id"
               class="col-xl-2-4 col-lg-3 col-md-4 col-sm-6 mb-4"
             >
               <ProductCard :product="product" />
             </div>
           </div>
-          
+
           <!-- No products found -->
           <div v-if="displayProducts.length === 0" class="text-center py-5">
             <p class="text-muted">Không tìm thấy sản phẩm nào.</p>
@@ -315,7 +317,8 @@ onMounted(() => {
         </div>
       </div>
     </section>
-  </div>
+    </div>
+  </UserLayout>
 </template>
 
 <style scoped>
@@ -563,34 +566,34 @@ onMounted(() => {
     gap: 15px;
     text-align: center;
   }
-  
+
   .section-title {
     font-size: 1.5rem;
   }
-  
+
   .campaign-stats {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .preview-products {
     gap: 5px;
   }
-  
+
   .preview-image {
     width: 50px;
     height: 50px;
   }
-  
+
   .filter-tabs {
     justify-content: center;
   }
-  
+
   .filter-tab {
     font-size: 0.8rem;
     padding: 6px 12px;
   }
-  
+
   .product-grid-section .section-title {
     font-size: 1.5rem;
   }

@@ -7,6 +7,7 @@ import { getCategoryName } from '@/utils'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import ProductCard from '@/components/ProductCard.vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const route = useRoute()
 const categorySlug = computed(() => route.params.category as string)
@@ -39,12 +40,12 @@ const updateMetaTags = () => {
 const fetchCategory = async (slug: string) => {
   categoryLoading.value = true
   categoryError.value = null
-  
+
   try {
     console.log(`Fetching category info for slug: ${slug}`)
     const categoryResponse = await categoriesApi.getCategoryBySlug(slug)
     console.log('Category API Response:', categoryResponse);
-    
+
     if (categoryResponse.data) {
       category.value = categoryResponse.data
       console.log('Category set successfully:', category.value)
@@ -65,17 +66,17 @@ const fetchCategory = async (slug: string) => {
 // Separate function to fetch products with filters
 const fetchProducts = async (page: number = 1, perPage: number = 12) => {
   productsLoading.value = true
-  
+
   try {
     console.log(`Fetching products for category: ${category.value?.id}, page: ${page}, per_page: ${perPage}`)
-    
+
     const filters: any = {
       page: page,
       per_page: perPage,
       sort_by: getSortField(selectedSort.value),
       sort_order: getSortOrder(selectedSort.value)
     }
-    
+
     // Add category filter - CRITICAL: Always add category_id when we have it
     if (category.value && category.value.id > 0) {
       filters.category_id = category.value.id
@@ -83,7 +84,7 @@ const fetchProducts = async (page: number = 1, perPage: number = 12) => {
     } else {
       console.warn('No valid category ID found, will fetch all products without category filter')
     }
-    
+
     // Apply additional filters
     if (selectedBrand.value !== 'all') {
       const brandId = allBrands.value.find(b => b.slug === selectedBrand.value)?.id
@@ -91,17 +92,17 @@ const fetchProducts = async (page: number = 1, perPage: number = 12) => {
         filters.brand_id = brandId
       }
     }
-    
+
     if (selectedPriceRange.value !== 'all') {
       const [min, max] = selectedPriceRange.value.split('-').map(Number)
       filters.min_price = min
       if (max) filters.max_price = max
     }
-    
+
     const productsResponse = await productsApi.getProducts(filters)
     console.log('Products API Response:', productsResponse)
     console.log('Filters sent to API:', filters)
-    
+
     // Build debug URL to see exactly what's being called
     const debugParams = new URLSearchParams()
     Object.entries(filters).forEach(([key, value]) => {
@@ -110,28 +111,28 @@ const fetchProducts = async (page: number = 1, perPage: number = 12) => {
       }
     })
     console.log('API URL would be:', `http://localhost:8000/api/products?${debugParams.toString()}`)
-    
+
     if (productsResponse.data) {
       console.log('Products pagination data received:', productsResponse.data);
-      
+
       // Extract products array from pagination data
       const productsArray = productsResponse.data.data || []
       console.log('Products array extracted:', productsArray);
-      
+
       // Ensure products data is an array and filter out any null/undefined values
       products.value = Array.isArray(productsArray) ? productsArray.filter(product => product && product.id) : []
-      
+
       // Update pagination info from products response (PaginatedResponse structure)
       currentPage.value = productsResponse.data.current_page || 1
       totalPages.value = productsResponse.data.last_page || 1
       totalProducts.value = productsResponse.data.total || 0
       itemsPerPage.value = productsResponse.data.per_page || perPage
-      
+
       // Update category products count
       if (category.value) {
         category.value.products_count = productsResponse.data.total || 0
       }
-      
+
       console.log('Products and pagination set successfully:', {
         productsCount: products.value.length,
         currentPage: currentPage.value,
@@ -146,7 +147,7 @@ const fetchProducts = async (page: number = 1, perPage: number = 12) => {
       totalPages.value = 1
       totalProducts.value = 0
     }
-    
+
   } catch (error) {
     console.error('Failed to load products:', error)
     products.value = []
@@ -161,16 +162,16 @@ const fetchProducts = async (page: number = 1, perPage: number = 12) => {
 // Combined function to load both category and products
 const loadCategoryPage = async (slug: string, page: number = 1, perPage: number = 12) => {
   loading.value = true
-  
+
   try {
     // Step 1: Fetch category first
     await fetchCategory(slug)
-    
+
     // Step 2: Only fetch products if category exists
     if (category.value && !categoryError.value) {
       await fetchProducts(page, perPage)
     }
-    
+
   } catch (error) {
     console.error('Failed to load category page:', error)
   } finally {
@@ -194,7 +195,7 @@ const applyFiltersAndRefresh = async () => {
 const getSortField = (sort: string): string => {
   switch (sort) {
     case 'newest': return 'created_at'
-    case 'price-asc': 
+    case 'price-asc':
     case 'price-desc': return 'price'
     case 'name': return 'name'
     default: return 'created_at'
@@ -206,7 +207,7 @@ const getSortOrder = (sort: string): 'asc' | 'desc' => {
     case 'price-asc': return 'asc'
     case 'price-desc': return 'desc'
     case 'name': return 'asc'
-    case 'newest': 
+    case 'newest':
     default: return 'desc'
   }
 }
@@ -302,7 +303,7 @@ const getPaginationPages = computed(() => {
   } else {
     // Always show first page
     pages.push(1)
-    
+
     if (current <= 4) {
       // Show first 5 pages, then ellipsis, then last page
       for (let i = 2; i <= 5; i++) {
@@ -376,7 +377,7 @@ const debouncedApplyFilters = () => {
   if (filterTimeout) {
     clearTimeout(filterTimeout)
   }
-  
+
   filterTimeout = setTimeout(() => {
     applyFilters()
   }, 300)
@@ -399,18 +400,18 @@ const categoryTitle = computed(() => {
 
 const categoryDescription = computed(() => {
   if (categoryError.value) return categoryError.value
-  
+
   console.log('Computing categoryDescription:', {
     categoryValue: category.value,
     hasDescription: !!category.value?.description,
     description: category.value?.description,
     slug: categorySlug.value
   })
-  
+
   if (category.value?.description) {
     return category.value.description
   }
-  
+
   console.log(`Using default description for category: ${categorySlug.value}`)
   return `Khám phá bộ sưu tập ${category.value?.name || getCategoryName(categorySlug.value).toLowerCase()} chính hãng với giá tốt nhất tại BaloZone`
 })
@@ -456,269 +457,253 @@ watch(categoryProducts, (newProducts) => {
 }, { immediate: true })
 </script>
 <template>
-  <div class="category-page">
-    <!-- Breadcrumbs -->
-    <Breadcrumb :items="breadcrumbs" />
+  <UserLayout>
+    <div class="category-page">
+      <!-- Breadcrumbs -->
+      <Breadcrumb :items="breadcrumbs" />
 
-    <!-- Category Error Section -->
-    <section v-if="categoryError" class="category-error">
-      <div class="container-fluid px-4">
-        <div class="row justify-content-center">
-          <div class="col-md-8 col-lg-6">
-            <div class="error-card">
-              <div class="error-icon">
-                <i class="bi bi-exclamation-triangle"></i>
-              </div>
-              <h2 class="error-title">Danh mục không tồn tại</h2>
-              <p class="error-description">
-                Xin lỗi, danh mục bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
-              </p>
-              <div class="error-actions">
-                <router-link to="/" class="btn btn-primary">
-                  <i class="bi bi-house"></i>
-                  Về trang chủ
-                </router-link>
-                <router-link to="/categories" class="btn btn-outline-secondary">
-                  <i class="bi bi-grid"></i>
-                  Xem tất cả danh mục
-                </router-link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Category Header -->
-    <section v-else class="category-header">
-      <div class="container-fluid px-4">
-        <div class="row align-items-center">
-          <!-- Category Info -->
-          <div class="col-lg-8">
-            <div class="header-content">
-              <div class="category-meta">
-                <LoadingSpinner v-if="categoryLoading" size="sm" text="" />
-                <span v-else class="category-badge">
-                  <i class="bi bi-tag-fill"></i>
-                  Danh mục
-                </span>
-              </div>
-              <h1 class="category-title">{{ categoryTitle }}</h1>
-              <p class="category-description">
-                {{ categoryDescription }}
-              </p>
-              <div class="category-stats">
-                <span class="stat-item">
-                  <i class="bi bi-box-seam"></i>
-                  {{ totalProducts }} sản phẩm
-                </span>
-                <span class="stat-item">
-                  <i class="bi bi-star-fill"></i>
-                  Đánh giá 4.8/5
-                </span>
-                <span class="stat-item">
-                  <i class="bi bi-truck"></i>
-                  Miễn phí vận chuyển
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Category Image -->
-          <div class="col-lg-4" v-if="categoryImage">
-            <div class="category-image">
-              <img :src="categoryImage" :alt="categoryTitle" class="img-fluid rounded">
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Filters and Products -->
-    <section v-if="!categoryError" class="products-section">
-      <div class="container-fluid px-4">
-        <div class="row">
-          <!-- Sidebar Filters -->
-          <div class="col-lg-3 col-md-4 mb-4">
-            <div class="filters-sidebar">
-              <div class="filter-card">
-                <h5 class="filter-title">Sắp xếp theo</h5>
-                <div class="filter-options">
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedSort" value="popular">
-                    <span class="checkmark"></span>
-                    Phổ biến nhất
-                  </label>
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedSort" value="newest">
-                    <span class="checkmark"></span>
-                    Mới nhất
-                  </label>
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedSort" value="price-asc">
-                    <span class="checkmark"></span>
-                    Giá thấp đến cao
-                  </label>
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedSort" value="price-desc">
-                    <span class="checkmark"></span>
-                    Giá cao đến thấp
-                  </label>
+      <!-- Category Error Section -->
+      <section v-if="categoryError" class="category-error">
+        <div class="container-fluid px-4">
+          <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+              <div class="error-card">
+                <div class="error-icon">
+                  <i class="bi bi-exclamation-triangle"></i>
                 </div>
-              </div>
-
-              <div class="filter-card">
-                <h5 class="filter-title">Khoảng giá</h5>
-                <div class="filter-options">
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedPriceRange" value="all">
-                    <span class="checkmark"></span>
-                    Tất cả
-                  </label>
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedPriceRange" value="0-1000000">
-                    <span class="checkmark"></span>
-                    Dưới 1 triệu
-                  </label>
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedPriceRange" value="1000000-3000000">
-                    <span class="checkmark"></span>
-                    1 - 3 triệu
-                  </label>
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedPriceRange" value="3000000-5000000">
-                    <span class="checkmark"></span>
-                    3 - 5 triệu
-                  </label>
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedPriceRange" value="5000000">
-                    <span class="checkmark"></span>
-                    Trên 5 triệu
-                  </label>
-                </div>
-              </div>
-
-              <div class="filter-card">
-                <h5 class="filter-title">Thương hiệu</h5>
-                <div class="filter-options">
-                  <label class="filter-option">
-                    <input type="radio" v-model="selectedBrand" value="all">
-                    <span class="checkmark"></span>
-                    Tất cả
-                  </label>
-                  <template v-for="brand in brands" :key="brand.id">
-                    <label v-if="brand && brand.id" class="filter-option">
-                      <input type="radio" v-model="selectedBrand" :value="brand.slug">
-                      <span class="checkmark"></span>
-                      {{ brand.name }}
-                    </label>
-                  </template>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Products Grid -->
-          <div class="col-lg-9 col-md-8">
-            <div class="products-header">
-              <div class="results-info">
-                <LoadingSpinner v-if="productsLoading" size="sm" text="" />
-                <span v-else>
-                  Hiển thị {{ displayedProducts.length }} / {{ totalProducts }} sản phẩm
-                </span>
-              </div>
-              <div class="header-controls">
-                <div class="items-per-page">
-                  <label for="itemsPerPage">Hiển thị:</label>
-                  <select id="itemsPerPage" v-model="itemsPerPage" class="form-select">
-                    <option :value="12">12</option>
-                    <option :value="24">24</option>
-                    <option :value="48">48</option>
-                  </select>
-                </div>
-                <div class="view-options">
-                  <button class="view-btn" :class="{ active: viewMode === 'grid' }" @click="toggleViewMode('grid')" title="Xem dạng lưới">
+                <h2 class="error-title">Danh mục không tồn tại</h2>
+                <p class="error-description">
+                  Xin lỗi, danh mục bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
+                </p>
+                <div class="error-actions">
+                  <router-link to="/" class="btn btn-primary">
+                    <i class="bi bi-house"></i>
+                    Về trang chủ
+                  </router-link>
+                  <router-link to="/categories" class="btn btn-outline-secondary">
                     <i class="bi bi-grid"></i>
-                  </button>
-                  <button class="view-btn" :class="{ active: viewMode === 'list' }" @click="toggleViewMode('list')" title="Xem dạng danh sách">
-                    <i class="bi bi-list"></i>
-                  </button>
+                    Xem tất cả danh mục
+                  </router-link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Category Header -->
+      <section v-else class="category-header">
+        <div class="container-fluid px-4">
+          <div class="row align-items-center">
+            <!-- Category Info -->
+            <div class="col-lg-8">
+              <div class="header-content">
+                <div class="category-meta">
+                  <LoadingSpinner v-if="categoryLoading" size="sm" text="" />
+                  <span v-else class="category-badge">
+                    <i class="bi bi-tag-fill"></i>
+                    Danh mục
+                  </span>
+                </div>
+                <h1 class="category-title">{{ categoryTitle }}</h1>
+                <p class="category-description">
+                  {{ categoryDescription }}
+                </p>
+                <div class="category-stats">
+                  <span class="stat-item">
+                    <i class="bi bi-box-seam"></i>
+                    {{ totalProducts }} sản phẩm
+                  </span>
+                  <span class="stat-item">
+                    <i class="bi bi-star-fill"></i>
+                    Đánh giá 4.8/5
+                  </span>
+                  <span class="stat-item">
+                    <i class="bi bi-truck"></i>
+                    Miễn phí vận chuyển
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div class="products-grid">
-              <LoadingSpinner v-if="loading || productsLoading" text="Đang tải sản phẩm..." size="lg" />
-              <div v-else-if="displayedProducts.length === 0" class="empty-state">
-                <div class="text-center py-5">
-                  <i class="bi bi-box-seam" style="font-size: 4rem; color: #ddd;"></i>
-                  <h4 class="mt-3 text-muted">Chưa có sản phẩm</h4>
-                  <p class="text-muted">Danh mục này hiện chưa có sản phẩm nào.</p>
-                </div>
+            <!-- Category Image -->
+            <div class="col-lg-4" v-if="categoryImage">
+              <div class="category-image">
+                <img :src="categoryImage" :alt="categoryTitle" class="img-fluid rounded">
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              <!-- Grid View -->
-              <div v-else-if="viewMode === 'grid'" class="row g-3">
-                <div v-for="product in displayedProducts" :key="product.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
-                  <ProductCard :product="product" />
+      <!-- Filters and Products -->
+      <section v-if="!categoryError" class="products-section">
+        <div class="container-fluid px-4">
+          <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 col-md-4 mb-4">
+              <div class="filters-sidebar">
+                <div class="filter-card">
+                  <h5 class="filter-title">Sắp xếp theo</h5>
+                  <div class="filter-options">
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedSort" value="popular">
+                      <span class="checkmark"></span>
+                      Phổ biến nhất
+                    </label>
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedSort" value="newest">
+                      <span class="checkmark"></span>
+                      Mới nhất
+                    </label>
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedSort" value="price-asc">
+                      <span class="checkmark"></span>
+                      Giá thấp đến cao
+                    </label>
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedSort" value="price-desc">
+                      <span class="checkmark"></span>
+                      Giá cao đến thấp
+                    </label>
+                  </div>
                 </div>
-              </div>
 
-              <!-- List View -->
-              <div v-else class="products-list">
-                <div v-for="product in displayedProducts" :key="product.id" class="product-list-item mb-3">
-                  <ProductCard :product="product" :listView="true" />
+                <div class="filter-card">
+                  <h5 class="filter-title">Khoảng giá</h5>
+                  <div class="filter-options">
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedPriceRange" value="all">
+                      <span class="checkmark"></span>
+                      Tất cả
+                    </label>
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedPriceRange" value="0-1000000">
+                      <span class="checkmark"></span>
+                      Dưới 1 triệu
+                    </label>
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedPriceRange" value="1000000-3000000">
+                      <span class="checkmark"></span>
+                      1 - 3 triệu
+                    </label>
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedPriceRange" value="3000000-5000000">
+                      <span class="checkmark"></span>
+                      3 - 5 triệu
+                    </label>
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedPriceRange" value="5000000">
+                      <span class="checkmark"></span>
+                      Trên 5 triệu
+                    </label>
+                  </div>
+                </div>
+
+                <div class="filter-card">
+                  <h5 class="filter-title">Thương hiệu</h5>
+                  <div class="filter-options">
+                    <label class="filter-option">
+                      <input type="radio" v-model="selectedBrand" value="all">
+                      <span class="checkmark"></span>
+                      Tất cả
+                    </label>
+                    <template v-for="brand in brands" :key="brand.id">
+                      <label v-if="brand && brand.id" class="filter-option">
+                        <input type="radio" v-model="selectedBrand" :value="brand.slug">
+                        <span class="checkmark"></span>
+                        {{ brand.name }}
+                      </label>
+                    </template>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Pagination -->
-            <div v-if="totalPages > 1" class="pagination-section">
-              <nav class="pagination-nav">
-                <button 
-                  class="page-btn" 
-                  @click="goToPage(currentPage - 1)" 
-                  :disabled="currentPage === 1"
-                  title="Trang trước"
-                >
-                  <i class="bi bi-chevron-left"></i>
-                </button>
-                
-                <button 
-                  v-for="page in getPaginationPages" 
-                  :key="`page-${page}`" 
-                  class="page-btn" 
-                  @click="typeof page === 'number' ? goToPage(page) : null" 
-                  :class="{ 
+            <!-- Products Grid -->
+            <div class="col-lg-9 col-md-8">
+              <div class="products-header">
+                <div class="results-info">
+                  <LoadingSpinner v-if="productsLoading" size="sm" text="" />
+                  <span v-else>
+                    Hiển thị {{ displayedProducts.length }} / {{ totalProducts }} sản phẩm
+                  </span>
+                </div>
+                <div class="header-controls">
+                  <div class="items-per-page">
+                    <label for="itemsPerPage">Hiển thị:</label>
+                    <select id="itemsPerPage" v-model="itemsPerPage" class="form-select">
+                      <option :value="12">12</option>
+                      <option :value="24">24</option>
+                      <option :value="48">48</option>
+                    </select>
+                  </div>
+                  <div class="view-options">
+                    <button class="view-btn" :class="{ active: viewMode === 'grid' }" @click="toggleViewMode('grid')" title="Xem dạng lưới">
+                      <i class="bi bi-grid"></i>
+                    </button>
+                    <button class="view-btn" :class="{ active: viewMode === 'list' }" @click="toggleViewMode('list')" title="Xem dạng danh sách">
+                      <i class="bi bi-list"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="products-grid">
+                <LoadingSpinner v-if="loading || productsLoading" text="Đang tải sản phẩm..." size="lg" />
+                <div v-else-if="displayedProducts.length === 0" class="empty-state">
+                  <div class="text-center py-5">
+                    <i class="bi bi-box-seam" style="font-size: 4rem; color: #ddd;"></i>
+                    <h4 class="mt-3 text-muted">Chưa có sản phẩm</h4>
+                    <p class="text-muted">Danh mục này hiện chưa có sản phẩm nào.</p>
+                  </div>
+                </div>
+
+                <!-- Grid View -->
+                <div v-else-if="viewMode === 'grid'" class="row g-3">
+                  <div v-for="product in displayedProducts" :key="product.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
+                    <ProductCard :product="product" />
+                  </div>
+                </div>
+
+                <!-- List View -->
+                <div v-else class="products-list">
+                  <div v-for="product in displayedProducts" :key="product.id" class="product-list-item mb-3">
+                    <ProductCard :product="product" :listView="true" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pagination -->
+              <div v-if="totalPages > 1" class="pagination-section">
+                <nav class="pagination-nav">
+                  <button class="page-btn" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" title="Trang trước">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
+
+                  <button v-for="page in getPaginationPages" :key="`page-${page}`" class="page-btn" @click="typeof page === 'number' ? goToPage(page) : null" :class="{
                     active: page === currentPage,
                     disabled: typeof page !== 'number'
-                  }"
-                  :disabled="typeof page !== 'number'"
-                  :title="typeof page === 'number' ? `Trang ${page}` : ''"
-                >
-                  {{ page }}
-                </button>
-                
-                <button 
-                  class="page-btn" 
-                  @click="goToPage(currentPage + 1)" 
-                  :disabled="currentPage === totalPages"
-                  title="Trang sau"
-                >
-                  <i class="bi bi-chevron-right"></i>
-                </button>
-              </nav>
+                  }" :disabled="typeof page !== 'number'" :title="typeof page === 'number' ? `Trang ${page}` : ''">
+                    {{ page }}
+                  </button>
 
-              <div class="pagination-info">
-                Trang {{ currentPage }} / {{ totalPages }} 
-                <span class="text-muted">({{ totalProducts }} sản phẩm)</span>
+                  <button class="page-btn" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" title="Trang sau">
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
+                </nav>
+
+                <div class="pagination-info">
+                  Trang {{ currentPage }} / {{ totalPages }}
+                  <span class="text-muted">({{ totalProducts }} sản phẩm)</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
+      </section>
+    </div>
+  </UserLayout>
 </template>
 
 <style scoped>

@@ -1,199 +1,190 @@
 <template>
-  <div class="sale-campaign-detail">
-    <!-- Loading State -->
-    <div v-if="isLoading" class="loading-state">
-      <div class="container text-center py-5">
-        <div class="spinner-border text-danger" style="width: 3rem; height: 3rem;" role="status">
-          <span class="visually-hidden">Đang tải...</span>
+  <UserLayout>
+    <div class="sale-campaign-detail">
+      <!-- Loading State -->
+      <div v-if="isLoading" class="loading-state">
+        <div class="container text-center py-5">
+          <div class="spinner-border text-danger" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+          <p class="mt-3">Đang tải thông tin chương trình...</p>
         </div>
-        <p class="mt-3">Đang tải thông tin chương trình...</p>
       </div>
-    </div>
 
-    <!-- Error State -->
-    <div v-else-if="error" class="error-state">
-      <div class="container text-center py-5">
-        <i class="bi bi-exclamation-triangle text-danger fs-1"></i>
-        <h3 class="mt-3">Có lỗi xảy ra</h3>
-        <p class="text-muted">{{ error }}</p>
-        <div class="d-flex gap-3 justify-content-center">
-          <button @click="loadCampaign" class="btn btn-primary">
-            <i class="bi bi-arrow-clockwise"></i>
-            Thử lại
-          </button>
-          <router-link to="/sale-campaigns" class="btn btn-outline-secondary">
-            Quay lại danh sách
+      <!-- Error State -->
+      <div v-else-if="error" class="error-state">
+        <div class="container text-center py-5">
+          <i class="bi bi-exclamation-triangle text-danger fs-1"></i>
+          <h3 class="mt-3">Có lỗi xảy ra</h3>
+          <p class="text-muted">{{ error }}</p>
+          <div class="d-flex gap-3 justify-content-center">
+            <button @click="loadCampaign" class="btn btn-primary">
+              <i class="bi bi-arrow-clockwise"></i>
+              Thử lại
+            </button>
+            <router-link to="/sale-campaigns" class="btn btn-outline-secondary">
+              Quay lại danh sách
+            </router-link>
+          </div>
+        </div>
+      </div>
+
+      <!-- Not Found State -->
+      <div v-else-if="!currentCampaign" class="not-found-state">
+        <div class="container text-center py-5">
+          <i class="bi bi-search text-muted fs-1"></i>
+          <h3 class="mt-3">Không tìm thấy chương trình</h3>
+          <p class="text-muted">Chương trình khuyến mãi này có thể đã bị xóa hoặc không tồn tại.</p>
+          <router-link to="/sale-campaigns" class="btn btn-primary">
+            Xem tất cả chương trình
           </router-link>
         </div>
       </div>
-    </div>
 
-    <!-- Not Found State -->
-    <div v-else-if="!currentCampaign" class="not-found-state">
-      <div class="container text-center py-5">
-        <i class="bi bi-search text-muted fs-1"></i>
-        <h3 class="mt-3">Không tìm thấy chương trình</h3>
-        <p class="text-muted">Chương trình khuyến mãi này có thể đã bị xóa hoặc không tồn tại.</p>
-        <router-link to="/sale-campaigns" class="btn btn-primary">
-          Xem tất cả chương trình
-        </router-link>
-      </div>
-    </div>
+      <!-- Campaign Content -->
+      <div v-else class="campaign-content">
+        <!-- Campaign Header -->
+        <section class="campaign-header">
+          <div class="container">
+            <nav aria-label="breadcrumb" class="mb-4">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                  <router-link to="/">Trang chủ</router-link>
+                </li>
+                <li class="breadcrumb-item">
+                  <router-link to="/sale-campaigns">Khuyến mãi</router-link>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                  {{ currentCampaign.name }}
+                </li>
+              </ol>
+            </nav>
 
-    <!-- Campaign Content -->
-    <div v-else class="campaign-content">
-      <!-- Campaign Header -->
-      <section class="campaign-header">
-        <div class="container">
-          <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-              <li class="breadcrumb-item">
-                <router-link to="/">Trang chủ</router-link>
-              </li>
-              <li class="breadcrumb-item">
-                <router-link to="/sale-campaigns">Khuyến mãi</router-link>
-              </li>
-              <li class="breadcrumb-item active" aria-current="page">
-                {{ currentCampaign.name }}
-              </li>
-            </ol>
-          </nav>
-
-          <div class="campaign-info">
-            <div class="campaign-badges">
-              <span v-if="currentCampaign.is_featured" class="badge featured">
-                <i class="bi bi-star-fill"></i>
-                Nổi bật
-              </span>
-              <span :class="['badge', 'status', currentCampaign.status]">
-                {{ getStatusText(currentCampaign.status) }}
-              </span>
-              <span v-if="currentCampaign.priority" class="badge priority">
-                Độ ưu tiên: {{ currentCampaign.priority }}/100
-              </span>
-            </div>
-            
-            <h1 class="campaign-title">{{ currentCampaign.name }}</h1>
-            <p class="campaign-description">{{ currentCampaign.description }}</p>
-            
-            <div class="campaign-meta">
-              <div class="meta-item">
-                <i class="bi bi-calendar-event"></i>
-                <span>{{ formatDate(currentCampaign.start_date) }} - {{ formatDate(currentCampaign.end_date) }}</span>
+            <div class="campaign-info">
+              <div class="campaign-badges">
+                <span v-if="currentCampaign.is_featured" class="badge featured">
+                  <i class="bi bi-star-fill"></i>
+                  Nổi bật
+                </span>
+                <span :class="['badge', 'status', currentCampaign.status]">
+                  {{ getStatusText(currentCampaign.status) }}
+                </span>
+                <span v-if="currentCampaign.priority" class="badge priority">
+                  Độ ưu tiên: {{ currentCampaign.priority }}/100
+                </span>
               </div>
-              
-              <div v-if="currentCampaign.sale_products" class="meta-item">
-                <i class="bi bi-box"></i>
-                <span>{{ currentCampaign.sale_products.length }} sản phẩm</span>
+
+              <h1 class="campaign-title">{{ currentCampaign.name }}</h1>
+              <p class="campaign-description">{{ currentCampaign.description }}</p>
+
+              <div class="campaign-meta">
+                <div class="meta-item">
+                  <i class="bi bi-calendar-event"></i>
+                  <span>{{ formatDate(currentCampaign.start_date) }} - {{ formatDate(currentCampaign.end_date) }}</span>
+                </div>
+
+                <div v-if="currentCampaign.sale_products" class="meta-item">
+                  <i class="bi bi-box"></i>
+                  <span>{{ currentCampaign.sale_products.length }} sản phẩm</span>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <!-- Countdown Timer -->
-          <div v-if="isCampaignActive(currentCampaign)" class="countdown-timer">
-            <h3>⏰ Thời gian còn lại</h3>
-            <div class="timer-display">
-              <div class="time-unit">
-                <span class="time-value">{{ timeRemaining.days }}</span>
-                <span class="time-label">Ngày</span>
-              </div>
-              <div class="time-separator">:</div>
-              <div class="time-unit">
-                <span class="time-value">{{ timeRemaining.hours }}</span>
-                <span class="time-label">Giờ</span>
-              </div>
-              <div class="time-separator">:</div>
-              <div class="time-unit">
-                <span class="time-value">{{ timeRemaining.minutes }}</span>
-                <span class="time-label">Phút</span>
-              </div>
-              <div class="time-separator">:</div>
-              <div class="time-unit">
-                <span class="time-value">{{ timeRemaining.seconds }}</span>
-                <span class="time-label">Giây</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <!-- Products Section -->
-      <section class="campaign-products">
-        <div class="container">
-          <div class="section-header">
-            <h2>🛍️ Sản phẩm khuyến mãi</h2>
-            <div class="products-summary" v-if="currentCampaign.sale_products">
-              <span class="products-count">{{ currentCampaign.sale_products.length }} sản phẩm</span>
-              <span class="discount-info">Giảm giá lên đến {{ getMaxDiscount() }}%</span>
-            </div>
-          </div>
-          
-          <!-- Products Grid -->
-          <div v-if="currentCampaign.sale_products && currentCampaign.sale_products.length > 0" class="products-grid">
-            <div class="row g-4">
-              <div 
-                v-for="saleProduct in currentCampaign.sale_products" 
-                :key="saleProduct.id"
-                class="col-lg-3 col-md-4 col-sm-6"
-              >
-                <div class="product-card" @click="goToProduct(saleProduct.product?.slug || saleProduct.product?.id || '')">
-                  <div class="product-image">
-                    <img 
-                      :src="getImageUrl(saleProduct.product?.image || '')" 
-                      :alt="saleProduct.product?.name || ''"
-                      loading="lazy"
-                    />
-                    <div class="discount-badge">
-                      -{{ Math.round(saleProduct.discount_percentage) }}%
-                    </div>
-                  </div>
-                  
-                  <div class="product-info">
-                    <h5 class="product-name">{{ saleProduct.product?.name }}</h5>
-                    <div class="product-category" v-if="saleProduct.product?.category">
-                      {{ saleProduct.product.category.name }}
-                    </div>
-                    
-                    <div class="price-info">
-                      <span class="original-price">{{ formatPrice(saleProduct.original_price) }}</span>
-                      <span class="sale-price">{{ formatPrice(saleProduct.sale_price) }}</span>
-                      <div class="savings">
-                        Tiết kiệm: {{ formatPrice(calculateDiscount(saleProduct)) }}
-                      </div>
-                    </div>
-                    
-                    <div class="quantity-info" v-if="saleProduct.max_quantity">
-                      <div class="stock-bar">
-                        <div 
-                          class="stock-fill" 
-                          :style="{ width: getStockPercentage(saleProduct) + '%' }"
-                        ></div>
-                      </div>
-                      <span class="stock-text">
-                        Còn {{ (saleProduct.max_quantity || 0) - ((saleProduct as any).sold_quantity || 0) }} sản phẩm
-                      </span>
-                    </div>
-                    
-                    <button class="btn-add-cart">
-                      <i class="bi bi-cart-plus"></i>
-                      Thêm vào giỏ
-                    </button>
-                  </div>
+            <!-- Countdown Timer -->
+            <div v-if="isCampaignActive(currentCampaign)" class="countdown-timer">
+              <h3>⏰ Thời gian còn lại</h3>
+              <div class="timer-display">
+                <div class="time-unit">
+                  <span class="time-value">{{ timeRemaining.days }}</span>
+                  <span class="time-label">Ngày</span>
+                </div>
+                <div class="time-separator">:</div>
+                <div class="time-unit">
+                  <span class="time-value">{{ timeRemaining.hours }}</span>
+                  <span class="time-label">Giờ</span>
+                </div>
+                <div class="time-separator">:</div>
+                <div class="time-unit">
+                  <span class="time-value">{{ timeRemaining.minutes }}</span>
+                  <span class="time-label">Phút</span>
+                </div>
+                <div class="time-separator">:</div>
+                <div class="time-unit">
+                  <span class="time-value">{{ timeRemaining.seconds }}</span>
+                  <span class="time-label">Giây</span>
                 </div>
               </div>
             </div>
           </div>
-          
-          <!-- No Products -->
-          <div v-else class="no-products">
-            <i class="bi bi-box text-muted fs-1"></i>
-            <h4 class="mt-3">Chưa có sản phẩm</h4>
-            <p class="text-muted">Chương trình này hiện chưa có sản phẩm nào được áp dụng.</p>
+        </section>
+
+        <!-- Products Section -->
+        <section class="campaign-products">
+          <div class="container">
+            <div class="section-header">
+              <h2>🛍️ Sản phẩm khuyến mãi</h2>
+              <div class="products-summary" v-if="currentCampaign.sale_products">
+                <span class="products-count">{{ currentCampaign.sale_products.length }} sản phẩm</span>
+                <span class="discount-info">Giảm giá lên đến {{ getMaxDiscount() }}%</span>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div v-if="currentCampaign.sale_products && currentCampaign.sale_products.length > 0" class="products-grid">
+              <div class="row g-4">
+                <div v-for="saleProduct in currentCampaign.sale_products" :key="saleProduct.id" class="col-lg-3 col-md-4 col-sm-6">
+                  <div class="product-card" @click="goToProduct(saleProduct.product?.slug || saleProduct.product?.id || '')">
+                    <div class="product-image">
+                      <img :src="getImageUrl(saleProduct.product?.image || '')" :alt="saleProduct.product?.name || ''" loading="lazy" />
+                      <div class="discount-badge">
+                        -{{ Math.round(saleProduct.discount_percentage) }}%
+                      </div>
+                    </div>
+
+                    <div class="product-info">
+                      <h5 class="product-name">{{ saleProduct.product?.name }}</h5>
+                      <div class="product-category" v-if="saleProduct.product?.category">
+                        {{ saleProduct.product.category.name }}
+                      </div>
+
+                      <div class="price-info">
+                        <span class="original-price">{{ formatPrice(saleProduct.original_price) }}</span>
+                        <span class="sale-price">{{ formatPrice(saleProduct.sale_price) }}</span>
+                        <div class="savings">
+                          Tiết kiệm: {{ formatPrice(calculateDiscount(saleProduct)) }}
+                        </div>
+                      </div>
+
+                      <div class="quantity-info" v-if="saleProduct.max_quantity">
+                        <div class="stock-bar">
+                          <div class="stock-fill" :style="{ width: getStockPercentage(saleProduct) + '%' }"></div>
+                        </div>
+                        <span class="stock-text">
+                          Còn {{ (saleProduct.max_quantity || 0) - ((saleProduct as any).sold_quantity || 0) }} sản phẩm
+                        </span>
+                      </div>
+
+                      <button class="btn-add-cart">
+                        <i class="bi bi-cart-plus"></i>
+                        Thêm vào giỏ
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- No Products -->
+            <div v-else class="no-products">
+              <i class="bi bi-box text-muted fs-1"></i>
+              <h4 class="mt-3">Chưa có sản phẩm</h4>
+              <p class="text-muted">Chương trình này hiện chưa có sản phẩm nào được áp dụng.</p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
-  </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -201,6 +192,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSaleCampaigns } from '@/composables/useSaleCampaigns'
 import { getImageUrl } from '@/utils'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -244,7 +236,7 @@ const startTimer = () => {
   if (timerInterval) {
     clearInterval(timerInterval)
   }
-  
+
   timerInterval = setInterval(() => {
     if (currentCampaign.value) {
       timeRemaining.value = getCampaignTimeRemaining(currentCampaign.value)
@@ -286,8 +278,8 @@ const getStatusText = (status: string) => {
 
 const getMaxDiscount = () => {
   if (!currentCampaign.value?.sale_products) return 0
-  
-  const discounts = currentCampaign.value.sale_products.map(sp => 
+
+  const discounts = currentCampaign.value.sale_products.map(sp =>
     parseFloat(String(sp.discount_percentage || 0))
   )
   return Math.max(...discounts)
@@ -394,7 +386,7 @@ onUnmounted(() => {
   padding: 40px 0;
   margin-bottom: 40px;
   border-radius: 0 0 30px 30px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
 
 .campaign-badges {
@@ -577,7 +569,7 @@ onUnmounted(() => {
   background: white;
   border-radius: 15px;
   overflow: hidden;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
   height: 100%;
@@ -585,7 +577,7 @@ onUnmounted(() => {
 
 .product-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
 }
 
 .product-image {
@@ -723,34 +715,34 @@ onUnmounted(() => {
   .campaign-title {
     font-size: 2rem;
   }
-  
+
   .campaign-meta {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .timer-display {
     gap: 10px;
   }
-  
+
   .time-unit {
     min-width: 60px;
     padding: 10px 15px;
   }
-  
+
   .time-value {
     font-size: 1.5rem;
   }
-  
+
   .time-separator {
     font-size: 1.5rem;
   }
-  
+
   .section-header {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .products-summary {
     justify-content: center;
   }
@@ -760,36 +752,36 @@ onUnmounted(() => {
   .campaign-header {
     padding: 20px 0;
   }
-  
+
   .campaign-title {
     font-size: 1.5rem;
   }
-  
+
   .campaign-description {
     font-size: 1rem;
   }
-  
+
   .countdown-timer {
     padding: 20px;
   }
-  
+
   .countdown-timer h3 {
     font-size: 1.2rem;
   }
-  
+
   .timer-display {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .time-separator {
     display: none;
   }
-  
+
   .product-image {
     height: 150px;
   }
-  
+
   .product-info {
     padding: 15px;
   }

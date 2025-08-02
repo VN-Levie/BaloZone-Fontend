@@ -1,4 +1,5 @@
 <template>
+  <AdminLayout>
   <div class="admin-sale-campaigns">
     <div class="header-section">
       <div class="container-fluid">
@@ -29,10 +30,10 @@
               <label class="form-label">Tìm kiếm</label>
               <div class="search-box">
                 <i class="bi bi-search"></i>
-                <input 
+                <input
                   v-model="searchQuery"
                   @input="debouncedSearch"
-                  type="text" 
+                  type="text"
                   class="form-control"
                   placeholder="Tìm theo tên chiến dịch..."
                 />
@@ -95,7 +96,7 @@
               Tổng cộng: {{ pagination?.total || 0 }} chiến dịch
             </h5>
           </div>
-          
+
           <div class="table-responsive">
             <table class="table table-hover">
               <thead>
@@ -152,7 +153,7 @@
                   <td>
                     <div class="priority-display">
                       <div class="priority-bar">
-                        <div 
+                        <div
                           class="priority-fill"
                           :style="{ width: (campaign.priority || 0) + '%' }"
                         ></div>
@@ -168,21 +169,21 @@
                   </td>
                   <td>
                     <div class="action-buttons">
-                      <router-link 
+                      <router-link
                         :to="`/admin/sale-campaigns/${campaign.id}/edit`"
                         class="btn btn-sm btn-outline-primary"
                         title="Chỉnh sửa"
                       >
                         <i class="bi bi-pencil"></i>
                       </router-link>
-                      <router-link 
+                      <router-link
                         :to="`/admin/sale-campaigns/${campaign.id}/products`"
                         class="btn btn-sm btn-outline-info"
                         title="Quản lý sản phẩm"
                       >
                         <i class="bi bi-box"></i>
                       </router-link>
-                      <button 
+                      <button
                         @click="deleteCampaign(campaign)"
                         class="btn btn-sm btn-outline-danger"
                         title="Xóa"
@@ -201,23 +202,23 @@
             <nav aria-label="Pagination">
               <ul class="pagination justify-content-center">
                 <li class="page-item" :class="{ disabled: pagination.current_page === 1 }">
-                  <button 
-                    class="page-link" 
+                  <button
+                    class="page-link"
                     @click="changePage(pagination.current_page - 1)"
                     :disabled="pagination.current_page === 1"
                   >
                     <i class="bi bi-chevron-left"></i>
                   </button>
                 </li>
-                
-                <li 
-                  v-for="page in getPageNumbers()" 
+
+                <li
+                  v-for="page in getPageNumbers()"
                   :key="page"
-                  class="page-item" 
+                  class="page-item"
                   :class="{ active: page === pagination.current_page }"
                 >
-                  <button 
-                    class="page-link" 
+                  <button
+                    class="page-link"
                     @click="changePage(Number(page))"
                     v-if="page !== '...'"
                   >
@@ -225,10 +226,10 @@
                   </button>
                   <span class="page-link" v-else>...</span>
                 </li>
-                
+
                 <li class="page-item" :class="{ disabled: pagination.current_page === pagination.last_page }">
-                  <button 
-                    class="page-link" 
+                  <button
+                    class="page-link"
                     @click="changePage(pagination.current_page + 1)"
                     :disabled="pagination.current_page === pagination.last_page"
                   >
@@ -243,11 +244,11 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div 
-      class="modal fade" 
-      id="deleteModal" 
-      tabindex="-1" 
-      aria-labelledby="deleteModalLabel" 
+    <div
+      class="modal fade"
+      id="deleteModal"
+      tabindex="-1"
+      aria-labelledby="deleteModalLabel"
       aria-hidden="true"
     >
       <div class="modal-dialog">
@@ -265,9 +266,9 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-            <button 
-              type="button" 
-              class="btn btn-danger" 
+            <button
+              type="button"
+              class="btn btn-danger"
               @click="confirmDelete"
               :disabled="isDeleting"
             >
@@ -278,13 +279,14 @@
         </div>
       </div>
     </div>
-  </div>
+  </div></AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useSaleCampaigns } from '@/composables/useSaleCampaigns'
 import { useToast } from '@/composables/useToast'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 // Debounce utility
 const debounce = (func: Function, wait: number) => {
@@ -326,7 +328,7 @@ const fetchCampaigns = async () => {
     page: currentPage.value,
     per_page: 15
   }
-  
+
   if (searchQuery.value) filters.search = searchQuery.value
   if (statusFilter.value) filters.status = statusFilter.value
   if (sortBy.value) filters.sort_by = sortBy.value
@@ -356,11 +358,11 @@ const changePage = (page: number) => {
 
 const getPageNumbers = () => {
   if (!pagination.value) return []
-  
+
   const current = pagination.value.current_page
   const last = pagination.value.last_page
   const pages: (number | string)[] = []
-  
+
   if (last <= 7) {
     for (let i = 1; i <= last; i++) {
       pages.push(i)
@@ -382,7 +384,7 @@ const getPageNumbers = () => {
       pages.push(last)
     }
   }
-  
+
   return pages
 }
 
@@ -428,16 +430,16 @@ const deleteCampaign = (campaign: any) => {
 
 const confirmDelete = async () => {
   if (!campaignToDelete.value) return
-  
+
   isDeleting.value = true
   try {
     await deleteSaleCampaign(campaignToDelete.value.id)
     showToast('Xóa chiến dịch thành công!', 'success')
-    
+
     // Hide modal
     const modal = (window as any).bootstrap.Modal.getInstance(document.getElementById('deleteModal'))
     modal.hide()
-    
+
     // Refresh data
     await fetchCampaigns()
   } catch (err) {
@@ -644,19 +646,19 @@ onMounted(() => {
   .header-section .row {
     text-align: center;
   }
-  
+
   .header-section .col-auto {
     margin-top: 1rem;
   }
-  
+
   .action-buttons {
     flex-direction: column;
   }
-  
+
   .campaign-info {
     max-width: 200px;
   }
-  
+
   .table-responsive {
     font-size: 0.875rem;
   }

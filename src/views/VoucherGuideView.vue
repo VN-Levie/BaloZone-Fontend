@@ -1,455 +1,457 @@
 <template>
-    <div class="voucher-guide-page">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb-section">
-            <div class="container">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <router-link to="/">Trang chủ</router-link>
-                        </li>
-                        <li class="breadcrumb-item active">Hướng dẫn sử dụng mã voucher</li>
-                    </ol>
-                </nav>
+    <UserLayout>
+        <div class="voucher-guide-page">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb-section">
+                <div class="container">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <router-link to="/">Trang chủ</router-link>
+                            </li>
+                            <li class="breadcrumb-item active">Hướng dẫn sử dụng mã voucher</li>
+                        </ol>
+                    </nav>
+                </div>
             </div>
-        </div>
 
-        <!-- Main Content -->
-        <div class="container py-5">
-            <div class="row">
-                <div class="col-lg-8 mx-auto">
-                    <div class="voucher-content">
-                        <h1 class="page-title text-center mb-5">Hướng Dẫn Sử Dụng Mã Voucher</h1>
+            <!-- Main Content -->
+            <div class="container py-5">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="voucher-content">
+                            <h1 class="page-title text-center mb-5">Hướng Dẫn Sử Dụng Mã Voucher</h1>
 
-                        <div class="voucher-intro">
-                            <div class="alert alert-info">
-                                <h5><i class="bi bi-gift me-2"></i>Tiết kiệm thông minh</h5>
-                                <p class="mb-0">Voucher là cách tuyệt vời để tiết kiệm chi phí khi mua sắm tại BaloZone. Hãy tham khảo hướng dẫn chi tiết để sử dụng voucher hiệu quả nhất!</p>
-                            </div>
-                        </div>
-
-                        <!-- Loại voucher -->
-                        <div class="guide-section">
-                            <h3 class="section-title">
-                                <i class="bi bi-tags text-primary me-2"></i>
-                                Các Loại Voucher Tại BaloZone
-                            </h3>
-
-                            <div class="voucher-types">
-                                <div class="voucher-type-card">
-                                    <div class="voucher-icon discount-voucher">
-                                        <i class="bi bi-percent"></i>
-                                    </div>
-                                    <div class="voucher-info">
-                                        <h5>Voucher Giảm Giá (%)</h5>
-                                        <p>Giảm một phần trăm nhất định trên tổng giá trị đơn hàng</p>
-                                        <div class="voucher-example">
-                                            <strong>Ví dụ:</strong> Giảm 20% tối đa 200.000đ cho đơn hàng từ 1.000.000đ
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="voucher-type-card">
-                                    <div class="voucher-icon amount-voucher">
-                                        <i class="bi bi-cash"></i>
-                                    </div>
-                                    <div class="voucher-info">
-                                        <h5>Voucher Giảm Tiền Cố Định</h5>
-                                        <p>Giảm một số tiền cố định cho đơn hàng</p>
-                                        <div class="voucher-example">
-                                            <strong>Ví dụ:</strong> Giảm 100.000đ cho đơn hàng từ 500.000đ
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="voucher-type-card">
-                                    <div class="voucher-icon shipping-voucher">
-                                        <i class="bi bi-truck"></i>
-                                    </div>
-                                    <div class="voucher-info">
-                                        <h5>Voucher Miễn Phí Vận Chuyển</h5>
-                                        <p>Miễn phí phí vận chuyển cho đơn hàng</p>
-                                        <div class="voucher-example">
-                                            <strong>Ví dụ:</strong> Miễn phí ship cho đơn hàng từ 300.000đ
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="voucher-type-card">
-                                    <div class="voucher-icon newbie-voucher">
-                                        <i class="bi bi-person-plus"></i>
-                                    </div>
-                                    <div class="voucher-info">
-                                        <h5>Voucher Khách Hàng Mới</h5>
-                                        <p>Ưu đãi đặc biệt dành cho khách hàng đăng ký lần đầu</p>
-                                        <div class="voucher-example">
-                                            <strong>Ví dụ:</strong> Giảm 15% cho đơn hàng đầu tiên
-                                        </div>
-                                    </div>
+                            <div class="voucher-intro">
+                                <div class="alert alert-info">
+                                    <h5><i class="bi bi-gift me-2"></i>Tiết kiệm thông minh</h5>
+                                    <p class="mb-0">Voucher là cách tuyệt vời để tiết kiệm chi phí khi mua sắm tại BaloZone. Hãy tham khảo hướng dẫn chi tiết để sử dụng voucher hiệu quả nhất!</p>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Cách sử dụng -->
-                        <div class="guide-section">
-                            <h3 class="section-title">
-                                <i class="bi bi-list-check text-success me-2"></i>
-                                Cách Sử Dụng Voucher
-                            </h3>
+                            <!-- Loại voucher -->
+                            <div class="guide-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-tags text-primary me-2"></i>
+                                    Các Loại Voucher Tại BaloZone
+                                </h3>
 
-                            <div class="usage-steps">
-                                <div class="step-item">
-                                    <div class="step-number">1</div>
-                                    <div class="step-content">
-                                        <h6>Thêm sản phẩm vào giỏ hàng</h6>
-                                        <p>Chọn sản phẩm yêu thích và thêm vào giỏ hàng như bình thường</p>
-                                    </div>
-                                </div>
-
-                                <div class="step-item">
-                                    <div class="step-number">2</div>
-                                    <div class="step-content">
-                                        <h6>Vào trang thanh toán</h6>
-                                        <p>Click "Thanh toán" từ giỏ hàng để chuyển đến trang xử lý đơn hàng</p>
-                                    </div>
-                                </div>
-
-                                <div class="step-item">
-                                    <div class="step-number">3</div>
-                                    <div class="step-content">
-                                        <h6>Nhập mã voucher</h6>
-                                        <p>Tìm ô "Mã giảm giá" và nhập chính xác mã voucher của bạn</p>
-                                        <div class="input-example">
-                                            <div class="example-input">
-                                                <input type="text" placeholder="VD: BALOZONE20" readonly>
-                                                <button class="apply-btn">Áp dụng</button>
-                                            </div>
+                                <div class="voucher-types">
+                                    <div class="voucher-type-card">
+                                        <div class="voucher-icon discount-voucher">
+                                            <i class="bi bi-percent"></i>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="step-item">
-                                    <div class="step-number">4</div>
-                                    <div class="step-content">
-                                        <h6>Kiểm tra giảm giá</h6>
-                                        <p>Hệ thống sẽ tự động tính toán và hiển thị số tiền được giảm</p>
-                                    </div>
-                                </div>
-
-                                <div class="step-item">
-                                    <div class="step-number">5</div>
-                                    <div class="step-content">
-                                        <h6>Hoàn tất thanh toán</h6>
-                                        <p>Xác nhận thông tin và hoàn tất việc thanh toán với giá đã giảm</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Lưu ý khi sử dụng -->
-                        <div class="guide-section">
-                            <h3 class="section-title">
-                                <i class="bi bi-exclamation-triangle text-warning me-2"></i>
-                                Lưu Ý Quan Trọng
-                            </h3>
-
-                            <div class="important-notes">
-                                <div class="note-item">
-                                    <div class="note-icon">
-                                        <i class="bi bi-calendar-x"></i>
-                                    </div>
-                                    <div class="note-content">
-                                        <h6>Kiểm tra hạn sử dụng</h6>
-                                        <p>Mỗi voucher có thời hạn sử dụng cụ thể. Voucher hết hạn sẽ không thể áp dụng được.</p>
-                                    </div>
-                                </div>
-
-                                <div class="note-item">
-                                    <div class="note-icon">
-                                        <i class="bi bi-cash-stack"></i>
-                                    </div>
-                                    <div class="note-content">
-                                        <h6>Giá trị đơn hàng tối thiểu</h6>
-                                        <p>Nhiều voucher yêu cầu đơn hàng phải đạt giá trị tối thiểu để có thể sử dụng.</p>
-                                    </div>
-                                </div>
-
-                                <div class="note-item">
-                                    <div class="note-icon">
-                                        <i class="bi bi-person"></i>
-                                    </div>
-                                    <div class="note-content">
-                                        <h6>Số lần sử dụng</h6>
-                                        <p>Mỗi voucher chỉ có thể sử dụng một lần cho mỗi tài khoản khách hàng.</p>
-                                    </div>
-                                </div>
-
-                                <div class="note-item">
-                                    <div class="note-icon">
-                                        <i class="bi bi-stack"></i>
-                                    </div>
-                                    <div class="note-content">
-                                        <h6>Không kết hợp voucher</h6>
-                                        <p>Không thể sử dụng nhiều voucher cùng lúc cho một đơn hàng.</p>
-                                    </div>
-                                </div>
-
-                                <div class="note-item">
-                                    <div class="note-icon">
-                                        <i class="bi bi-bag-x"></i>
-                                    </div>
-                                    <div class="note-content">
-                                        <h6>Sản phẩm áp dụng</h6>
-                                        <p>Một số voucher chỉ áp dụng cho nhóm sản phẩm hoặc thương hiệu cụ thể.</p>
-                                    </div>
-                                </div>
-
-                                <div class="note-item">
-                                    <div class="note-icon">
-                                        <i class="bi bi-arrow-return-left"></i>
-                                    </div>
-                                    <div class="note-content">
-                                        <h6>Chính sách hoàn trả</h6>
-                                        <p>Khi hoàn trả sản phẩm, voucher sẽ không được hoàn lại cho khách hàng.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Cách nhận voucher -->
-                        <div class="guide-section">
-                            <h3 class="section-title">
-                                <i class="bi bi-gift text-info me-2"></i>
-                                Cách Nhận Voucher Miễn Phí
-                            </h3>
-
-                            <div class="voucher-sources">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="source-card">
-                                            <i class="bi bi-newspaper source-icon"></i>
-                                            <h6>Đăng ký nhận tin</h6>
-                                            <p>Đăng ký email để nhận voucher và thông báo khuyến mãi mới nhất</p>
-                                            <div class="source-action">
-                                                <a href="#" class="btn btn-outline-primary btn-sm">Đăng ký ngay</a>
+                                        <div class="voucher-info">
+                                            <h5>Voucher Giảm Giá (%)</h5>
+                                            <p>Giảm một phần trăm nhất định trên tổng giá trị đơn hàng</p>
+                                            <div class="voucher-example">
+                                                <strong>Ví dụ:</strong> Giảm 20% tối đa 200.000đ cho đơn hàng từ 1.000.000đ
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <div class="source-card">
-                                            <i class="bi bi-facebook source-icon"></i>
-                                            <h6>Follow mạng xã hội</h6>
-                                            <p>Theo dõi fanpage Facebook để nhận voucher độc quyền</p>
-                                            <div class="source-action">
-                                                <a href="#" class="btn btn-outline-primary btn-sm">Follow ngay</a>
+                                    <div class="voucher-type-card">
+                                        <div class="voucher-icon amount-voucher">
+                                            <i class="bi bi-cash"></i>
+                                        </div>
+                                        <div class="voucher-info">
+                                            <h5>Voucher Giảm Tiền Cố Định</h5>
+                                            <p>Giảm một số tiền cố định cho đơn hàng</p>
+                                            <div class="voucher-example">
+                                                <strong>Ví dụ:</strong> Giảm 100.000đ cho đơn hàng từ 500.000đ
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <div class="source-card">
-                                            <i class="bi bi-person-plus source-icon"></i>
-                                            <h6>Đăng ký tài khoản</h6>
-                                            <p>Khách hàng mới sẽ nhận voucher chào mừng 15% ngay khi đăng ký</p>
-                                            <div class="source-action">
-                                                <a href="#" class="btn btn-outline-primary btn-sm">Đăng ký</a>
+                                    <div class="voucher-type-card">
+                                        <div class="voucher-icon shipping-voucher">
+                                            <i class="bi bi-truck"></i>
+                                        </div>
+                                        <div class="voucher-info">
+                                            <h5>Voucher Miễn Phí Vận Chuyển</h5>
+                                            <p>Miễn phí phí vận chuyển cho đơn hàng</p>
+                                            <div class="voucher-example">
+                                                <strong>Ví dụ:</strong> Miễn phí ship cho đơn hàng từ 300.000đ
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <div class="source-card">
-                                            <i class="bi bi-calendar-event source-icon"></i>
-                                            <h6>Sự kiện đặc biệt</h6>
-                                            <p>Nhận voucher trong các dịp lễ, tết và sinh nhật BaloZone</p>
-                                            <div class="source-action">
-                                                <a href="#" class="btn btn-outline-primary btn-sm">Xem sự kiện</a>
+                                    <div class="voucher-type-card">
+                                        <div class="voucher-icon newbie-voucher">
+                                            <i class="bi bi-person-plus"></i>
+                                        </div>
+                                        <div class="voucher-info">
+                                            <h5>Voucher Khách Hàng Mới</h5>
+                                            <p>Ưu đãi đặc biệt dành cho khách hàng đăng ký lần đầu</p>
+                                            <div class="voucher-example">
+                                                <strong>Ví dụ:</strong> Giảm 15% cho đơn hàng đầu tiên
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Voucher hiện có -->
-                        <div class="guide-section">
-                            <h3 class="section-title">
-                                <i class="bi bi-lightning text-warning me-2"></i>
-                                Voucher Đang Có Hiệu Lực
-                            </h3>
+                            <!-- Cách sử dụng -->
+                            <div class="guide-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-list-check text-success me-2"></i>
+                                    Cách Sử Dụng Voucher
+                                </h3>
 
-                            <div class="current-vouchers">
-                                <!-- Loading state -->
-                                <div v-if="isLoading" class="text-center py-4">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Đang tải...</span>
-                                    </div>
-                                    <p class="mt-2 text-muted">Đang tải danh sách voucher...</p>
-                                </div>
-
-                                <!-- Error state -->
-                                <div v-else-if="error" class="alert alert-warning text-center">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>
-                                    {{ error }}
-                                    <button @click="fetchVouchers" class="btn btn-outline-warning btn-sm ms-2">
-                                        Thử lại
-                                    </button>
-                                </div>
-
-                                <!-- Vouchers list -->
-                                <template v-else-if="vouchers.length > 0">
-                                    <div v-for="(voucher, index) in vouchers" :key="voucher.id" class="voucher-card" :class="{ 'featured': shouldShowHotBadge(voucher, index) }">
-                                        <div class="voucher-header">
-                                            <div v-if="shouldShowHotBadge(voucher, index)" class="voucher-badge">
-                                                {{ index === 0 ? 'HOT' : 'SALE' }}
-                                            </div>
-                                            <div class="voucher-title">
-                                                <i :class="getVoucherIcon(voucher)" class="me-2"></i>
-                                                {{ voucher.code }}
-                                            </div>
+                                <div class="usage-steps">
+                                    <div class="step-item">
+                                        <div class="step-number">1</div>
+                                        <div class="step-content">
+                                            <h6>Thêm sản phẩm vào giỏ hàng</h6>
+                                            <p>Chọn sản phẩm yêu thích và thêm vào giỏ hàng như bình thường</p>
                                         </div>
-                                        <div class="voucher-details">
-                                            <h6>{{ getVoucherTitle(voucher) }}</h6>
-                                            <!-- <p>{{ getVoucherDescription() }}</p> -->
-                                            <p>{{ voucher.description }}</p>
-                                            <div class="voucher-meta">
-                                                <div class="voucher-expiry">
-                                                    <i class="bi bi-clock me-1"></i>
-                                                    <span>Hết hạn: {{ formatDate(voucher.end_date) }}</span>
-                                                </div>
-                                                <div class="voucher-quantity">
-                                                    <i class="bi bi-box me-1"></i>
-                                                    <span>Còn {{ voucher.quantity }} mã</span>
+                                    </div>
+
+                                    <div class="step-item">
+                                        <div class="step-number">2</div>
+                                        <div class="step-content">
+                                            <h6>Vào trang thanh toán</h6>
+                                            <p>Click "Thanh toán" từ giỏ hàng để chuyển đến trang xử lý đơn hàng</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="step-item">
+                                        <div class="step-number">3</div>
+                                        <div class="step-content">
+                                            <h6>Nhập mã voucher</h6>
+                                            <p>Tìm ô "Mã giảm giá" và nhập chính xác mã voucher của bạn</p>
+                                            <div class="input-example">
+                                                <div class="example-input">
+                                                    <input type="text" placeholder="VD: BALOZONE20" readonly>
+                                                    <button class="apply-btn">Áp dụng</button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="voucher-action">
-                                            <button @click="copyVoucherCode(voucher.code)" class="btn" :class="shouldShowHotBadge(voucher, index) ? 'btn-primary' : 'btn-outline-primary'" :disabled="isCopying">
-                                                <i v-if="isCopying && copiedCode === voucher.code" class="bi bi-check-lg me-1"></i>
-                                                <i v-else class="bi bi-clipboard me-1"></i>
-                                                {{ isCopying && copiedCode === voucher.code ? 'Đã copy!' : 'Copy mã' }}
-                                            </button>
+                                    </div>
+
+                                    <div class="step-item">
+                                        <div class="step-number">4</div>
+                                        <div class="step-content">
+                                            <h6>Kiểm tra giảm giá</h6>
+                                            <p>Hệ thống sẽ tự động tính toán và hiển thị số tiền được giảm</p>
                                         </div>
                                     </div>
-                                </template>
 
-                                <!-- Empty state -->
-                                <div v-else class="alert alert-info text-center">
-                                    <i class="bi bi-gift me-2"></i>
-                                    Hiện tại chưa có voucher nào. Vui lòng quay lại sau!
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Xử lý lỗi -->
-                        <div class="guide-section">
-                            <h3 class="section-title">
-                                <i class="bi bi-bug text-danger me-2"></i>
-                                Xử Lý Lỗi Thường Gặp
-                            </h3>
-
-                            <div class="error-solutions">
-                                <div class="error-item">
-                                    <div class="error-title">
-                                        <i class="bi bi-x-circle text-danger me-2"></i>
-                                        <span>"Mã voucher không hợp lệ"</span>
-                                    </div>
-                                    <div class="error-solutions-list">
-                                        <ul>
-                                            <li>Kiểm tra lại chính tả của mã voucher</li>
-                                            <li>Đảm bảo không có khoảng trắng thừa</li>
-                                            <li>Xác nhận mã voucher chưa hết hạn</li>
-                                            <li>Liên hệ hotline để được hỗ trợ</li>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div class="error-item">
-                                    <div class="error-title">
-                                        <i class="bi bi-x-circle text-danger me-2"></i>
-                                        <span>"Đơn hàng không đủ điều kiện"</span>
-                                    </div>
-                                    <div class="error-solutions-list">
-                                        <ul>
-                                            <li>Kiểm tra giá trị đơn hàng tối thiểu</li>
-                                            <li>Xem xét sản phẩm có được áp dụng voucher không</li>
-                                            <li>Thêm sản phẩm để đạt giá trị yêu cầu</li>
-                                            <li>Chọn voucher phù hợp với đơn hàng hiện tại</li>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div class="error-item">
-                                    <div class="error-title">
-                                        <i class="bi bi-x-circle text-danger me-2"></i>
-                                        <span>"Voucher đã được sử dụng"</span>
-                                    </div>
-                                    <div class="error-solutions-list">
-                                        <ul>
-                                            <li>Mỗi voucher chỉ sử dụng được một lần</li>
-                                            <li>Kiểm tra lịch sử đơn hàng đã dùng voucher này chưa</li>
-                                            <li>Sử dụng voucher khác hoặc tìm voucher mới</li>
-                                            <li>Đăng ký nhận thông báo voucher mới</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Hỗ trợ -->
-                        <div class="guide-section">
-                            <h3 class="section-title">
-                                <i class="bi bi-headset text-primary me-2"></i>
-                                Hỗ Trợ Voucher
-                            </h3>
-                            <div class="support-info">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="support-card">
-                                            <i class="bi bi-telephone support-icon"></i>
-                                            <h6>Hotline 24/7</h6>
-                                            <p class="support-detail">1900 6750</p>
-                                            <small>Hỗ trợ voucher miễn phí</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="support-card">
-                                            <i class="bi bi-chat-dots support-icon"></i>
-                                            <h6>Live Chat</h6>
-                                            <p class="support-detail">Tư vấn trực tiếp</p>
-                                            <small>8:00 - 22:00 hàng ngày</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="support-card">
-                                            <i class="bi bi-envelope support-icon"></i>
-                                            <h6>Email</h6>
-                                            <p class="support-detail">voucher@balozone.vn</p>
-                                            <small>Phản hồi trong 2 giờ</small>
+                                    <div class="step-item">
+                                        <div class="step-number">5</div>
+                                        <div class="step-content">
+                                            <h6>Hoàn tất thanh toán</h6>
+                                            <p>Xác nhận thông tin và hoàn tất việc thanh toán với giá đã giảm</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="cta-section text-center mt-5">
-                            <div class="alert alert-success">
-                                <h5><i class="bi bi-bag-check me-2"></i>Sẵn sàng mua sắm với voucher?</h5>
-                                <p class="mb-3">Khám phá bộ sưu tập vali, balo đẳng cấp với giá ưu đãi</p>
-                                <router-link to="/" class="btn btn-success me-3">
-                                    <i class="bi bi-shop me-2"></i>Mua sắm ngay
-                                </router-link>
-                                <router-link to="/contact" class="btn btn-outline-success">
-                                    <i class="bi bi-telephone me-2"></i>Liên hệ hỗ trợ
-                                </router-link>
+                            <!-- Lưu ý khi sử dụng -->
+                            <div class="guide-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                    Lưu Ý Quan Trọng
+                                </h3>
+
+                                <div class="important-notes">
+                                    <div class="note-item">
+                                        <div class="note-icon">
+                                            <i class="bi bi-calendar-x"></i>
+                                        </div>
+                                        <div class="note-content">
+                                            <h6>Kiểm tra hạn sử dụng</h6>
+                                            <p>Mỗi voucher có thời hạn sử dụng cụ thể. Voucher hết hạn sẽ không thể áp dụng được.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="note-item">
+                                        <div class="note-icon">
+                                            <i class="bi bi-cash-stack"></i>
+                                        </div>
+                                        <div class="note-content">
+                                            <h6>Giá trị đơn hàng tối thiểu</h6>
+                                            <p>Nhiều voucher yêu cầu đơn hàng phải đạt giá trị tối thiểu để có thể sử dụng.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="note-item">
+                                        <div class="note-icon">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        <div class="note-content">
+                                            <h6>Số lần sử dụng</h6>
+                                            <p>Mỗi voucher chỉ có thể sử dụng một lần cho mỗi tài khoản khách hàng.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="note-item">
+                                        <div class="note-icon">
+                                            <i class="bi bi-stack"></i>
+                                        </div>
+                                        <div class="note-content">
+                                            <h6>Không kết hợp voucher</h6>
+                                            <p>Không thể sử dụng nhiều voucher cùng lúc cho một đơn hàng.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="note-item">
+                                        <div class="note-icon">
+                                            <i class="bi bi-bag-x"></i>
+                                        </div>
+                                        <div class="note-content">
+                                            <h6>Sản phẩm áp dụng</h6>
+                                            <p>Một số voucher chỉ áp dụng cho nhóm sản phẩm hoặc thương hiệu cụ thể.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="note-item">
+                                        <div class="note-icon">
+                                            <i class="bi bi-arrow-return-left"></i>
+                                        </div>
+                                        <div class="note-content">
+                                            <h6>Chính sách hoàn trả</h6>
+                                            <p>Khi hoàn trả sản phẩm, voucher sẽ không được hoàn lại cho khách hàng.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cách nhận voucher -->
+                            <div class="guide-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-gift text-info me-2"></i>
+                                    Cách Nhận Voucher Miễn Phí
+                                </h3>
+
+                                <div class="voucher-sources">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="source-card">
+                                                <i class="bi bi-newspaper source-icon"></i>
+                                                <h6>Đăng ký nhận tin</h6>
+                                                <p>Đăng ký email để nhận voucher và thông báo khuyến mãi mới nhất</p>
+                                                <div class="source-action">
+                                                    <a href="#" class="btn btn-outline-primary btn-sm">Đăng ký ngay</a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="source-card">
+                                                <i class="bi bi-facebook source-icon"></i>
+                                                <h6>Follow mạng xã hội</h6>
+                                                <p>Theo dõi fanpage Facebook để nhận voucher độc quyền</p>
+                                                <div class="source-action">
+                                                    <a href="#" class="btn btn-outline-primary btn-sm">Follow ngay</a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="source-card">
+                                                <i class="bi bi-person-plus source-icon"></i>
+                                                <h6>Đăng ký tài khoản</h6>
+                                                <p>Khách hàng mới sẽ nhận voucher chào mừng 15% ngay khi đăng ký</p>
+                                                <div class="source-action">
+                                                    <a href="#" class="btn btn-outline-primary btn-sm">Đăng ký</a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="source-card">
+                                                <i class="bi bi-calendar-event source-icon"></i>
+                                                <h6>Sự kiện đặc biệt</h6>
+                                                <p>Nhận voucher trong các dịp lễ, tết và sinh nhật BaloZone</p>
+                                                <div class="source-action">
+                                                    <a href="#" class="btn btn-outline-primary btn-sm">Xem sự kiện</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Voucher hiện có -->
+                            <div class="guide-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-lightning text-warning me-2"></i>
+                                    Voucher Đang Có Hiệu Lực
+                                </h3>
+
+                                <div class="current-vouchers">
+                                    <!-- Loading state -->
+                                    <div v-if="isLoading" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Đang tải...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">Đang tải danh sách voucher...</p>
+                                    </div>
+
+                                    <!-- Error state -->
+                                    <div v-else-if="error" class="alert alert-warning text-center">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        {{ error }}
+                                        <button @click="fetchVouchers" class="btn btn-outline-warning btn-sm ms-2">
+                                            Thử lại
+                                        </button>
+                                    </div>
+
+                                    <!-- Vouchers list -->
+                                    <template v-else-if="vouchers.length > 0">
+                                        <div v-for="(voucher, index) in vouchers" :key="voucher.id" class="voucher-card" :class="{ 'featured': shouldShowHotBadge(voucher, index) }">
+                                            <div class="voucher-header">
+                                                <div v-if="shouldShowHotBadge(voucher, index)" class="voucher-badge">
+                                                    {{ index === 0 ? 'HOT' : 'SALE' }}
+                                                </div>
+                                                <div class="voucher-title">
+                                                    <i :class="getVoucherIcon(voucher)" class="me-2"></i>
+                                                    {{ voucher.code }}
+                                                </div>
+                                            </div>
+                                            <div class="voucher-details">
+                                                <h6>{{ getVoucherTitle(voucher) }}</h6>
+                                                <!-- <p>{{ getVoucherDescription() }}</p> -->
+                                                <p>{{ voucher.description }}</p>
+                                                <div class="voucher-meta">
+                                                    <div class="voucher-expiry">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        <span>Hết hạn: {{ formatDate(voucher.end_date) }}</span>
+                                                    </div>
+                                                    <div class="voucher-quantity">
+                                                        <i class="bi bi-box me-1"></i>
+                                                        <span>Còn {{ voucher.quantity }} mã</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="voucher-action">
+                                                <button @click="copyVoucherCode(voucher.code)" class="btn" :class="shouldShowHotBadge(voucher, index) ? 'btn-primary' : 'btn-outline-primary'" :disabled="isCopying">
+                                                    <i v-if="isCopying && copiedCode === voucher.code" class="bi bi-check-lg me-1"></i>
+                                                    <i v-else class="bi bi-clipboard me-1"></i>
+                                                    {{ isCopying && copiedCode === voucher.code ? 'Đã copy!' : 'Copy mã' }}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <!-- Empty state -->
+                                    <div v-else class="alert alert-info text-center">
+                                        <i class="bi bi-gift me-2"></i>
+                                        Hiện tại chưa có voucher nào. Vui lòng quay lại sau!
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Xử lý lỗi -->
+                            <div class="guide-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-bug text-danger me-2"></i>
+                                    Xử Lý Lỗi Thường Gặp
+                                </h3>
+
+                                <div class="error-solutions">
+                                    <div class="error-item">
+                                        <div class="error-title">
+                                            <i class="bi bi-x-circle text-danger me-2"></i>
+                                            <span>"Mã voucher không hợp lệ"</span>
+                                        </div>
+                                        <div class="error-solutions-list">
+                                            <ul>
+                                                <li>Kiểm tra lại chính tả của mã voucher</li>
+                                                <li>Đảm bảo không có khoảng trắng thừa</li>
+                                                <li>Xác nhận mã voucher chưa hết hạn</li>
+                                                <li>Liên hệ hotline để được hỗ trợ</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="error-item">
+                                        <div class="error-title">
+                                            <i class="bi bi-x-circle text-danger me-2"></i>
+                                            <span>"Đơn hàng không đủ điều kiện"</span>
+                                        </div>
+                                        <div class="error-solutions-list">
+                                            <ul>
+                                                <li>Kiểm tra giá trị đơn hàng tối thiểu</li>
+                                                <li>Xem xét sản phẩm có được áp dụng voucher không</li>
+                                                <li>Thêm sản phẩm để đạt giá trị yêu cầu</li>
+                                                <li>Chọn voucher phù hợp với đơn hàng hiện tại</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="error-item">
+                                        <div class="error-title">
+                                            <i class="bi bi-x-circle text-danger me-2"></i>
+                                            <span>"Voucher đã được sử dụng"</span>
+                                        </div>
+                                        <div class="error-solutions-list">
+                                            <ul>
+                                                <li>Mỗi voucher chỉ sử dụng được một lần</li>
+                                                <li>Kiểm tra lịch sử đơn hàng đã dùng voucher này chưa</li>
+                                                <li>Sử dụng voucher khác hoặc tìm voucher mới</li>
+                                                <li>Đăng ký nhận thông báo voucher mới</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hỗ trợ -->
+                            <div class="guide-section">
+                                <h3 class="section-title">
+                                    <i class="bi bi-headset text-primary me-2"></i>
+                                    Hỗ Trợ Voucher
+                                </h3>
+                                <div class="support-info">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="support-card">
+                                                <i class="bi bi-telephone support-icon"></i>
+                                                <h6>Hotline 24/7</h6>
+                                                <p class="support-detail">1900 6750</p>
+                                                <small>Hỗ trợ voucher miễn phí</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="support-card">
+                                                <i class="bi bi-chat-dots support-icon"></i>
+                                                <h6>Live Chat</h6>
+                                                <p class="support-detail">Tư vấn trực tiếp</p>
+                                                <small>8:00 - 22:00 hàng ngày</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="support-card">
+                                                <i class="bi bi-envelope support-icon"></i>
+                                                <h6>Email</h6>
+                                                <p class="support-detail">voucher@balozone.vn</p>
+                                                <small>Phản hồi trong 2 giờ</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="cta-section text-center mt-5">
+                                <div class="alert alert-success">
+                                    <h5><i class="bi bi-bag-check me-2"></i>Sẵn sàng mua sắm với voucher?</h5>
+                                    <p class="mb-3">Khám phá bộ sưu tập vali, balo đẳng cấp với giá ưu đãi</p>
+                                    <router-link to="/" class="btn btn-success me-3">
+                                        <i class="bi bi-shop me-2"></i>Mua sắm ngay
+                                    </router-link>
+                                    <router-link to="/contact" class="btn btn-outline-success">
+                                        <i class="bi bi-telephone me-2"></i>Liên hệ hỗ trợ
+                                    </router-link>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -457,6 +459,7 @@ import { ref, onMounted } from 'vue'
 import { vouchersApi } from '@/services/api'
 import { useToast } from '@/composables/useToast'
 import type { Voucher } from '@/types'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 // Meta information for SEO
 document.title = 'Hướng Dẫn Sử Dụng Mã Voucher - BaloZone.vn'

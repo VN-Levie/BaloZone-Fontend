@@ -1,271 +1,258 @@
 <template>
-  <div class="orders-page" style="background:linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); min-height:100vh; padding: 2rem 0;">
-    <div class="container-fluid px-4">
-      <Breadcrumb :items="breadcrumbItems" class="mb-4" />
-      
-      <div class="page-header mb-4">
-        <h1 class="page-title">
-          <i class="bi bi-box-seam me-3"></i>
-          Đơn hàng của tôi
-        </h1>
-        <p class="page-subtitle">Theo dõi và quản lý tất cả đơn hàng của bạn</p>
-      </div>
-      
-      <div class="row">
-        <!-- Filters Sidebar -->
-        <div class="col-lg-3 col-md-4 mb-4">
-          <div class="filters-card">
-            <div class="filters-header">
-              <h5 class="filters-title">
-                <i class="bi bi-funnel me-2"></i>
-                Bộ lọc
-              </h5>
-            </div>
-            <div class="filters-body">
-              <div class="filter-group">
-                <label class="filter-label">
-                  <i class="bi bi-clipboard-check me-2"></i>
-                  Trạng thái đơn hàng
-                </label>
-                <select v-model="selectedStatus" class="filter-select">
-                  <option value="">Tất cả trạng thái</option>
-                  <option value="pending">Chờ xử lý</option>
-                  <option value="confirmed">Đã xác nhận</option>
-                  <option value="shipped">Đang vận chuyển</option>
-                  <option value="delivered">Đã giao hàng</option>
-                  <option value="cancelled">Đã hủy</option>
-                </select>
-              </div>
-              
-              <div class="filter-group">
-                <label class="filter-label">
-                  <i class="bi bi-calendar-range me-2"></i>
-                  Khoảng thời gian
-                </label>
-                <select v-model="selectedDateRange" class="filter-select">
-                  <option value="">Tất cả thời gian</option>
-                  <option value="7">7 ngày qua</option>
-                  <option value="30">30 ngày qua</option>
-                  <option value="90">3 tháng qua</option>
-                </select>
-              </div>
-              
-              <button 
-                v-if="selectedStatus || selectedDateRange"
-                @click="clearFilters"
-                class="btn-clear-filters"
-              >
-                <i class="bi bi-x-circle me-2"></i>
-                Xóa bộ lọc
-              </button>
-            </div>
-          </div>
+  <UserLayout>
+    <div class="orders-page" style="background:linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); min-height:100vh; padding: 2rem 0;">
+      <div class="container-fluid px-4">
+        <Breadcrumb :items="breadcrumbItems" class="mb-4" />
+
+        <div class="page-header mb-4">
+          <h1 class="page-title">
+            <i class="bi bi-box-seam me-3"></i>
+            Đơn hàng của tôi
+          </h1>
+          <p class="page-subtitle">Theo dõi và quản lý tất cả đơn hàng của bạn</p>
         </div>
-        
-        <!-- Orders Content -->
-        <div class="col-lg-9 col-md-8">
-          <div class="orders-content">
-            <!-- Loading State -->
-            <div v-if="loading" class="loading-state">
-              <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>Đang tải đơn hàng...</p>
+
+        <div class="row">
+          <!-- Filters Sidebar -->
+          <div class="col-lg-3 col-md-4 mb-4">
+            <div class="filters-card">
+              <div class="filters-header">
+                <h5 class="filters-title">
+                  <i class="bi bi-funnel me-2"></i>
+                  Bộ lọc
+                </h5>
               </div>
-            </div>
-            
-            <!-- Error State -->
-            <div v-else-if="error" class="error-state">
-              <div class="error-content">
-                <i class="bi bi-exclamation-triangle"></i>
-                <h5>Có lỗi xảy ra</h5>
-                <p>{{ error }}</p>
-                <button @click="fetchOrders" class="btn-retry">
-                  <i class="bi bi-arrow-clockwise me-2"></i>
-                  Thử lại
+              <div class="filters-body">
+                <div class="filter-group">
+                  <label class="filter-label">
+                    <i class="bi bi-clipboard-check me-2"></i>
+                    Trạng thái đơn hàng
+                  </label>
+                  <select v-model="selectedStatus" class="filter-select">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="pending">Chờ xử lý</option>
+                    <option value="confirmed">Đã xác nhận</option>
+                    <option value="shipped">Đang vận chuyển</option>
+                    <option value="delivered">Đã giao hàng</option>
+                    <option value="cancelled">Đã hủy</option>
+                  </select>
+                </div>
+
+                <div class="filter-group">
+                  <label class="filter-label">
+                    <i class="bi bi-calendar-range me-2"></i>
+                    Khoảng thời gian
+                  </label>
+                  <select v-model="selectedDateRange" class="filter-select">
+                    <option value="">Tất cả thời gian</option>
+                    <option value="7">7 ngày qua</option>
+                    <option value="30">30 ngày qua</option>
+                    <option value="90">3 tháng qua</option>
+                  </select>
+                </div>
+
+                <button v-if="selectedStatus || selectedDateRange" @click="clearFilters" class="btn-clear-filters">
+                  <i class="bi bi-x-circle me-2"></i>
+                  Xóa bộ lọc
                 </button>
               </div>
             </div>
-            
-            <!-- Empty State -->
-            <div v-else-if="orders.length === 0" class="empty-state">
-              <div class="empty-content">
-                <div class="empty-icon">
-                  <i class="bi bi-box-seam"></i>
-                </div>
-                <h4 class="empty-title">
-                  <span v-if="selectedStatus || selectedDateRange">
-                    Không tìm thấy đơn hàng
-                  </span>
-                  <span v-else>
-                    Chưa có đơn hàng nào
-                  </span>
-                </h4>
-                <p class="empty-message">
-                  <span v-if="selectedStatus || selectedDateRange">
-                    Không có đơn hàng nào phù hợp với điều kiện lọc của bạn.
-                  </span>
-                  <span v-else>
-                    Bạn chưa đặt đơn hàng nào. Hãy bắt đầu mua sắm ngay!
-                  </span>
-                </p>
-                
-                <div class="empty-actions">
-                  <button 
-                    v-if="selectedStatus || selectedDateRange"
-                    @click="clearFilters"
-                    class="btn btn-secondary me-3"
-                  >
-                    <i class="bi bi-x-circle me-2"></i>
-                    Xóa bộ lọc
-                  </button>
-                  <router-link to="/" class="btn btn-primary">
-                    <i class="bi bi-shop me-2"></i>
-                    {{ (selectedStatus || selectedDateRange) ? 'Tiếp tục mua sắm' : 'Bắt đầu mua sắm' }}
-                  </router-link>
+          </div>
+
+          <!-- Orders Content -->
+          <div class="col-lg-9 col-md-8">
+            <div class="orders-content">
+              <!-- Loading State -->
+              <div v-if="loading" class="loading-state">
+                <div class="loading-spinner">
+                  <div class="spinner"></div>
+                  <p>Đang tải đơn hàng...</p>
                 </div>
               </div>
-            </div>
-            
-            <!-- Orders List -->
-            <div v-else class="orders-grid">
-              <div v-for="order in validOrders" :key="order.id" class="order-card">
-                <div class="order-header">
-                  <div class="order-info">
-                    <h6 class="order-number">
-                      <i class="bi bi-receipt me-2"></i>
-                      {{ order.order_number || `#${order.id}` }}
-                    </h6>
-                    <p class="order-date">
-                      <i class="bi bi-calendar3 me-1"></i>
-                      {{ formatDate(order.created_at) }}
-                    </p>
+
+              <!-- Error State -->
+              <div v-else-if="error" class="error-state">
+                <div class="error-content">
+                  <i class="bi bi-exclamation-triangle"></i>
+                  <h5>Có lỗi xảy ra</h5>
+                  <p>{{ error }}</p>
+                  <button @click="fetchOrders" class="btn-retry">
+                    <i class="bi bi-arrow-clockwise me-2"></i>
+                    Thử lại
+                  </button>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div v-else-if="orders.length === 0" class="empty-state">
+                <div class="empty-content">
+                  <div class="empty-icon">
+                    <i class="bi bi-box-seam"></i>
                   </div>
-                  <div class="order-status">
-                    <span class="status-badge" :class="getStatusClass(order.status)">
-                      <i :class="getStatusIcon(order.status)" class="me-1"></i>
-                      {{ getStatusText(order.status) }}
+                  <h4 class="empty-title">
+                    <span v-if="selectedStatus || selectedDateRange">
+                      Không tìm thấy đơn hàng
                     </span>
+                    <span v-else>
+                      Chưa có đơn hàng nào
+                    </span>
+                  </h4>
+                  <p class="empty-message">
+                    <span v-if="selectedStatus || selectedDateRange">
+                      Không có đơn hàng nào phù hợp với điều kiện lọc của bạn.
+                    </span>
+                    <span v-else>
+                      Bạn chưa đặt đơn hàng nào. Hãy bắt đầu mua sắm ngay!
+                    </span>
+                  </p>
+
+                  <div class="empty-actions">
+                    <button v-if="selectedStatus || selectedDateRange" @click="clearFilters" class="btn btn-secondary me-3">
+                      <i class="bi bi-x-circle me-2"></i>
+                      Xóa bộ lọc
+                    </button>
+                    <router-link to="/" class="btn btn-primary">
+                      <i class="bi bi-shop me-2"></i>
+                      {{ (selectedStatus || selectedDateRange) ? 'Tiếp tục mua sắm' : 'Bắt đầu mua sắm' }}
+                    </router-link>
                   </div>
                 </div>
-                
-                <div class="order-body">
-                  <div class="order-items">
-                    <div v-for="item in order.items?.slice(0, 2)" :key="item.id" class="order-item">
-                      <div class="item-image">
-                        <img :src="item.product_image || '/placeholder.jpg'" :alt="item.product_name" />
-                      </div>
-                      <div class="item-details">
-                        <h6 class="item-name">{{ item.product_name }}</h6>
-                        <p class="item-info">
-                          SL: {{ item.quantity }} × {{ formatPrice(item.price) }}
-                        </p>
-                      </div>
+              </div>
+
+              <!-- Orders List -->
+              <div v-else class="orders-grid">
+                <div v-for="order in validOrders" :key="order.id" class="order-card">
+                  <div class="order-header">
+                    <div class="order-info">
+                      <h6 class="order-number">
+                        <i class="bi bi-receipt me-2"></i>
+                        {{ order.order_number || `#${order.id}` }}
+                      </h6>
+                      <p class="order-date">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        {{ formatDate(order.created_at) }}
+                      </p>
                     </div>
-                    
-                    <div v-if="order.items && order.items.length > 2" class="more-items">
-                      <span class="more-text">
-                        +{{ order.items.length - 2 }} sản phẩm khác
+                    <div class="order-status">
+                      <span class="status-badge" :class="getStatusClass(order.status)">
+                        <i :class="getStatusIcon(order.status)" class="me-1"></i>
+                        {{ getStatusText(order.status) }}
                       </span>
                     </div>
                   </div>
-                </div>
-                
-                <div class="order-footer">
-                  <div class="order-total">
-                    <span class="total-label">Tổng cộng:</span>
-                    <span class="total-amount">{{ formatPrice(order.total_amount) }}</span>
+
+                  <div class="order-body">
+                    <div class="order-items">
+                      <div v-for="item in order.items?.slice(0, 2)" :key="item.id" class="order-item">
+                        <div class="item-image">
+                          <img :src="item.product_image || '/placeholder.jpg'" :alt="item.product_name" />
+                        </div>
+                        <div class="item-details">
+                          <h6 class="item-name">{{ item.product_name }}</h6>
+                          <p class="item-info">
+                            SL: {{ item.quantity }} × {{ formatPrice(item.price) }}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div v-if="order.items && order.items.length > 2" class="more-items">
+                        <span class="more-text">
+                          +{{ order.items.length - 2 }} sản phẩm khác
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div class="order-actions">
-                    <router-link 
-                      :to="`/order/${order.id}`" 
-                      class="btn btn-outline-primary btn-sm"
-                    >
-                      <i class="bi bi-eye me-1"></i>
-                      Chi tiết
-                    </router-link>
-                    <button 
-                      v-if="canCancelOrder(order.status)"
-                      @click="showCancelModal(order)"
-                      class="btn btn-outline-danger btn-sm"
-                    >
-                      <i class="bi bi-x-circle me-1"></i>
-                      Hủy đơn
-                    </button>
+
+                  <div class="order-footer">
+                    <div class="order-total">
+                      <span class="total-label">Tổng cộng:</span>
+                      <span class="total-amount">{{ formatPrice(order.total_amount) }}</span>
+                    </div>
+                    <div class="order-actions">
+                      <router-link :to="`/order/${order.id}`" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i>
+                        Chi tiết
+                      </router-link>
+                      <button v-if="canCancelOrder(order.status)" @click="showCancelModal(order)" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Hủy đơn
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <!-- Pagination -->
-            <div v-if="orders.length > 0 && pagination.last_page > 1" class="pagination-wrapper">
-              <nav class="pagination-nav">
-                <ul class="pagination">
-                  <li class="page-item" :class="{ disabled: pagination.current_page === 1 }">
-                    <button class="page-link" @click="changePage(pagination.current_page - 1)">
-                      <i class="bi bi-chevron-left"></i>
-                    </button>
-                  </li>
-                  
-                  <li v-for="page in visiblePages" :key="page" class="page-item" :class="{ active: page === pagination.current_page }">
-                    <button class="page-link" @click="changePage(page)">{{ page }}</button>
-                  </li>
-                  
-                  <li class="page-item" :class="{ disabled: pagination.current_page === pagination.last_page }">
-                    <button class="page-link" @click="changePage(pagination.current_page + 1)">
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
+
+              <!-- Pagination -->
+              <div v-if="orders.length > 0 && pagination.last_page > 1" class="pagination-wrapper">
+                <nav class="pagination-nav">
+                  <ul class="pagination">
+                    <li class="page-item" :class="{ disabled: pagination.current_page === 1 }">
+                      <button class="page-link" @click="changePage(pagination.current_page - 1)">
+                        <i class="bi bi-chevron-left"></i>
+                      </button>
+                    </li>
+
+                    <li v-for="page in visiblePages" :key="page" class="page-item" :class="{ active: page === pagination.current_page }">
+                      <button class="page-link" @click="changePage(page)">{{ page }}</button>
+                    </li>
+
+                    <li class="page-item" :class="{ disabled: pagination.current_page === pagination.last_page }">
+                      <button class="page-link" @click="changePage(pagination.current_page + 1)">
+                        <i class="bi bi-chevron-right"></i>
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <!-- Cancel Order Modal -->
-    <div v-if="showCancelOrderModal" class="modal-overlay" @click="hideCancelModal">
-      <div class="cancel-modal" @click.stop>
-        <div class="modal-header">
-          <div class="modal-icon">
-            <i class="bi bi-exclamation-triangle"></i>
-          </div>
-          <h4 class="modal-title">Xác nhận hủy đơn hàng</h4>
-        </div>
-        <div class="modal-body">
-          <p class="modal-message">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
-          <div v-if="orderToCancel" class="order-preview">
-            <div class="preview-header">
-              <i class="bi bi-receipt me-2"></i>
-              {{ orderToCancel.order_number || `#${orderToCancel.id}` }}
+
+      <!-- Cancel Order Modal -->
+      <div v-if="showCancelOrderModal" class="modal-overlay" @click="hideCancelModal">
+        <div class="cancel-modal" @click.stop>
+          <div class="modal-header">
+            <div class="modal-icon">
+              <i class="bi bi-exclamation-triangle"></i>
             </div>
-            <div class="preview-info">
-              Tổng giá trị: {{ formatPrice(orderToCancel.total_amount) }}
-            </div>
+            <h4 class="modal-title">Xác nhận hủy đơn hàng</h4>
           </div>
-          <p class="warning-text">
-            <i class="bi bi-info-circle me-2"></i>
-            Hành động này không thể hoàn tác
-          </p>
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-cancel" @click="hideCancelModal">
-            <i class="bi bi-x-circle me-2"></i>
-            Giữ đơn hàng
-          </button>
-          <button class="btn btn-confirm-cancel" @click="confirmCancelOrder" :disabled="cancelling">
-            <span v-if="cancelling" class="spinner-border spinner-border-sm me-2"></span>
-            <i v-else class="bi bi-trash me-2"></i>
-            {{ cancelling ? 'Đang hủy...' : 'Xác nhận hủy' }}
-          </button>
+          <div class="modal-body">
+            <p class="modal-message">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
+            <div v-if="orderToCancel" class="order-preview">
+              <div class="preview-header">
+                <i class="bi bi-receipt me-2"></i>
+                {{ orderToCancel.order_number || `#${orderToCancel.id}` }}
+              </div>
+              <div class="preview-info">
+                Tổng giá trị: {{ formatPrice(orderToCancel.total_amount) }}
+              </div>
+            </div>
+            <p class="warning-text">
+              <i class="bi bi-info-circle me-2"></i>
+              Hành động này không thể hoàn tác
+            </p>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-cancel" @click="hideCancelModal">
+              <i class="bi bi-x-circle me-2"></i>
+              Giữ đơn hàng
+            </button>
+            <button class="btn btn-confirm-cancel" @click="confirmCancelOrder" :disabled="cancelling">
+              <span v-if="cancelling" class="spinner-border spinner-border-sm me-2"></span>
+              <i v-else class="bi bi-trash me-2"></i>
+              {{ cancelling ? 'Đang hủy...' : 'Xác nhận hủy' }}
+            </button>
+          </div>
         </div>
       </div>
+
+      <ToastContainer />
     </div>
-    
-    <ToastContainer />
-  </div>
+  </UserLayout>
 </template>
-                           
+
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -275,6 +262,7 @@ import { formatPrice, formatDate } from '../utils'
 import { useToast } from '../composables/useToast'
 import Breadcrumb from '../components/Breadcrumb.vue'
 import ToastContainer from '../components/ToastContainer.vue'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -316,7 +304,7 @@ const visiblePages = computed(() => {
   const range = 2
   const start = Math.max(1, current - range)
   const end = Math.min(last, current + range)
-  
+
   const pages = []
   for (let i = start; i <= end; i++) {
     pages.push(i)
@@ -335,20 +323,20 @@ const fetchOrders = async () => {
   try {
     loading.value = true
     error.value = null
-    
+
     const params = {
       page: pagination.value.current_page,
       status: selectedStatus.value || undefined,
       days: selectedDateRange.value ? parseInt(selectedDateRange.value) : undefined
     }
-    
+
     const response = await ordersApi.getUserOrders(params.page, params.status, params.days)
     const paginatedData = response.data as PaginatedResponse<Order>
-    
-    orders.value = Array.isArray(paginatedData.data) 
+
+    orders.value = Array.isArray(paginatedData.data)
       ? paginatedData.data.filter(order => order && order.id)
       : []
-    
+
     pagination.value = {
       current_page: paginatedData.current_page,
       last_page: paginatedData.last_page,
@@ -427,7 +415,7 @@ const hideCancelModal = () => {
 
 const confirmCancelOrder = async () => {
   if (!orderToCancel.value) return
-  
+
   try {
     cancelling.value = true
     await ordersApi.cancelOrder(orderToCancel.value.id)
@@ -579,8 +567,13 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-spinner p {
@@ -960,8 +953,13 @@ onMounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .cancel-modal {
@@ -975,8 +973,15 @@ onMounted(() => {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-header {
@@ -1087,31 +1092,31 @@ onMounted(() => {
   .orders-page {
     padding: 1rem 0;
   }
-  
+
   .page-title {
     font-size: 2rem;
   }
-  
+
   .filters-card,
   .orders-content {
     border-radius: 15px;
   }
-  
+
   .order-header {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
   }
-  
+
   .order-footer {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
-  
+
   .modal-actions .btn {
     width: 100%;
   }
@@ -1122,17 +1127,17 @@ onMounted(() => {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .filters-body,
   .orders-content {
     padding: 1rem;
   }
-  
+
   .order-item {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .item-image img {
     width: 80px;
     height: 80px;

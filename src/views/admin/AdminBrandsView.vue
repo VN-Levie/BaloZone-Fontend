@@ -1,246 +1,190 @@
 <template>
-  <div class="admin-brands">
-    <!-- Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <h1 class="page-title">Quản Lý Thương Hiệu</h1>
-          <p class="page-subtitle">Danh sách tất cả thương hiệu trong hệ thống</p>
-        </div>
-        <div class="header-actions">
-          <button 
-            type="button" 
-            class="btn btn-outline"
-            @click="router.push('/admin/brands/trashed')"
-          >
-            <i class="bi bi-trash"></i>
-            Thùng rác
-          </button>
-          <button 
-            type="button" 
-            class="btn btn-primary"
-            @click="router.push('/admin/brands/create')"
-          >
-            <i class="bi bi-plus"></i>
-            Thêm thương hiệu
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filters & Search -->
-    <div class="filters-section">
-      <div class="filters-grid">
-        <div class="search-group">
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="form-control"
-            placeholder="Tìm kiếm thương hiệu..."
-            @input="handleSearch"
-          />
-          <i class="bi bi-search search-icon"></i>
-        </div>
-        
-        <select v-model="selectedStatus" class="form-control" @change="() => loadBrands()">
-          <option value="">Tất cả trạng thái</option>
-          <option value="active">Hoạt động</option>
-          <option value="inactive">Không hoạt động</option>
-        </select>
-
-        <select v-model="hasProducts" class="form-control" @change="() => loadBrands()">
-          <option value="">Tất cả thương hiệu</option>
-          <option value="true">Có sản phẩm</option>
-          <option value="false">Không có sản phẩm</option>
-        </select>
-
-        <select v-model="sortBy" class="form-control" @change="() => loadBrands()">
-          <option value="created_at">Mới nhất</option>
-          <option value="name">Tên A-Z</option>
-          <option value="products_count">Số sản phẩm</option>
-          <option value="total_revenue">Doanh thu</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Brands List -->
-    <div class="brands-content">
-      <div v-if="loading" class="loading-section">
-        <LoadingSpinner />
-      </div>
-
-      <div v-else-if="brands.length === 0" class="empty-state">
-        <i class="bi bi-award empty-icon"></i>
-        <h3>Không có thương hiệu nào</h3>
-        <p>Hãy tạo thương hiệu đầu tiên của bạn</p>
-        <button 
-          type="button" 
-          class="btn btn-primary"
-          @click="router.push('/admin/brands/create')"
-        >
-          <i class="bi bi-plus"></i>
-          Thêm thương hiệu đầu tiên
-        </button>
-      </div>
-
-      <div v-else class="brands-table-container">
-        <table class="brands-table">
-          <thead>
-            <tr>
-              <th>Logo</th>
-              <th>Tên thương hiệu</th>
-              <th>Trạng thái</th>
-              <th>Sản phẩm</th>
-              <th>Doanh thu</th>
-              <th>Ngày tạo</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="brand in brands" :key="brand.id">
-              <td class="brand-logo-cell">
-                <img 
-                  :src="brand.logo || 'https://placehold.co/600x400?text=img'" 
-                  :alt="brand.name"
-                  class="brand-thumbnail"
-                  @error="handleImageError"
-                />
-              </td>
-              <td class="brand-name-cell">
-                <div class="brand-name">{{ brand.name }}</div>
-                <div class="brand-slug">{{ brand.slug }}</div>
-                <div v-if="brand.description" class="brand-description">
-                  {{ truncateText(brand.description, 50) }}
-                </div>
-              </td>
-              <td>
-                <span 
-                  class="status-badge"
-                  :class="{
-                    'status-active': brand.status === 'active',
-                    'status-inactive': brand.status === 'inactive'
-                  }"
-                >
-                  <i class="bi" :class="brand.status === 'active' ? 'bi-check-circle' : 'bi-x-circle'"></i>
-                  {{ brand.status === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
-                </span>
-              </td>
-              <td class="products-cell">
-                <div class="products-stats">
-                  <span class="total-products">{{ brand.products_count || 0 }} sản phẩm</span>
-                  <span v-if="brand.active_products_count !== undefined" class="active-products">
-                    ({{ brand.active_products_count }} hoạt động)
-                  </span>
-                </div>
-              </td>
-              <td class="revenue-cell">
-                <span v-if="brand.total_revenue" class="revenue-amount">
-                  {{ formatPrice(brand.total_revenue) }}
-                </span>
-                <span v-else class="no-revenue">-</span>
-              </td>
-              <td class="date-cell">
-                {{ formatDate(brand.created_at) }}
-              </td>
-              <td class="actions-cell">
-                <div class="action-buttons">
-                  <button 
-                    type="button"
-                    class="btn-icon btn-edit"
-                    @click="editBrand(brand.id)"
-                    title="Chỉnh sửa"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button 
-                    type="button"
-                    class="btn-icon btn-delete"
-                    @click="confirmDelete(brand)"
-                    title="Xóa"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div v-if="pagination && pagination.total > pagination.per_page" class="pagination-section">
-        <nav class="pagination-nav">
-          <button
-            type="button"
-            class="btn btn-outline"
-            :disabled="pagination.current_page <= 1"
-            @click="changePage(pagination.current_page - 1)"
-          >
-            <i class="bi bi-chevron-left"></i>
-            Trước
-          </button>
-
-          <div class="page-numbers">
-            <button
-              v-for="page in getPageNumbers()"
-              :key="page"
-              type="button"
-              class="btn"
-              :class="page === pagination.current_page ? 'btn-primary' : 'btn-outline'"
-              @click="changePage(page)"
-            >
-              {{ page }}
+  <AdminLayout>
+    <div class="admin-brands">
+      <!-- Header -->
+      <div class="page-header">
+        <div class="header-content">
+          <div class="header-left">
+            <h1 class="page-title">Quản Lý Thương Hiệu</h1>
+            <p class="page-subtitle">Danh sách tất cả thương hiệu trong hệ thống</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn btn-outline" @click="router.push('/admin/brands/trashed')">
+              <i class="bi bi-trash"></i>
+              Thùng rác
+            </button>
+            <button type="button" class="btn btn-primary" @click="router.push('/admin/brands/create')">
+              <i class="bi bi-plus"></i>
+              Thêm thương hiệu
             </button>
           </div>
-
-          <button
-            type="button"
-            class="btn btn-outline"
-            :disabled="pagination.current_page >= pagination.last_page"
-            @click="changePage(pagination.current_page + 1)"
-          >
-            Sau
-            <i class="bi bi-chevron-right"></i>
-          </button>
-        </nav>
-      </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>Xác nhận xóa thương hiệu</h3>
-          <button type="button" class="close-btn" @click="closeDeleteModal">
-            <i class="bi bi-x"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa thương hiệu <strong>{{ brandToDelete?.name }}</strong>?</p>
-          <p v-if="brandToDelete?.products_count && brandToDelete.products_count > 0" class="text-warning">
-            <i class="bi bi-exclamation-triangle"></i>
-            Thương hiệu này có {{ brandToDelete.products_count }} sản phẩm. Bạn có thể cần xem xét lại.
-          </p>
-          <p class="text-danger">Hành động này sẽ chuyển thương hiệu vào thùng rác.</p>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-outline" @click="closeDeleteModal">
-            Hủy
-          </button>
-          <button 
-            type="button" 
-            class="btn btn-danger"
-            @click="deleteBrand"
-            :disabled="deleting"
-          >
-            <i v-if="deleting" class="bi bi-arrow-repeat spin-animation"></i>
-            <i v-else class="bi bi-trash"></i>
-            {{ deleting ? 'Đang xóa...' : 'Xóa' }}
-          </button>
         </div>
       </div>
+
+      <!-- Filters & Search -->
+      <div class="filters-section">
+        <div class="filters-grid">
+          <div class="search-group">
+            <input v-model="searchQuery" type="text" class="form-control" placeholder="Tìm kiếm thương hiệu..." @input="handleSearch" />
+            <i class="bi bi-search search-icon"></i>
+          </div>
+
+          <select v-model="selectedStatus" class="form-control" @change="() => loadBrands()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active">Hoạt động</option>
+            <option value="inactive">Không hoạt động</option>
+          </select>
+
+          <select v-model="hasProducts" class="form-control" @change="() => loadBrands()">
+            <option value="">Tất cả thương hiệu</option>
+            <option value="true">Có sản phẩm</option>
+            <option value="false">Không có sản phẩm</option>
+          </select>
+
+          <select v-model="sortBy" class="form-control" @change="() => loadBrands()">
+            <option value="created_at">Mới nhất</option>
+            <option value="name">Tên A-Z</option>
+            <option value="products_count">Số sản phẩm</option>
+            <option value="total_revenue">Doanh thu</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Brands List -->
+      <div class="brands-content">
+        <div v-if="loading" class="loading-section">
+          <LoadingSpinner />
+        </div>
+
+        <div v-else-if="brands.length === 0" class="empty-state">
+          <i class="bi bi-award empty-icon"></i>
+          <h3>Không có thương hiệu nào</h3>
+          <p>Hãy tạo thương hiệu đầu tiên của bạn</p>
+          <button type="button" class="btn btn-primary" @click="router.push('/admin/brands/create')">
+            <i class="bi bi-plus"></i>
+            Thêm thương hiệu đầu tiên
+          </button>
+        </div>
+
+        <div v-else class="brands-table-container">
+          <table class="brands-table">
+            <thead>
+              <tr>
+                <th>Logo</th>
+                <th>Tên thương hiệu</th>
+                <th>Trạng thái</th>
+                <th>Sản phẩm</th>
+                <th>Doanh thu</th>
+                <th>Ngày tạo</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="brand in brands" :key="brand.id">
+                <td class="brand-logo-cell">
+                  <img :src="brand.logo || 'https://placehold.co/600x400?text=img'" :alt="brand.name" class="brand-thumbnail" @error="handleImageError" />
+                </td>
+                <td class="brand-name-cell">
+                  <div class="brand-name">{{ brand.name }}</div>
+                  <div class="brand-slug">{{ brand.slug }}</div>
+                  <div v-if="brand.description" class="brand-description">
+                    {{ truncateText(brand.description, 50) }}
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge" :class="{
+                    'status-active': brand.status === 'active',
+                    'status-inactive': brand.status === 'inactive'
+                  }">
+                    <i class="bi" :class="brand.status === 'active' ? 'bi-check-circle' : 'bi-x-circle'"></i>
+                    {{ brand.status === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
+                  </span>
+                </td>
+                <td class="products-cell">
+                  <div class="products-stats">
+                    <span class="total-products">{{ brand.products_count || 0 }} sản phẩm</span>
+                    <span v-if="brand.active_products_count !== undefined" class="active-products">
+                      ({{ brand.active_products_count }} hoạt động)
+                    </span>
+                  </div>
+                </td>
+                <td class="revenue-cell">
+                  <span v-if="brand.total_revenue" class="revenue-amount">
+                    {{ formatPrice(brand.total_revenue) }}
+                  </span>
+                  <span v-else class="no-revenue">-</span>
+                </td>
+                <td class="date-cell">
+                  {{ formatDate(brand.created_at) }}
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons">
+                    <button type="button" class="btn-icon btn-edit" @click="editBrand(brand.id)" title="Chỉnh sửa">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="btn-icon btn-delete" @click="confirmDelete(brand)" title="Xóa">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="pagination && pagination.total > pagination.per_page" class="pagination-section">
+          <nav class="pagination-nav">
+            <button type="button" class="btn btn-outline" :disabled="pagination.current_page <= 1" @click="changePage(pagination.current_page - 1)">
+              <i class="bi bi-chevron-left"></i>
+              Trước
+            </button>
+
+            <div class="page-numbers">
+              <button v-for="page in getPageNumbers()" :key="page" type="button" class="btn" :class="page === pagination.current_page ? 'btn-primary' : 'btn-outline'" @click="changePage(page)">
+                {{ page }}
+              </button>
+            </div>
+
+            <button type="button" class="btn btn-outline" :disabled="pagination.current_page >= pagination.last_page" @click="changePage(pagination.current_page + 1)">
+              Sau
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Delete Confirmation Modal -->
+      <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>Xác nhận xóa thương hiệu</h3>
+            <button type="button" class="close-btn" @click="closeDeleteModal">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Bạn có chắc chắn muốn xóa thương hiệu <strong>{{ brandToDelete?.name }}</strong>?</p>
+            <p v-if="brandToDelete?.products_count && brandToDelete.products_count > 0" class="text-warning">
+              <i class="bi bi-exclamation-triangle"></i>
+              Thương hiệu này có {{ brandToDelete.products_count }} sản phẩm. Bạn có thể cần xem xét lại.
+            </p>
+            <p class="text-danger">Hành động này sẽ chuyển thương hiệu vào thùng rác.</p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline" @click="closeDeleteModal">
+              Hủy
+            </button>
+            <button type="button" class="btn btn-danger" @click="deleteBrand" :disabled="deleting">
+              <i v-if="deleting" class="bi bi-arrow-repeat spin-animation"></i>
+              <i v-else class="bi bi-trash"></i>
+              {{ deleting ? 'Đang xóa...' : 'Xóa' }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
@@ -252,6 +196,7 @@ import { formatDate, truncateText } from '@/utils'
 import { parseApiError } from '@/utils/errorHandler'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { Brand } from '@/types'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 const router = useRouter()
 const { showSuccess, showError } = useToast()
@@ -287,31 +232,31 @@ const loadBrands = async (page = 1) => {
     const params = new URLSearchParams()
     params.append('page', page.toString())
     params.append('per_page', '12')
-    
+
     if (searchQuery.value.trim()) {
       params.append('search', searchQuery.value.trim())
     }
-    
+
     if (selectedStatus.value) {
       params.append('status', selectedStatus.value)
     }
-    
+
     if (hasProducts.value) {
       params.append('has_products', hasProducts.value)
     }
-    
+
     if (sortBy.value) {
       params.append('sort_by', sortBy.value)
       params.append('sort_order', 'desc')
     }
 
     const response = await adminBrandsApi.getBrands(page, 12, params)
-    
+
     if (response && response.data) {
       // Handle Laravel pagination structure
       const brandData = response.data || []
       brands.value = Array.isArray(brandData) ? brandData.filter(brand => brand && brand.id) : []
-      
+
       // Extract pagination info
       pagination.value = {
         current_page: response.current_page || 1,
@@ -380,16 +325,16 @@ const changePage = (page: number) => {
 
 const getPageNumbers = () => {
   if (!pagination.value) return []
-  
+
   const current = pagination.value.current_page
   const last = pagination.value.last_page
   const delta = 2
   const range = []
-  
+
   for (let i = Math.max(1, current - delta); i <= Math.min(last, current + delta); i++) {
     range.push(i)
   }
-  
+
   return range
 }
 
@@ -837,44 +782,49 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
   .admin-brands {
     padding: 15px;
   }
-  
+
   .header-content {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
-  
+
   .filters-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .brands-table-container {
     overflow-x: scroll;
   }
-  
+
   .brands-table {
     min-width: 800px;
   }
-  
+
   .brands-table th,
   .brands-table td {
     padding: 8px 10px;
     font-size: 12px;
   }
-  
+
   .brand-thumbnail {
     width: 40px;
     height: 40px;
   }
-  
+
   .pagination-nav {
     flex-wrap: wrap;
   }

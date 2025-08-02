@@ -1,214 +1,164 @@
 <template>
-  <div class="admin-dashboard">
-    <div class="container-fluid py-4">
-      <!-- Dashboard Header -->
-      <DashboardHeader 
-        :user="user" 
-        title="Dashboard Admin"
-        subtitle="Tổng quan và quản lý hệ thống"
-      />
+  <AdminLayout>
+    <div class="admin-dashboard">
+      <div class="container-fluid py-4">
+        <!-- Dashboard Header -->
+        <DashboardHeader :user="user" title="Dashboard Admin" subtitle="Tổng quan và quản lý hệ thống" />
 
-      <!-- Access denied for non-admins -->
-      <div v-if="!canAccess" class="access-denied">
-        <div class="alert alert-danger">
-          <i class="bi bi-shield-exclamation"></i>
-          Bạn không có quyền truy cập vào trang này.
+        <!-- Access denied for non-admins -->
+        <div v-if="!canAccess" class="access-denied">
+          <div class="alert alert-danger">
+            <i class="bi bi-shield-exclamation"></i>
+            Bạn không có quyền truy cập vào trang này.
+          </div>
         </div>
-      </div>
 
-      <!-- Dashboard Content -->
-      <div v-else class="dashboard-content">
-        <!-- Enhanced Stats Section -->
-        <EnhancedStats 
-          :stats="enhancedStats" 
-          :loading="loading.dashboard"
-          @refresh="refreshStats"
-        />
+        <!-- Dashboard Content -->
+        <div v-else class="dashboard-content">
+          <!-- Enhanced Stats Section -->
+          <EnhancedStats :stats="enhancedStats" :loading="loading.dashboard" @refresh="refreshStats" />
 
-        <!-- Enhanced Actions Section -->
-        <EnhancedActions 
-          :actions="enhancedActions"
-          @action-click="handleQuickAction"
-        />
+          <!-- Enhanced Actions Section -->
+          <EnhancedActions :actions="enhancedActions" @action-click="handleQuickAction" />
 
-        <!-- Quick Management Section -->
-        <div class="row g-4 mt-4">
-          <div class="col-12">
-            <div class="card shadow-sm">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                  <i class="bi bi-lightning-charge-fill text-warning me-2"></i>
-                  Quản lý nhanh
-                </h5>
-                <small class="text-muted">Truy cập nhanh các chức năng chính</small>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <!-- Product Management -->
-                  <div class="col-md-6 col-lg-3">
-                    <div class="quick-management-card product-card" @click="router.push('/admin/products')">
-                      <div class="card-icon">
-                        <i class="bi bi-box-seam-fill"></i>
-                      </div>
-                      <div class="card-content">
-                        <h6 class="card-title">Sản phẩm</h6>
-                        <p class="card-subtitle">{{ stats.totalProducts }} sản phẩm</p>
-                        <div class="card-actions">
-                          <button 
-                            class="btn btn-sm btn-primary"
-                            @click.stop="router.push('/admin/products')"
-                          >
-                            <i class="bi bi-grid-3x2-gap me-1"></i>Danh sách
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-success"
-                            @click.stop="router.push('/admin/products/create')"
-                          >
-                            <i class="bi bi-plus-lg me-1"></i>Thêm mới
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Category Management -->
-                  <div class="col-md-6 col-lg-3">
-                    <div class="quick-management-card category-card" @click="router.push('/admin/categories')">
-                      <div class="card-icon">
-                        <i class="bi bi-grid-3x3-gap-fill"></i>
-                      </div>
-                      <div class="card-content">
-                        <h6 class="card-title">Danh mục</h6>
-                        <p class="card-subtitle">Quản lý phân loại</p>
-                        <div class="card-actions">
-                          <button 
-                            class="btn btn-sm btn-info"
-                            @click.stop="router.push('/admin/categories')"
-                          >
-                            <i class="bi bi-list-ul me-1"></i>Danh sách
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-warning"
-                            @click.stop="router.push('/admin/categories/create')"
-                          >
-                            <i class="bi bi-folder-plus me-1"></i>Tạo mới
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Brand Management -->
-                  <div class="col-md-6 col-lg-3">
-                    <div class="quick-management-card brand-card" @click="router.push('/admin/brands')">
-                      <div class="card-icon">
-                        <i class="bi bi-award-fill"></i>
-                      </div>
-                      <div class="card-content">
-                        <h6 class="card-title">Thương hiệu</h6>
-                        <p class="card-subtitle">Quản lý nhãn hàng</p>
-                        <div class="card-actions">
-                          <button 
-                            class="btn btn-sm btn-success"
-                            @click.stop="router.push('/admin/brands')"
-                          >
-                            <i class="bi bi-star me-1"></i>Danh sách
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-primary"
-                            @click.stop="router.push('/admin/brands/create')"
-                          >
-                            <i class="bi bi-plus-circle me-1"></i>Tạo mới
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Orders Management -->
-                  <div class="col-md-6 col-lg-3">
-                    <div class="quick-management-card order-card" @click="router.push('/admin/orders')">
-                      <div class="card-icon">
-                        <i class="bi bi-cart-check-fill"></i>
-                      </div>
-                      <div class="card-content">
-                        <h6 class="card-title">Đơn hàng</h6>
-                        <p class="card-subtitle">{{ stats.totalOrders }} đơn hàng</p>
-                        <div class="card-actions">
-                          <button 
-                            class="btn btn-sm btn-danger"
-                            @click.stop="router.push('/admin/orders')"
-                          >
-                            <i class="bi bi-clipboard-check me-1"></i>Xử lý
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-outline-secondary"
-                            @click.stop="router.push('/admin/reports/orders')"
-                          >
-                            <i class="bi bi-graph-up me-1"></i>Báo cáo
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Users Management -->
-                  <div class="col-md-6 col-lg-3">
-                    <div class="quick-management-card user-card" @click="router.push('/admin/users')">
-                      <div class="card-icon">
-                        <i class="bi bi-people-fill"></i>
-                      </div>
-                      <div class="card-content">
-                        <h6 class="card-title">Người dùng</h6>
-                        <p class="card-subtitle">{{ stats.totalUsers }} tài khoản</p>
-                        <div class="card-actions">
-                          <button 
-                            class="btn btn-sm btn-secondary"
-                            @click.stop="router.push('/admin/users')"
-                          >
-                            <i class="bi bi-person-lines-fill me-1"></i>Quản lý
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-outline-info"
-                            @click.stop="router.push('/admin/roles')"
-                          >
-                            <i class="bi bi-shield-check me-1"></i>Phân quyền
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+          <!-- Quick Management Section -->
+          <div class="row g-4 mt-4">
+            <div class="col-12">
+              <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning-charge-fill text-warning me-2"></i>
+                    Quản lý nhanh
+                  </h5>
+                  <small class="text-muted">Truy cập nhanh các chức năng chính</small>
                 </div>
-
-                <!-- Category Trash Access -->
-                <div class="row g-3 mt-3">
-                  <div class="col-12">
-                    <div class="alert alert-light border d-flex justify-content-between align-items-center">
-                      <div class="d-flex align-items-center">
-                        <i class="bi bi-trash3-fill text-warning me-2"></i>
-                        <span><strong>Thùng rác:</strong> Quản lý các mục đã xóa tạm thời</span>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <!-- Product Management -->
+                    <div class="col-md-6 col-lg-3">
+                      <div class="quick-management-card product-card" @click="router.push('/admin/products')">
+                        <div class="card-icon">
+                          <i class="bi bi-box-seam-fill"></i>
+                        </div>
+                        <div class="card-content">
+                          <h6 class="card-title">Sản phẩm</h6>
+                          <p class="card-subtitle">{{ stats.totalProducts }} sản phẩm</p>
+                          <div class="card-actions">
+                            <button class="btn btn-sm btn-primary" @click.stop="router.push('/admin/products')">
+                              <i class="bi bi-grid-3x2-gap me-1"></i>Danh sách
+                            </button>
+                            <button class="btn btn-sm btn-success" @click.stop="router.push('/admin/products/create')">
+                              <i class="bi bi-plus-lg me-1"></i>Thêm mới
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <div class="btn-group">
-                        <button 
-                          class="btn btn-sm btn-outline-warning"
-                          @click="router.push('/admin/categories/trashed')"
-                        >
-                          <i class="bi bi-folder-x me-1"></i>Danh mục đã xóa
-                        </button>
-                        <button 
-                          class="btn btn-sm btn-outline-info"
-                          @click="router.push('/admin/brands/trashed')"
-                        >
-                          <i class="bi bi-award me-1"></i>Thương hiệu đã xóa
-                        </button>
-                        <button 
-                          class="btn btn-sm btn-outline-secondary"
-                          @click="router.push('/admin/products/trashed')"
-                          disabled
-                          title="Chức năng sắp có"
-                        >
-                          <i class="bi bi-box me-1"></i>Sản phẩm đã xóa
-                        </button>
+                    </div>
+
+                    <!-- Category Management -->
+                    <div class="col-md-6 col-lg-3">
+                      <div class="quick-management-card category-card" @click="router.push('/admin/categories')">
+                        <div class="card-icon">
+                          <i class="bi bi-grid-3x3-gap-fill"></i>
+                        </div>
+                        <div class="card-content">
+                          <h6 class="card-title">Danh mục</h6>
+                          <p class="card-subtitle">Quản lý phân loại</p>
+                          <div class="card-actions">
+                            <button class="btn btn-sm btn-info" @click.stop="router.push('/admin/categories')">
+                              <i class="bi bi-list-ul me-1"></i>Danh sách
+                            </button>
+                            <button class="btn btn-sm btn-warning" @click.stop="router.push('/admin/categories/create')">
+                              <i class="bi bi-folder-plus me-1"></i>Tạo mới
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Brand Management -->
+                    <div class="col-md-6 col-lg-3">
+                      <div class="quick-management-card brand-card" @click="router.push('/admin/brands')">
+                        <div class="card-icon">
+                          <i class="bi bi-award-fill"></i>
+                        </div>
+                        <div class="card-content">
+                          <h6 class="card-title">Thương hiệu</h6>
+                          <p class="card-subtitle">Quản lý nhãn hàng</p>
+                          <div class="card-actions">
+                            <button class="btn btn-sm btn-success" @click.stop="router.push('/admin/brands')">
+                              <i class="bi bi-star me-1"></i>Danh sách
+                            </button>
+                            <button class="btn btn-sm btn-primary" @click.stop="router.push('/admin/brands/create')">
+                              <i class="bi bi-plus-circle me-1"></i>Tạo mới
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Orders Management -->
+                    <div class="col-md-6 col-lg-3">
+                      <div class="quick-management-card order-card" @click="router.push('/admin/orders')">
+                        <div class="card-icon">
+                          <i class="bi bi-cart-check-fill"></i>
+                        </div>
+                        <div class="card-content">
+                          <h6 class="card-title">Đơn hàng</h6>
+                          <p class="card-subtitle">{{ stats.totalOrders }} đơn hàng</p>
+                          <div class="card-actions">
+                            <button class="btn btn-sm btn-danger" @click.stop="router.push('/admin/orders')">
+                              <i class="bi bi-clipboard-check me-1"></i>Xử lý
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" @click.stop="router.push('/admin/reports/orders')">
+                              <i class="bi bi-graph-up me-1"></i>Báo cáo
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Users Management -->
+                    <div class="col-md-6 col-lg-3">
+                      <div class="quick-management-card user-card" @click="router.push('/admin/users')">
+                        <div class="card-icon">
+                          <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div class="card-content">
+                          <h6 class="card-title">Người dùng</h6>
+                          <p class="card-subtitle">{{ stats.totalUsers }} tài khoản</p>
+                          <div class="card-actions">
+                            <button class="btn btn-sm btn-secondary" @click.stop="router.push('/admin/users')">
+                              <i class="bi bi-person-lines-fill me-1"></i>Quản lý
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" @click.stop="router.push('/admin/roles')">
+                              <i class="bi bi-shield-check me-1"></i>Phân quyền
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Category Trash Access -->
+                  <div class="row g-3 mt-3">
+                    <div class="col-12">
+                      <div class="alert alert-light border d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-trash3-fill text-warning me-2"></i>
+                          <span><strong>Thùng rác:</strong> Quản lý các mục đã xóa tạm thời</span>
+                        </div>
+                        <div class="btn-group">
+                          <button class="btn btn-sm btn-outline-warning" @click="router.push('/admin/categories/trashed')">
+                            <i class="bi bi-folder-x me-1"></i>Danh mục đã xóa
+                          </button>
+                          <button class="btn btn-sm btn-outline-info" @click="router.push('/admin/brands/trashed')">
+                            <i class="bi bi-award me-1"></i>Thương hiệu đã xóa
+                          </button>
+                          <button class="btn btn-sm btn-outline-secondary" @click="router.push('/admin/products/trashed')" disabled title="Chức năng sắp có">
+                            <i class="bi bi-box me-1"></i>Sản phẩm đã xóa
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -216,90 +166,74 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Charts Section -->
-        <ChartsSection 
-          :sales-data="salesChartData"
-          :orders-data="ordersStatusChartData"
-          :loading="loading.dashboard"
-          :selected-period="selectedPeriod"
-          @period-change="handlePeriodChange"
-          @download-chart="handleDownloadChart"
-          @refresh-chart="handleRefreshChart"
-        />
+          <!-- Charts Section -->
+          <ChartsSection :sales-data="salesChartData" :orders-data="ordersStatusChartData" :loading="loading.dashboard" :selected-period="selectedPeriod" @period-change="handlePeriodChange" @download-chart="handleDownloadChart" @refresh-chart="handleRefreshChart" />
 
-        <!-- Additional Information Sections -->
-        <div class="row g-4 mt-2">
-          <!-- Top Products -->
-          <div class="col-lg-6">
-            <div class="info-card">
-              <div class="card-header">
-                <h5 class="card-title">
-                  <i class="bi bi-trophy-fill"></i>
-                  Sản phẩm bán chạy
-                </h5>
-              </div>
-              <div class="card-body">
-                <div v-if="loading.dashboard" class="loading-skeleton">
-                  <div v-for="i in 5" :key="i" class="skeleton-item"></div>
+          <!-- Additional Information Sections -->
+          <div class="row g-4 mt-2">
+            <!-- Top Products -->
+            <div class="col-lg-6">
+              <div class="info-card">
+                <div class="card-header">
+                  <h5 class="card-title">
+                    <i class="bi bi-trophy-fill"></i>
+                    Sản phẩm bán chạy
+                  </h5>
                 </div>
-                <div v-else-if="dashboardData.topProducts?.length" class="top-products-list">
-                  <div 
-                    v-for="(product, index) in dashboardData.topProducts.slice(0, 5)" 
-                    :key="product.id"
-                    class="product-item"
-                  >
-                    <div class="product-rank">{{ index + 1 }}</div>
-                    <div class="product-info">
-                      <h6 class="product-name">{{ product.name }}</h6>
-                      <div class="product-meta">
-                        <span class="badge bg-success">{{ product.total_sold }} đã bán</span>
-                        <span class="text-muted">{{ formatCurrency(product.price || 0) }}</span>
+                <div class="card-body">
+                  <div v-if="loading.dashboard" class="loading-skeleton">
+                    <div v-for="i in 5" :key="i" class="skeleton-item"></div>
+                  </div>
+                  <div v-else-if="dashboardData.topProducts?.length" class="top-products-list">
+                    <div v-for="(product, index) in dashboardData.topProducts.slice(0, 5)" :key="product.id" class="product-item">
+                      <div class="product-rank">{{ index + 1 }}</div>
+                      <div class="product-info">
+                        <h6 class="product-name">{{ product.name }}</h6>
+                        <div class="product-meta">
+                          <span class="badge bg-success">{{ product.total_sold }} đã bán</span>
+                          <span class="text-muted">{{ formatCurrency(product.price || 0) }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div v-else class="empty-state">
-                  <i class="bi bi-box"></i>
-                  <p>Chưa có dữ liệu sản phẩm</p>
+                  <div v-else class="empty-state">
+                    <i class="bi bi-box"></i>
+                    <p>Chưa có dữ liệu sản phẩm</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Low Stock Alerts -->
-          <div class="col-lg-6">
-            <div class="info-card">
-              <div class="card-header">
-                <h5 class="card-title">
-                  <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-                  Cảnh báo tồn kho
-                </h5>
-              </div>
-              <div class="card-body">
-                <div v-if="loading.dashboard" class="loading-skeleton">
-                  <div v-for="i in 3" :key="i" class="skeleton-item"></div>
+            <!-- Low Stock Alerts -->
+            <div class="col-lg-6">
+              <div class="info-card">
+                <div class="card-header">
+                  <h5 class="card-title">
+                    <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                    Cảnh báo tồn kho
+                  </h5>
                 </div>
-                <div v-else-if="lowStockProducts?.length" class="stock-alerts">
-                  <div 
-                    v-for="product in lowStockProducts.slice(0, 5)" 
-                    :key="product.id"
-                    class="stock-item"
-                  >
-                    <div class="stock-info">
-                      <h6 class="product-name">{{ product.name }}</h6>
-                      <div class="stock-level">
-                        <span class="stock-status text-danger">⚠️</span>
-                        <span class="badge bg-danger">{{ product.stock }} còn lại</span>
-                        <span class="text-muted">{{ formatCurrency(product.price) }}</span>
+                <div class="card-body">
+                  <div v-if="loading.dashboard" class="loading-skeleton">
+                    <div v-for="i in 3" :key="i" class="skeleton-item"></div>
+                  </div>
+                  <div v-else-if="lowStockProducts?.length" class="stock-alerts">
+                    <div v-for="product in lowStockProducts.slice(0, 5)" :key="product.id" class="stock-item">
+                      <div class="stock-info">
+                        <h6 class="product-name">{{ product.name }}</h6>
+                        <div class="stock-level">
+                          <span class="stock-status text-danger">⚠️</span>
+                          <span class="badge bg-danger">{{ product.stock }} còn lại</span>
+                          <span class="text-muted">{{ formatCurrency(product.price) }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div v-else class="empty-state">
-                  <i class="bi bi-check-circle text-success"></i>
-                  <p>Tất cả sản phẩm đều có đủ tồn kho</p>
+                  <div v-else class="empty-state">
+                    <i class="bi bi-check-circle text-success"></i>
+                    <p>Tất cả sản phẩm đều có đủ tồn kho</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -307,7 +241,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
@@ -325,6 +259,7 @@ import EnhancedStats from '@/components/admin/EnhancedStats.vue'
 import EnhancedActions from '@/components/admin/EnhancedActions.vue'
 import ChartsSection from '@/components/admin/ChartsSection.vue'
 import { useToast } from '@/composables/useToast'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 const router = useRouter()
 const { user, isAdmin, isContributor, token } = useAuth()
@@ -595,7 +530,7 @@ const loadDashboardData = async () => {
 
   try {
     console.log('🚀 Starting to fetch dashboard data...')
-    
+
     // Fetch all dashboard data in parallel
     const [
       dashboardStatsResponse,
@@ -665,9 +600,9 @@ const loadDashboardData = async () => {
     const chartLabels = (dashboardApiData.revenue_chart || []).map((item: any) => {
       // Format date to be more readable
       const date = new Date(item.date)
-      return date.toLocaleDateString('vi-VN', { 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString('vi-VN', {
+        month: 'short',
+        day: 'numeric'
       })
     })
 
@@ -712,7 +647,7 @@ const loadDashboardData = async () => {
           ],
           backgroundColor: [
             '#4299e1', // Shipped - Blue
-            '#48bb78', // Delivered - Green  
+            '#48bb78', // Delivered - Green
             '#ed8936', // Pending - Orange
             '#f6e05e', // Processing - Yellow
             '#f56565'  // Cancelled - Red
@@ -794,6 +729,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -953,8 +889,13 @@ onMounted(() => {
 }
 
 @keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Product Lists */
@@ -1066,17 +1007,17 @@ onMounted(() => {
   .admin-dashboard {
     padding: 1rem 0;
   }
-  
+
   .product-item {
     flex-direction: column;
     text-align: center;
     gap: 0.75rem;
   }
-  
+
   .product-rank {
     margin-right: 0;
   }
-  
+
   .info-card .card-header,
   .info-card .card-body {
     padding: 1rem;

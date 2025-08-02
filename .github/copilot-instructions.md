@@ -1,4 +1,3 @@
-
 # Hướng dẫn cho GitHub Copilot - Dự án BaloZone Frontend
 
 Chào Copilot, bạn đang hỗ trợ phát triển frontend cho dự án BaloZone, một trang web thương mại điện tử. Vui lòng tuân thủ các hướng dẫn dưới đây để đảm bảo code được viết ra nhất quán và chính xác.
@@ -37,7 +36,9 @@ Toàn bộ tương tác dữ liệu đều thông qua BaloZone-Backend API.
   ```json
   {
     "success": true,
-    "data": { /* Dữ liệu trả về */ },
+    "data": {
+      /* Dữ liệu trả về */
+    },
     "message": "Thông điệp thành công"
   }
   ```
@@ -57,9 +58,11 @@ Toàn bộ tương tác dữ liệu đều thông qua BaloZone-Backend API.
     "success": true,
     "data": {
       "current_page": 1,
-      "data": [ /* Mảng các items */ ],
+      "data": [
+        /* Mảng các items */
+      ],
       "total": 100,
-      "per_page": 10,
+      "per_page": 10
       // ... các thông tin khác
     },
     "message": "..."
@@ -83,9 +86,11 @@ File `src/api.ts` đã đóng gói tất cả các lời gọi API và tự đ�
 API được chia thành 3 nhóm chính:
 
 1.  **Public (`/api/*`):** Không cần xác thực.
+
     - `GET /api/products`, `GET /api/categories`, `GET /api/brands`, `GET /api/news`, `POST /api/contact`...
 
 2.  **User Authenticated (`/api/*`):** Cần xác thực với vai trò `user` hoặc cao hơn.
+
     - `GET /api/profile`, `GET /api/orders`, `POST /api/orders`, `GET /api/addresses`, `POST /api/comments`...
 
 3.  **Admin & Contributor (`/api/dashboard/*`):** Cần xác thực với vai trò `admin` hoặc `contributor`.
@@ -128,14 +133,15 @@ API được chia thành 3 nhóm chính:
 ## 4. Ví dụ và Tóm tắt quy tắc
 
 - **Lấy và hiển thị danh sách sản phẩm trong một component:**
+
   ```vue
   <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
-  import { productsApi } from '@/api'
-  import type { Product } from '@/types'
+  import { ref, onMounted } from "vue";
+  import { productsApi } from "@/api";
+  import type { Product } from "@/types";
 
-  const products = ref<Product[]>([])
-  const isLoading = ref(true)
+  const products = ref<Product[]>([]);
+  const isLoading = ref(true);
 
   onMounted(async () => {
     try {
@@ -157,6 +163,4 @@ API được chia thành 3 nhóm chính:
   4.  **Sử dụng `<script setup lang="ts">`:** Viết code theo Composition API.
   5.  **Sử dụng Types:** Tận dụng các kiểu dữ liệu trong `src/types.ts`.
   6.  **Kiểm tra quyền:** Chú ý đến phân quyền khi tạo các tính năng cho trang quản trị.
-
-
-
+  7.  **Test Server:** Lệnh không cần chạy `npm run dev` vì sv đã chạy sẵn tại cổng 5173

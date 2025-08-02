@@ -1,144 +1,131 @@
 <template>
-  <div class="sale-campaigns-page">
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="container">
-        <div class="hero-content">
-          <h1 class="hero-title">🔥 Khuyến Mãi Hot</h1>
-          <p class="hero-subtitle">Cơ hội vàng săn balo với giá cực ưu đãi!</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Featured Campaigns -->
-    <section v-if="hasFeaturedCampaigns" class="featured-campaigns">
-      <div class="container">
-        <h2 class="section-title">Chương Trình Nổi Bật</h2>
-        <div class="campaigns-grid">
-          <div 
-            v-for="campaign in featuredCampaigns" 
-            :key="campaign.id"
-            class="campaign-card featured"
-            @click="goToCampaign(campaign)"
-          >
-            <div class="campaign-header">
-              <h3 class="campaign-name">{{ campaign.name }}</h3>
-              <div class="campaign-priority">
-                <span class="priority-badge">Nổi bật</span>
-              </div>
-            </div>
-            <p class="campaign-description">{{ campaign.description }}</p>
-            <div class="campaign-meta">
-              <div class="campaign-dates">
-                <i class="bi bi-calendar"></i>
-                {{ formatDate(campaign.start_date) }} - {{ formatDate(campaign.end_date) }}
-              </div>
-              <div class="campaign-countdown" v-if="isCampaignActive(campaign)">
-                <i class="bi bi-clock"></i>
-                {{ getTimeRemaining(campaign) }}
-              </div>
-            </div>
-            <div class="campaign-status">
-              <span :class="['status-badge', campaign.status]">
-                {{ getStatusText(campaign.status) }}
-              </span>
-            </div>
+  <UserLayout>
+    <div class="sale-campaigns-page">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="container">
+          <div class="hero-content">
+            <h1 class="hero-title">🔥 Khuyến Mãi Hot</h1>
+            <p class="hero-subtitle">Cơ hội vàng săn balo với giá cực ưu đãi!</p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- All Campaigns -->
-    <section class="all-campaigns">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">Tất Cả Chương Trình</h2>
-          <div class="campaign-filters">
-            <select v-model="statusFilter" @change="fetchCampaigns" class="filter-select">
-              <option value="">Tất cả trạng thái</option>
-              <option value="active">Đang hoạt động</option>
-              <option value="scheduled">Sắp diễn ra</option>
-              <option value="inactive">Đã kết thúc</option>
-            </select>
-            <input 
-              v-model="searchQuery" 
-              @input="debouncedSearch"
-              type="text" 
-              placeholder="Tìm kiếm chương trình..."
-              class="search-input"
-            >
-          </div>
-        </div>
-
-        <div v-if="isLoading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Đang tải chương trình khuyến mãi...</p>
-        </div>
-
-        <div v-else-if="error" class="error-state">
-          <p>{{ error }}</p>
-          <button @click="fetchCampaigns" class="retry-btn">Thử lại</button>
-        </div>
-
-        <div v-else-if="saleCampaigns.length === 0" class="empty-state">
-          <i class="bi bi-gift"></i>
-          <h3>Chưa có chương trình khuyến mãi</h3>
-          <p>Hãy quay lại sau để không bỏ lỡ những ưu đãi hấp dẫn!</p>
-        </div>
-
-        <div v-else class="campaigns-list">
-          <div 
-            v-for="campaign in saleCampaigns" 
-            :key="campaign.id"
-            class="campaign-card"
-            @click="goToCampaign(campaign)"
-          >
-            <div class="campaign-header">
-              <div>
+      <!-- Featured Campaigns -->
+      <section v-if="hasFeaturedCampaigns" class="featured-campaigns">
+        <div class="container">
+          <h2 class="section-title">Chương Trình Nổi Bật</h2>
+          <div class="campaigns-grid">
+            <div v-for="campaign in featuredCampaigns" :key="campaign.id" class="campaign-card featured" @click="goToCampaign(campaign)">
+              <div class="campaign-header">
                 <h3 class="campaign-name">{{ campaign.name }}</h3>
-                <p class="campaign-description">{{ campaign.description }}</p>
+                <div class="campaign-priority">
+                  <span class="priority-badge">Nổi bật</span>
+                </div>
               </div>
-              <div class="campaign-priority">
-                <span v-if="campaign.is_featured" class="priority-badge featured">Nổi bật</span>
-                <span class="priority-value">{{ campaign.priority }}/10</span>
+              <p class="campaign-description">{{ campaign.description }}</p>
+              <div class="campaign-meta">
+                <div class="campaign-dates">
+                  <i class="bi bi-calendar"></i>
+                  {{ formatDate(campaign.start_date) }} - {{ formatDate(campaign.end_date) }}
+                </div>
+                <div class="campaign-countdown" v-if="isCampaignActive(campaign)">
+                  <i class="bi bi-clock"></i>
+                  {{ getTimeRemaining(campaign) }}
+                </div>
               </div>
-            </div>
-            
-            <div class="campaign-meta">
-              <div class="campaign-dates">
-                <i class="bi bi-calendar"></i>
-                {{ formatDate(campaign.start_date) }} - {{ formatDate(campaign.end_date) }}
+              <div class="campaign-status">
+                <span :class="['status-badge', campaign.status]">
+                  {{ getStatusText(campaign.status) }}
+                </span>
               </div>
-              <div class="campaign-countdown" v-if="isCampaignActive(campaign)">
-                <i class="bi bi-clock"></i>
-                {{ getTimeRemaining(campaign) }}
-              </div>
-              <div class="products-count" v-if="campaign.sale_products">
-                <i class="bi bi-box"></i>
-                {{ campaign.sale_products.length }} sản phẩm
-              </div>
-            </div>
-
-            <div class="campaign-footer">
-              <span :class="['status-badge', campaign.status]">
-                {{ getStatusText(campaign.status) }}
-              </span>
-              <button class="view-btn">
-                Xem chi tiết
-                <i class="bi bi-arrow-right"></i>
-              </button>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
+      </section>
+
+      <!-- All Campaigns -->
+      <section class="all-campaigns">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Tất Cả Chương Trình</h2>
+            <div class="campaign-filters">
+              <select v-model="statusFilter" @change="fetchCampaigns" class="filter-select">
+                <option value="">Tất cả trạng thái</option>
+                <option value="active">Đang hoạt động</option>
+                <option value="scheduled">Sắp diễn ra</option>
+                <option value="inactive">Đã kết thúc</option>
+              </select>
+              <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm chương trình..." class="search-input">
+            </div>
+          </div>
+
+          <div v-if="isLoading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Đang tải chương trình khuyến mãi...</p>
+          </div>
+
+          <div v-else-if="error" class="error-state">
+            <p>{{ error }}</p>
+            <button @click="fetchCampaigns" class="retry-btn">Thử lại</button>
+          </div>
+
+          <div v-else-if="saleCampaigns.length === 0" class="empty-state">
+            <i class="bi bi-gift"></i>
+            <h3>Chưa có chương trình khuyến mãi</h3>
+            <p>Hãy quay lại sau để không bỏ lỡ những ưu đãi hấp dẫn!</p>
+          </div>
+
+          <div v-else class="campaigns-list">
+            <div v-for="campaign in saleCampaigns" :key="campaign.id" class="campaign-card" @click="goToCampaign(campaign)">
+              <div class="campaign-header">
+                <div>
+                  <h3 class="campaign-name">{{ campaign.name }}</h3>
+                  <p class="campaign-description">{{ campaign.description }}</p>
+                </div>
+                <div class="campaign-priority">
+                  <span v-if="campaign.is_featured" class="priority-badge featured">Nổi bật</span>
+                  <span class="priority-value">{{ campaign.priority }}/10</span>
+                </div>
+              </div>
+
+              <div class="campaign-meta">
+                <div class="campaign-dates">
+                  <i class="bi bi-calendar"></i>
+                  {{ formatDate(campaign.start_date) }} - {{ formatDate(campaign.end_date) }}
+                </div>
+                <div class="campaign-countdown" v-if="isCampaignActive(campaign)">
+                  <i class="bi bi-clock"></i>
+                  {{ getTimeRemaining(campaign) }}
+                </div>
+                <div class="products-count" v-if="campaign.sale_products">
+                  <i class="bi bi-box"></i>
+                  {{ campaign.sale_products.length }} sản phẩm
+                </div>
+              </div>
+
+              <div class="campaign-footer">
+                <span :class="['status-badge', campaign.status]">
+                  {{ getStatusText(campaign.status) }}
+                </span>
+                <button class="view-btn">
+                  Xem chi tiết
+                  <i class="bi bi-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSaleCampaigns } from '@/composables/useSaleCampaigns'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 // Simple debounce implementation
 const debounce = (func: Function, wait: number) => {
@@ -175,7 +162,7 @@ const fetchCampaigns = async () => {
   const filters: any = {}
   if (statusFilter.value) filters.status = statusFilter.value
   if (searchQuery.value) filters.search = searchQuery.value
-  
+
   await fetchSaleCampaigns(filters)
 }
 
@@ -212,7 +199,7 @@ const getStatusText = (status: string) => {
 const getTimeRemaining = (campaign: any) => {
   const remaining = getCampaignTimeRemaining(campaign)
   if (remaining.expired) return 'Đã kết thúc'
-  
+
   if (remaining.days > 0) return `Còn ${remaining.days} ngày`
   if (remaining.hours > 0) return `Còn ${remaining.hours} giờ`
   if (remaining.minutes > 0) return `Còn ${remaining.minutes} phút`
@@ -245,7 +232,7 @@ onMounted(async () => {
   font-size: 3rem;
   font-weight: 800;
   margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .hero-subtitle {
@@ -283,7 +270,7 @@ onMounted(async () => {
   background: white;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
@@ -291,7 +278,7 @@ onMounted(async () => {
 
 .campaign-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
   border-color: #667eea;
 }
 
@@ -401,7 +388,7 @@ onMounted(async () => {
 
 .all-campaigns {
   padding: 60px 0;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
 }
 
@@ -426,7 +413,7 @@ onMounted(async () => {
   border: none;
   border-radius: 8px;
   background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .filter-select {
@@ -478,7 +465,7 @@ onMounted(async () => {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255,255,255,0.3);
+  border: 4px solid rgba(255, 255, 255, 0.3);
   border-left: 4px solid white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -486,8 +473,13 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .retry-btn {
@@ -511,16 +503,16 @@ onMounted(async () => {
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .campaign-filters {
     justify-content: center;
   }
-  
+
   .campaigns-grid {
     grid-template-columns: 1fr;
   }

@@ -1,198 +1,169 @@
 <template>
-  <div class="cart-page">
-    <div class="container py-4">
-      <!-- Header Section -->
-      <div class="cart-header">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h1 class="page-title mb-2">
-              <i class="bi bi-cart3 me-3"></i>
-              Giỏ hàng của bạn
-            </h1>
-            <p class="text-muted mb-0" v-if="cartItems.length > 0">
-              {{ cartItemsCount }} sản phẩm trong giỏ hàng
-            </p>
-          </div>
-          <div v-if="cartItems.length > 0" class="cart-actions">
-            <button 
-              class="btn btn-outline-danger btn-clear-cart"
-              @click="showClearCartModal = true"
-              title="Xóa toàn bộ giỏ hàng"
-            >
-              <i class="bi bi-trash3 me-2"></i>
-              Xóa tất cả
-            </button>
+  <UserLayout>
+    <div class="cart-page">
+      <div class="container py-4">
+        <!-- Header Section -->
+        <div class="cart-header">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h1 class="page-title mb-2">
+                <i class="bi bi-cart3 me-3"></i>
+                Giỏ hàng của bạn
+              </h1>
+              <p class="text-muted mb-0" v-if="cartItems.length > 0">
+                {{ cartItemsCount }} sản phẩm trong giỏ hàng
+              </p>
+            </div>
+            <div v-if="cartItems.length > 0" class="cart-actions">
+              <button class="btn btn-outline-danger btn-clear-cart" @click="showClearCartModal = true" title="Xóa toàn bộ giỏ hàng">
+                <i class="bi bi-trash3 me-2"></i>
+                Xóa tất cả
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <!-- Empty cart -->
-      <div v-if="cartItems.length === 0" class="empty-cart">
-        <div class="empty-cart-content">
-          <div class="empty-cart-icon">
-            <i class="bi bi-cart-x"></i>
-          </div>
-          <h3 class="empty-cart-title">Giỏ hàng của bạn đang trống</h3>
-          <p class="empty-cart-subtitle">Hãy khám phá các sản phẩm tuyệt vời của chúng tôi</p>
-          <router-link to="/" class="btn btn-primary btn-lg mt-3">
-            <i class="bi bi-shop me-2"></i>
-            Bắt đầu mua sắm
-          </router-link>
-        </div>
-      </div>
 
-      <!-- Cart items -->
-      <div v-else class="cart-content">
-        <div class="row g-4">
-          <div class="col-lg-8">
-            <div class="cart-items-section">
-              <div class="cart-items-header">
-                <h5 class="mb-0">Sản phẩm trong giỏ</h5>
-              </div>
-              
-              <div class="cart-items">
-                <transition-group name="cart-item" tag="div">
-                  <div 
-                    v-for="item in cartItems" 
-                    :key="`${item.product.id}-${item.selectedSize}`"
-                    class="cart-item"
-                  >
-                    <div class="item-image">
-                      <img :src="getImageUrl(item.product.image)" :alt="item.product.name" />
-                      <div class="item-badge" v-if="(item.product.discount_price && Number(item.product.discount_price) < Number(item.product.price)) || (item.product.originalPrice && Number(item.product.originalPrice) < Number(item.product.price))">
-                        <span class="badge bg-danger">Sale</span>
-                      </div>
-                    </div>
-                    
-                    <div class="item-details">
-                      <div class="item-info">
-                        <h6 class="item-name">{{ item.product.name }}</h6>
-                        <p class="item-brand" v-if="item.product.brand">
-                          <i class="bi bi-tags me-1"></i>
-                          {{ item.product.brand.name }}
-                        </p>
-                        <div v-if="item.selectedSize" class="item-options">
-                          <span class="size-badge">Size: {{ item.selectedSize }}</span>
-                        </div>
-                        <div class="item-price-section">
-                          <span class="item-price">{{ formatPrice(item.product.discount_price || item.product.originalPrice || item.product.price) }}</span>
-                          <span v-if="item.product.discount_price && Number(item.product.discount_price) < Number(item.product.price)" 
-                                class="item-original-price">
-                            {{ formatPrice(item.product.price) }}
-                          </span>
-                          <span v-else-if="item.product.originalPrice && Number(item.product.originalPrice) < Number(item.product.price)" 
-                                class="item-original-price">
-                            {{ formatPrice(item.product.price) }}
-                          </span>
+        <!-- Empty cart -->
+        <div v-if="cartItems.length === 0" class="empty-cart">
+          <div class="empty-cart-content">
+            <div class="empty-cart-icon">
+              <i class="bi bi-cart-x"></i>
+            </div>
+            <h3 class="empty-cart-title">Giỏ hàng của bạn đang trống</h3>
+            <p class="empty-cart-subtitle">Hãy khám phá các sản phẩm tuyệt vời của chúng tôi</p>
+            <router-link to="/" class="btn btn-primary btn-lg mt-3">
+              <i class="bi bi-shop me-2"></i>
+              Bắt đầu mua sắm
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Cart items -->
+        <div v-else class="cart-content">
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <div class="cart-items-section">
+                <div class="cart-items-header">
+                  <h5 class="mb-0">Sản phẩm trong giỏ</h5>
+                </div>
+
+                <div class="cart-items">
+                  <transition-group name="cart-item" tag="div">
+                    <div v-for="item in cartItems" :key="`${item.product.id}-${item.selectedSize}`" class="cart-item">
+                      <div class="item-image">
+                        <img :src="getImageUrl(item.product.image)" :alt="item.product.name" />
+                        <div class="item-badge" v-if="(item.product.discount_price && Number(item.product.discount_price) < Number(item.product.price)) || (item.product.originalPrice && Number(item.product.originalPrice) < Number(item.product.price))">
+                          <span class="badge bg-danger">Sale</span>
                         </div>
                       </div>
-                      
-                      <div class="item-controls">
-                        <div class="quantity-section">
-                          <label class="quantity-label">Số lượng:</label>
-                          <div class="quantity-controls">
-                            <button 
-                              class="quantity-btn quantity-btn-decrease"
-                              @click="decreaseQuantity(item.product.id, item.selectedSize)"
-                              :disabled="item.quantity <= 1"
-                            >
-                              <i class="bi bi-dash"></i>
-                            </button>
-                            <input 
-                              type="number" 
-                              class="quantity-input"
-                              :value="item.quantity"
-                              @input="updateQuantityInput(item.product.id, item.selectedSize, $event)"
-                              min="1"
-                              max="99"
-                            />
-                            <button 
-                              class="quantity-btn quantity-btn-increase"
-                              @click="increaseQuantity(item.product.id, item.selectedSize)"
-                            >
-                              <i class="bi bi-plus"></i>
-                            </button>
+
+                      <div class="item-details">
+                        <div class="item-info">
+                          <h6 class="item-name">{{ item.product.name }}</h6>
+                          <p class="item-brand" v-if="item.product.brand">
+                            <i class="bi bi-tags me-1"></i>
+                            {{ item.product.brand.name }}
+                          </p>
+                          <div v-if="item.selectedSize" class="item-options">
+                            <span class="size-badge">Size: {{ item.selectedSize }}</span>
+                          </div>
+                          <div class="item-price-section">
+                            <span class="item-price">{{ formatPrice(item.product.discount_price || item.product.originalPrice || item.product.price) }}</span>
+                            <span v-if="item.product.discount_price && Number(item.product.discount_price) < Number(item.product.price)" class="item-original-price">
+                              {{ formatPrice(item.product.price) }}
+                            </span>
+                            <span v-else-if="item.product.originalPrice && Number(item.product.originalPrice) < Number(item.product.price)" class="item-original-price">
+                              {{ formatPrice(item.product.price) }}
+                            </span>
                           </div>
                         </div>
-                        
-                        <div class="item-total-section">
-                          <span class="item-total-label">Thành tiền:</span>
-                          <span class="item-total">{{ formatPrice(Number(item.product.discount_price || item.product.originalPrice || item.product.price) * item.quantity) }}</span>
+
+                        <div class="item-controls">
+                          <div class="quantity-section">
+                            <label class="quantity-label">Số lượng:</label>
+                            <div class="quantity-controls">
+                              <button class="quantity-btn quantity-btn-decrease" @click="decreaseQuantity(item.product.id, item.selectedSize)" :disabled="item.quantity <= 1">
+                                <i class="bi bi-dash"></i>
+                              </button>
+                              <input type="number" class="quantity-input" :value="item.quantity" @input="updateQuantityInput(item.product.id, item.selectedSize, $event)" min="1" max="99" />
+                              <button class="quantity-btn quantity-btn-increase" @click="increaseQuantity(item.product.id, item.selectedSize)">
+                                <i class="bi bi-plus"></i>
+                              </button>
+                            </div>
+                          </div>
+
+                          <div class="item-total-section">
+                            <span class="item-total-label">Thành tiền:</span>
+                            <span class="item-total">{{ formatPrice(Number(item.product.discount_price || item.product.originalPrice || item.product.price) * item.quantity) }}</span>
+                          </div>
+
+                          <button class="btn-remove-item" @click="confirmRemoveItem(item.product.id, item.selectedSize, item.product.name)" title="Xóa sản phẩm">
+                            <i class="bi bi-trash3"></i>
+                          </button>
                         </div>
-                        
-                        <button 
-                          class="btn-remove-item"
-                          @click="confirmRemoveItem(item.product.id, item.selectedSize, item.product.name)"
-                          title="Xóa sản phẩm"
-                        >
-                          <i class="bi bi-trash3"></i>
-                        </button>
                       </div>
                     </div>
-                  </div>
-                </transition-group>
+                  </transition-group>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <div class="col-lg-4">
-            <div class="cart-summary">
-              <div class="summary-header">
-                <h5 class="mb-0">
-                  <i class="bi bi-receipt me-2"></i>
-                  Tóm tắt đơn hàng
-                </h5>
-              </div>
-              
-              <div class="summary-content">
-                <div class="summary-row">
-                  <span>Tạm tính ({{ cartItemsCount }} sản phẩm):</span>
-                  <span class="summary-amount">{{ formatPrice(cartTotal) }}</span>
+
+            <div class="col-lg-4">
+              <div class="cart-summary">
+                <div class="summary-header">
+                  <h5 class="mb-0">
+                    <i class="bi bi-receipt me-2"></i>
+                    Tóm tắt đơn hàng
+                  </h5>
                 </div>
-                
-                <div class="summary-row">
-                  <span>Phí vận chuyển:</span>
-                  <span class="summary-amount text-success">
-                    <i class="bi bi-check-circle me-1"></i>
-                    Miễn phí
-                  </span>
-                </div>
-                
-                <div class="summary-row discount-row" v-if="false">
-                  <span>Giảm giá:</span>
-                  <span class="summary-amount text-success">-{{ formatPrice(0) }}</span>
-                </div>
-                
-                <hr class="summary-divider">
-                
-                <div class="summary-row total-row">
-                  <span class="total-label">Tổng thanh toán:</span>
-                  <span class="total-amount">{{ formatPrice(totalAmount) }}</span>
-                </div>
-                
-                <div class="summary-actions">
-                  <button 
-                    class="btn btn-primary btn-checkout w-100"
-                    @click="proceedToCheckout"
-                  >
-                    <i class="bi bi-credit-card me-2"></i>
-                    Tiến hành thanh toán
-                  </button>
-                  
-                  <router-link to="/" class="btn btn-outline-secondary w-100 mt-3">
-                    <i class="bi bi-arrow-left me-2"></i>
-                    Tiếp tục mua sắm
-                  </router-link>
-                </div>
-                
-                <div class="payment-security">
-                  <div class="security-info">
-                    <i class="bi bi-shield-check text-success me-2"></i>
-                    <span>Thanh toán an toàn & bảo mật</span>
+
+                <div class="summary-content">
+                  <div class="summary-row">
+                    <span>Tạm tính ({{ cartItemsCount }} sản phẩm):</span>
+                    <span class="summary-amount">{{ formatPrice(cartTotal) }}</span>
                   </div>
-                  <div class="security-info">
-                    <i class="bi bi-truck text-primary me-2"></i>
-                    <span>Giao hàng nhanh chóng</span>
+
+                  <div class="summary-row">
+                    <span>Phí vận chuyển:</span>
+                    <span class="summary-amount text-success">
+                      <i class="bi bi-check-circle me-1"></i>
+                      Miễn phí
+                    </span>
+                  </div>
+
+                  <div class="summary-row discount-row" v-if="false">
+                    <span>Giảm giá:</span>
+                    <span class="summary-amount text-success">-{{ formatPrice(0) }}</span>
+                  </div>
+
+                  <hr class="summary-divider">
+
+                  <div class="summary-row total-row">
+                    <span class="total-label">Tổng thanh toán:</span>
+                    <span class="total-amount">{{ formatPrice(totalAmount) }}</span>
+                  </div>
+
+                  <div class="summary-actions">
+                    <button class="btn btn-primary btn-checkout w-100" @click="proceedToCheckout">
+                      <i class="bi bi-credit-card me-2"></i>
+                      Tiến hành thanh toán
+                    </button>
+
+                    <router-link to="/" class="btn btn-outline-secondary w-100 mt-3">
+                      <i class="bi bi-arrow-left me-2"></i>
+                      Tiếp tục mua sắm
+                    </router-link>
+                  </div>
+
+                  <div class="payment-security">
+                    <div class="security-info">
+                      <i class="bi bi-shield-check text-success me-2"></i>
+                      <span>Thanh toán an toàn & bảo mật</span>
+                    </div>
+                    <div class="security-info">
+                      <i class="bi bi-truck text-primary me-2"></i>
+                      <span>Giao hàng nhanh chóng</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -200,61 +171,61 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Clear Cart Confirmation Modal -->
-    <div v-if="showClearCartModal" class="modal-overlay" @click="showClearCartModal = false">
-      <div class="modal-dialog" @click.stop>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <i class="bi bi-exclamation-triangle text-warning me-2"></i>
-              Xác nhận xóa giỏ hàng
-            </h5>
+      <!-- Clear Cart Confirmation Modal -->
+      <div v-if="showClearCartModal" class="modal-overlay" @click="showClearCartModal = false">
+        <div class="modal-dialog" @click.stop>
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                Xác nhận xóa giỏ hàng
+              </h5>
+            </div>
+            <div class="modal-body">
+              <p>Bạn có chắc chắn muốn xóa tất cả sản phẩm trong giỏ hàng?</p>
+              <p class="text-muted mb-0">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" @click="showClearCartModal = false">
+                Hủy bỏ
+              </button>
+              <button class="btn btn-danger" @click="clearAllItems">
+                <i class="bi bi-trash3 me-2"></i>
+                Xóa tất cả
+              </button>
+            </div>
           </div>
-          <div class="modal-body">
-            <p>Bạn có chắc chắn muốn xóa tất cả sản phẩm trong giỏ hàng?</p>
-            <p class="text-muted mb-0">Hành động này không thể hoàn tác.</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="showClearCartModal = false">
-              Hủy bỏ
-            </button>
-            <button class="btn btn-danger" @click="clearAllItems">
-              <i class="bi bi-trash3 me-2"></i>
-              Xóa tất cả
-            </button>
+        </div>
+      </div>
+
+      <!-- Remove Item Confirmation Modal -->
+      <div v-if="showRemoveModal" class="modal-overlay" @click="showRemoveModal = false">
+        <div class="modal-dialog" @click.stop>
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="bi bi-trash3 text-danger me-2"></i>
+                Xóa sản phẩm
+              </h5>
+            </div>
+            <div class="modal-body">
+              <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>"{{ itemToRemove.name }}"</strong> khỏi giỏ hàng?</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" @click="showRemoveModal = false">
+                Hủy bỏ
+              </button>
+              <button class="btn btn-danger" @click="executeRemoveItem">
+                <i class="bi bi-trash3 me-2"></i>
+                Xóa sản phẩm
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Remove Item Confirmation Modal -->
-    <div v-if="showRemoveModal" class="modal-overlay" @click="showRemoveModal = false">
-      <div class="modal-dialog" @click.stop>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <i class="bi bi-trash3 text-danger me-2"></i>
-              Xóa sản phẩm
-            </h5>
-          </div>
-          <div class="modal-body">
-            <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>"{{ itemToRemove.name }}"</strong> khỏi giỏ hàng?</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="showRemoveModal = false">
-              Hủy bỏ
-            </button>
-            <button class="btn btn-danger" @click="executeRemoveItem">
-              <i class="bi bi-trash3 me-2"></i>
-              Xóa sản phẩm
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -263,14 +234,15 @@ import { useCart } from '@/composables/useCart'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { formatPrice, getImageUrl } from '@/utils'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const router = useRouter()
 const { addToast } = useToast()
-const { 
-  cartItems, 
-  cartItemsCount, 
-  totalAmount, 
-  updateQuantity, 
+const {
+  cartItems,
+  cartItemsCount,
+  totalAmount,
+  updateQuantity,
   removeFromCart,
   clearCart,
   getCartItem
@@ -314,7 +286,7 @@ const decreaseQuantity = (productId: number, size?: string) => {
 const updateQuantityInput = (productId: number, size: string | undefined, event: Event) => {
   const target = event.target as HTMLInputElement
   const newQuantity = parseInt(target.value)
-  
+
   if (newQuantity && newQuantity > 0 && newQuantity <= 99) {
     updateQuantity(productId, newQuantity, size)
   } else {
@@ -821,6 +793,7 @@ const proceedToCheckout = () => {
     opacity: 0;
     transform: translateY(50px) scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -921,28 +894,28 @@ const proceedToCheckout = () => {
     padding: 1.5rem;
     margin-bottom: 1.5rem;
   }
-  
+
   .page-title {
     font-size: 2rem;
   }
-  
+
   .cart-item {
     flex-direction: column;
     text-align: center;
     gap: 1rem;
   }
-  
+
   .item-image {
     margin-right: 0;
     align-self: center;
   }
-  
+
   .item-details {
     flex-direction: column;
     gap: 1rem;
     width: 100%;
   }
-  
+
   .item-controls {
     flex-direction: row;
     justify-content: space-between;
@@ -950,7 +923,7 @@ const proceedToCheckout = () => {
     min-width: auto;
     width: 100%;
   }
-  
+
   .quantity-section,
   .item-total-section {
     text-align: center;
@@ -961,47 +934,47 @@ const proceedToCheckout = () => {
   .cart-header {
     padding: 1rem;
   }
-  
+
   .page-title {
     font-size: 1.8rem;
   }
-  
+
   .btn-clear-cart {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }
-  
+
   .cart-items {
     padding: 0.5rem;
   }
-  
+
   .cart-item {
     padding: 1rem;
   }
-  
+
   .item-image {
     width: 100px;
     height: 100px;
   }
-  
+
   .summary-content {
     padding: 1.5rem;
   }
-  
+
   .modal-dialog {
     width: 95%;
   }
-  
+
   .modal-header,
   .modal-body {
     padding: 1.5rem;
   }
-  
+
   .modal-footer {
     padding: 1rem 1.5rem;
     flex-direction: column;
   }
-  
+
   .modal-footer .btn {
     width: 100%;
   }
@@ -1013,17 +986,17 @@ const proceedToCheckout = () => {
     gap: 1rem;
     text-align: center;
   }
-  
+
   .item-controls {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .quantity-controls {
     width: 100%;
     max-width: 200px;
   }
-  
+
   .quantity-input {
     width: 80px;
   }

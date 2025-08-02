@@ -1,185 +1,187 @@
 <template>
-  <div class="profile-page" style="background:linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); min-height:100vh; padding: 2rem 0;">
-    <div class="container-fluid px-4">
-      <div class="row">
-        <!-- Sidebar -->
-        <div class="col-lg-3 col-md-4 mb-4">
-          <ProfileSidebar :user="user" :activeTab="activeTab" @change-tab="activeTab = $event" />
-        </div>
-        <!-- Main Content -->
-        <div class="col-lg-9 col-md-8">
-          <ProfileInfoCard v-if="activeTab === 'profile'" :form="profileForm" :updating="updating" @update="updateProfile" @reset="loadProfile" />
-          <!-- Address Book -->
-          <div v-if="activeTab === 'addresses'" class="profile-content address-section">
-            <div class="address-header-section">
-              <div class="header-content">
-                <h3 class="content-title mb-1">
-                  <i class="bi bi-geo-alt-fill me-2"></i>
-                  Sổ địa chỉ
-                </h3>
-                <p class="text-muted mb-0">Quản lý địa chỉ giao hàng của bạn</p>
-              </div>
-              <button v-if="!showAddForm && !showEditForm" class="btn btn-primary btn-add-address" @click="showAddForm = true">
-                <i class="bi bi-plus-circle me-2"></i>
-                Thêm địa chỉ mới
-              </button>
-            </div>
-
-            <!-- Add Address Form -->
-            <AddressForm v-if="showAddForm" :isEdit="false" :submitting="addingAddress" :backendError="addAddressBackendError" @submit="handleAddAddress" @cancel="cancelAddAddress" />
-
-            <!-- Edit Address Form -->
-            <AddressForm v-if="showEditForm" :isEdit="true" :modelValue="editingAddress" :submitting="editingAddressLoading" :backendError="editAddressBackendError" @submit="handleEditAddress" @cancel="cancelEditAddress" />
-
-            <!-- Addresses List -->
-            <div v-if="!showAddForm && !showEditForm" class="addresses-section">
-              <div v-if="addresses.length === 0" class="no-addresses">
-                <div class="no-addresses-content">
-                  <i class="bi bi-geo-alt text-muted"></i>
-                  <h5>Chưa có địa chỉ nào</h5>
-                  <p class="text-muted">Thêm địa chỉ đầu tiên để bắt đầu mua sắm</p>
-                  <button class="btn btn-primary" @click="showAddForm = true">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    Thêm địa chỉ ngay
-                  </button>
-                </div>
-              </div>
-
-              <div v-else class="addresses-grid">
-                <div v-for="address in addresses" :key="address.id" class="address-card">
-                  <div class="address-content">
-                    <div class="address-header">
-                      <span class="address-type">
-                        <i class="bi bi-house-door me-1"></i>
-                        {{ address.recipient_name }}
-                      </span>
-                      <span v-if="address.is_default" class="badge bg-success default-badge">
-                        <i class="bi bi-star-fill me-1"></i>
-                        Mặc định
-                      </span>
-                    </div>
-                    <div class="address-info">
-                      <p class="address-text">
-                        <i class="bi bi-geo me-1"></i>
-                        {{ address.address }}
-                      </p>
-                      <p class="address-details">
-                        <i class="bi bi-map me-1"></i>
-                        {{ address.ward }}, {{ address.district }}, {{ address.province }}
-                      </p>
-                      <p class="address-details">
-                        <i class="bi bi-telephone me-1"></i>
-                        {{ address.recipient_phone }}
-                      </p>
-                      <p v-if="address.postal_code" class="address-details">
-                        <i class="bi bi-mailbox me-1"></i>
-                        {{ address.postal_code }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="address-actions">
-                    <button class="btn btn-sm btn-edit" @click="openEditAddress(address)">
-                      <i class="bi bi-pencil me-1"></i>
-                      Sửa
-                    </button>
-                    <button v-if="!address.is_default" class="btn btn-sm btn-default" @click="setAsDefault(address.id)">
-                      <i class="bi bi-star me-1"></i>
-                      Mặc định
-                    </button>
-                    <button class="btn btn-sm btn-delete" @click="() => handleDeleteAddress(address.id)">
-                      <i class="bi bi-trash me-1"></i>
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+  <UserLayout>
+    <div class="profile-page" style="background:linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); min-height:100vh; padding: 2rem 0;">
+      <div class="container-fluid px-4">
+        <div class="row">
+          <!-- Sidebar -->
+          <div class="col-lg-3 col-md-4 mb-4">
+            <ProfileSidebar :user="user" :activeTab="activeTab" @change-tab="activeTab = $event" />
           </div>
-          <!-- Change Password -->
-          <div v-if="activeTab === 'password'" class="profile-content password-section">
-            <div class="content-header mb-4">
-              <h3 class="content-title">
-                <i class="bi bi-shield-lock-fill me-2"></i>
-                Đổi mật khẩu
-              </h3>
-              <p class="text-muted">Cập nhật mật khẩu để bảo mật tài khoản của bạn</p>
-            </div>
-            <form @submit.prevent="changePassword" class="password-form">
-              <div class="mb-3">
-                <label for="currentPassword" class="form-label">
-                  <i class="bi bi-lock me-1"></i>
-                  Mật khẩu hiện tại *
-                </label>
-                <input id="currentPassword" v-model="passwordForm.currentPassword" type="password" class="form-control" required />
-              </div>
-              <div class="mb-3">
-                <label for="newPassword" class="form-label">
-                  <i class="bi bi-key me-1"></i>
-                  Mật khẩu mới *
-                </label>
-                <input id="newPassword" v-model="passwordForm.newPassword" type="password" class="form-control" required />
-              </div>
-              <div class="mb-3">
-                <label for="confirmPassword" class="form-label">
-                  <i class="bi bi-check-circle me-1"></i>
-                  Xác nhận mật khẩu mới *
-                </label>
-                <input id="confirmPassword" v-model="passwordForm.confirmPassword" type="password" class="form-control" required />
-              </div>
-              <div class="form-actions">
-                <button type="submit" class="btn btn-primary" :disabled="changingPassword">
-                  <span v-if="changingPassword" class="spinner-border spinner-border-sm me-2"></span>
-                  <i v-else class="bi bi-check-circle me-2"></i>
-                  {{ changingPassword ? 'Đang cập nhật...' : 'Đổi mật khẩu' }}
+          <!-- Main Content -->
+          <div class="col-lg-9 col-md-8">
+            <ProfileInfoCard v-if="activeTab === 'profile'" :form="profileForm" :updating="updating" @update="updateProfile" @reset="loadProfile" />
+            <!-- Address Book -->
+            <div v-if="activeTab === 'addresses'" class="profile-content address-section">
+              <div class="address-header-section">
+                <div class="header-content">
+                  <h3 class="content-title mb-1">
+                    <i class="bi bi-geo-alt-fill me-2"></i>
+                    Sổ địa chỉ
+                  </h3>
+                  <p class="text-muted mb-0">Quản lý địa chỉ giao hàng của bạn</p>
+                </div>
+                <button v-if="!showAddForm && !showEditForm" class="btn btn-primary btn-add-address" @click="showAddForm = true">
+                  <i class="bi bi-plus-circle me-2"></i>
+                  Thêm địa chỉ mới
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="cancelDelete">
-      <div class="delete-modal" @click.stop>
-        <div class="modal-header">
-          <div class="modal-icon">
-            <i class="bi bi-exclamation-triangle"></i>
-          </div>
-          <h4 class="modal-title">Xác nhận xóa địa chỉ</h4>
-        </div>
-        <div class="modal-body">
-          <p class="modal-message">Bạn có chắc chắn muốn xóa địa chỉ này không?</p>
-          <div v-if="addressToDelete" class="address-preview">
-            <div class="preview-header">
-              <i class="bi bi-house-door me-2"></i>
-              {{ addressToDelete.recipient_name }}
-            </div>
-            <div class="preview-info">
-              {{ addressToDelete.address }}<br>
-              {{ addressToDelete.ward }}, {{ addressToDelete.district }}, {{ addressToDelete.province }}
-            </div>
-          </div>
-          <p class="warning-text">
-            <i class="bi bi-info-circle me-2"></i>
-            Hành động này không thể hoàn tác
-          </p>
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-cancel" @click="cancelDelete">
-            <i class="bi bi-x-circle me-2"></i>
-            Hủy bỏ
-          </button>
-          <button class="btn btn-confirm-delete" @click="confirmDelete" :disabled="deletingAddress">
-            <span v-if="deletingAddress" class="spinner-border spinner-border-sm me-2"></span>
-            <i v-else class="bi bi-trash me-2"></i>
-            {{ deletingAddress ? 'Đang xóa...' : 'Xác nhận xóa' }}
-          </button>
-        </div>
-      </div>
-    </div>
 
-    <ToastContainer />
-  </div>
+              <!-- Add Address Form -->
+              <AddressForm v-if="showAddForm" :isEdit="false" :submitting="addingAddress" :backendError="addAddressBackendError" @submit="handleAddAddress" @cancel="cancelAddAddress" />
+
+              <!-- Edit Address Form -->
+              <AddressForm v-if="showEditForm" :isEdit="true" :modelValue="editingAddress" :submitting="editingAddressLoading" :backendError="editAddressBackendError" @submit="handleEditAddress" @cancel="cancelEditAddress" />
+
+              <!-- Addresses List -->
+              <div v-if="!showAddForm && !showEditForm" class="addresses-section">
+                <div v-if="addresses.length === 0" class="no-addresses">
+                  <div class="no-addresses-content">
+                    <i class="bi bi-geo-alt text-muted"></i>
+                    <h5>Chưa có địa chỉ nào</h5>
+                    <p class="text-muted">Thêm địa chỉ đầu tiên để bắt đầu mua sắm</p>
+                    <button class="btn btn-primary" @click="showAddForm = true">
+                      <i class="bi bi-plus-circle me-2"></i>
+                      Thêm địa chỉ ngay
+                    </button>
+                  </div>
+                </div>
+
+                <div v-else class="addresses-grid">
+                  <div v-for="address in addresses" :key="address.id" class="address-card">
+                    <div class="address-content">
+                      <div class="address-header">
+                        <span class="address-type">
+                          <i class="bi bi-house-door me-1"></i>
+                          {{ address.recipient_name }}
+                        </span>
+                        <span v-if="address.is_default" class="badge bg-success default-badge">
+                          <i class="bi bi-star-fill me-1"></i>
+                          Mặc định
+                        </span>
+                      </div>
+                      <div class="address-info">
+                        <p class="address-text">
+                          <i class="bi bi-geo me-1"></i>
+                          {{ address.address }}
+                        </p>
+                        <p class="address-details">
+                          <i class="bi bi-map me-1"></i>
+                          {{ address.ward }}, {{ address.district }}, {{ address.province }}
+                        </p>
+                        <p class="address-details">
+                          <i class="bi bi-telephone me-1"></i>
+                          {{ address.recipient_phone }}
+                        </p>
+                        <p v-if="address.postal_code" class="address-details">
+                          <i class="bi bi-mailbox me-1"></i>
+                          {{ address.postal_code }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="address-actions">
+                      <button class="btn btn-sm btn-edit" @click="openEditAddress(address)">
+                        <i class="bi bi-pencil me-1"></i>
+                        Sửa
+                      </button>
+                      <button v-if="!address.is_default" class="btn btn-sm btn-default" @click="setAsDefault(address.id)">
+                        <i class="bi bi-star me-1"></i>
+                        Mặc định
+                      </button>
+                      <button class="btn btn-sm btn-delete" @click="() => handleDeleteAddress(address.id)">
+                        <i class="bi bi-trash me-1"></i>
+                        Xóa
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Change Password -->
+            <div v-if="activeTab === 'password'" class="profile-content password-section">
+              <div class="content-header mb-4">
+                <h3 class="content-title">
+                  <i class="bi bi-shield-lock-fill me-2"></i>
+                  Đổi mật khẩu
+                </h3>
+                <p class="text-muted">Cập nhật mật khẩu để bảo mật tài khoản của bạn</p>
+              </div>
+              <form @submit.prevent="changePassword" class="password-form">
+                <div class="mb-3">
+                  <label for="currentPassword" class="form-label">
+                    <i class="bi bi-lock me-1"></i>
+                    Mật khẩu hiện tại *
+                  </label>
+                  <input id="currentPassword" v-model="passwordForm.currentPassword" type="password" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                  <label for="newPassword" class="form-label">
+                    <i class="bi bi-key me-1"></i>
+                    Mật khẩu mới *
+                  </label>
+                  <input id="newPassword" v-model="passwordForm.newPassword" type="password" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                  <label for="confirmPassword" class="form-label">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Xác nhận mật khẩu mới *
+                  </label>
+                  <input id="confirmPassword" v-model="passwordForm.confirmPassword" type="password" class="form-control" required />
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary" :disabled="changingPassword">
+                    <span v-if="changingPassword" class="spinner-border spinner-border-sm me-2"></span>
+                    <i v-else class="bi bi-check-circle me-2"></i>
+                    {{ changingPassword ? 'Đang cập nhật...' : 'Đổi mật khẩu' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Delete Confirmation Modal -->
+      <div v-if="showDeleteModal" class="modal-overlay" @click="cancelDelete">
+        <div class="delete-modal" @click.stop>
+          <div class="modal-header">
+            <div class="modal-icon">
+              <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <h4 class="modal-title">Xác nhận xóa địa chỉ</h4>
+          </div>
+          <div class="modal-body">
+            <p class="modal-message">Bạn có chắc chắn muốn xóa địa chỉ này không?</p>
+            <div v-if="addressToDelete" class="address-preview">
+              <div class="preview-header">
+                <i class="bi bi-house-door me-2"></i>
+                {{ addressToDelete.recipient_name }}
+              </div>
+              <div class="preview-info">
+                {{ addressToDelete.address }}<br>
+                {{ addressToDelete.ward }}, {{ addressToDelete.district }}, {{ addressToDelete.province }}
+              </div>
+            </div>
+            <p class="warning-text">
+              <i class="bi bi-info-circle me-2"></i>
+              Hành động này không thể hoàn tác
+            </p>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-cancel" @click="cancelDelete">
+              <i class="bi bi-x-circle me-2"></i>
+              Hủy bỏ
+            </button>
+            <button class="btn btn-confirm-delete" @click="confirmDelete" :disabled="deletingAddress">
+              <span v-if="deletingAddress" class="spinner-border spinner-border-sm me-2"></span>
+              <i v-else class="bi bi-trash me-2"></i>
+              {{ deletingAddress ? 'Đang xóa...' : 'Xác nhận xóa' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ToastContainer />
+    </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -191,6 +193,7 @@ import ProfileSidebar from '@/components/ProfileSidebar.vue'
 import ProfileInfoCard from '@/components/ProfileInfoCard.vue'
 import AddressForm from '@/components/AddressForm.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const { user, updateUser } = useAuth()
 const { showToast } = useToast()

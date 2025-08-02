@@ -1,37 +1,80 @@
 <template>
-  <div class="news-view">
-    <div class="container mt-4">
-      <Breadcrumb :items="breadcrumbItems" />
+  <UserLayout>
+    <div class="news-view">
+      <div class="container mt-4">
+        <Breadcrumb :items="breadcrumbItems" />
 
-      <div class="row">
-        <div class="col-12">
-          <h1 class="mb-4">News & Updates</h1>
+        <div class="row">
+          <div class="col-12">
+            <h1 class="mb-4">News & Updates</h1>
 
-          <LoadingSpinner v-if="loading" />
+            <LoadingSpinner v-if="loading" />
 
-          <div v-else-if="error" class="alert alert-danger">
-            {{ error }}
-          </div>
+            <div v-else-if="error" class="alert alert-danger">
+              {{ error }}
+            </div>
 
-          <div v-else>
-            <!-- Featured Article -->
-            <div v-if="featuredArticle" class="featured-article mb-5">
-              <div class="card">
-                <div class="row g-0">
-                  <div class="col-md-6">
-                    <img :src="featuredArticle.thumbnail || featuredArticle.image_url || '/placeholder-news.jpg'" :alt="featuredArticle.title" class="img-fluid h-100 object-cover">
+            <div v-else>
+              <!-- Featured Article -->
+              <div v-if="featuredArticle" class="featured-article mb-5">
+                <div class="card">
+                  <div class="row g-0">
+                    <div class="col-md-6">
+                      <img :src="featuredArticle.thumbnail || featuredArticle.image_url || '/placeholder-news.jpg'" :alt="featuredArticle.title" class="img-fluid h-100 object-cover">
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card-body h-100 d-flex flex-column">
+                        <span class="badge bg-primary mb-2 align-self-start">Nổi bật</span>
+                        <h3 class="card-title">{{ featuredArticle.title }}</h3>
+                        <p class="card-text flex-grow-1">{{ featuredArticle.description || featuredArticle.excerpt }}</p>
+                        <div class="mt-auto">
+                          <small class="text-muted">
+                            {{ formatDate(featuredArticle.created_at) }}<span v-if="featuredArticle.read_time"> • {{ featuredArticle.read_time }} min read</span>
+                          </small>
+                          <div class="mt-2">
+                            <router-link :to="`/news/${featuredArticle.id}`" class="btn btn-primary">
+                              <i class="fas fa-arrow-right"></i> Xem chi tiết
+                            </router-link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="col-md-6">
-                    <div class="card-body h-100 d-flex flex-column">
-                      <span class="badge bg-primary mb-2 align-self-start">Nổi bật</span>
-                      <h3 class="card-title">{{ featuredArticle.title }}</h3>
-                      <p class="card-text flex-grow-1">{{ featuredArticle.description || featuredArticle.excerpt }}</p>
+                </div>
+              </div>
+
+              <!-- Articles Grid -->
+              <div class="row">
+                <div v-for="article in articles" :key="article.id" class="col-lg-4 col-md-6 mb-4">
+                  <div class="card h-100">
+                    <div class="position-relative">
+                      <img :src="article.thumbnail || article.image_url || '/placeholder-news.jpg'" :alt="article.title" class="card-img-top">
+                      <span v-if="article.category" class="badge bg-secondary position-absolute top-0 start-0 m-2">
+                        {{ article.category }}
+                      </span>
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
+                      <h5 class="card-title">{{ article.title }}</h5>
+                      <p class="card-text flex-grow-1">{{ article.description || article.excerpt }}</p>
+
                       <div class="mt-auto">
-                        <small class="text-muted">
-                          {{ formatDate(featuredArticle.created_at) }}<span v-if="featuredArticle.read_time"> • {{ featuredArticle.read_time }} min read</span>
-                        </small>
-                        <div class="mt-2">
-                          <router-link :to="`/news/${featuredArticle.id}`" class="btn btn-primary">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <small class="text-muted">
+                            {{ formatDate(article.created_at) }}
+                          </small>
+                          <small v-if="article.read_time" class="text-muted">
+                            {{ article.read_time }} phút đọc
+                          </small>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                          <small class="text-muted">
+                            <i class="fas fa-eye me-1"></i>
+                            {{ article.views || 0 }} lượt xem
+                          </small>
+
+                          <router-link :to="`/news/${article.id}`" class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-arrow-right"></i> Xem chi tiết
                           </router-link>
                         </div>
@@ -40,86 +83,45 @@
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Articles Grid -->
-            <div class="row">
-              <div v-for="article in articles" :key="article.id" class="col-lg-4 col-md-6 mb-4">
-                <div class="card h-100">
-                  <div class="position-relative">
-                    <img :src="article.thumbnail || article.image_url || '/placeholder-news.jpg'" :alt="article.title" class="card-img-top">
-                    <span v-if="article.category" class="badge bg-secondary position-absolute top-0 start-0 m-2">
-                      {{ article.category }}
-                    </span>
-                  </div>
-
-                  <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ article.title }}</h5>
-                    <p class="card-text flex-grow-1">{{ article.description || article.excerpt }}</p>
-
-                    <div class="mt-auto">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <small class="text-muted">
-                          {{ formatDate(article.created_at) }}
-                        </small>
-                        <small v-if="article.read_time" class="text-muted">
-                          {{ article.read_time }} phút đọc
-                        </small>
-                      </div>
-
-                      <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                          <i class="fas fa-eye me-1"></i>
-                          {{ article.views || 0 }} lượt xem
-                        </small>
-
-                        <router-link :to="`/news/${article.id}`" class="btn btn-outline-primary btn-sm">
-                          <i class="fas fa-arrow-right"></i> Xem chi tiết
-                        </router-link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <!-- Empty State -->
+              <div v-if="articles.length === 0" class="text-center py-5">
+                <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                <h3>No articles found</h3>
+                <p class="text-muted">
+                  <span v-if="searchQuery">No articles match your search criteria.</span>
+                  <span v-else>No articles available at the moment.</span>
+                </p>
               </div>
+
+              <!-- Pagination -->
+              <nav v-if="totalPages > 1" aria-label="News pagination">
+                <ul class="pagination justify-content-center">
+                  <li :class="['page-item', { disabled: currentPage <= 1 }]">
+                    <button @click="changePage(currentPage - 1)" class="page-link" :disabled="currentPage <= 1">
+                      Previous
+                    </button>
+                  </li>
+
+                  <li v-for="page in visiblePages" :key="page" :class="['page-item', { active: page === currentPage }]">
+                    <button @click="changePage(page)" class="page-link">
+                      {{ page }}
+                    </button>
+                  </li>
+
+                  <li :class="['page-item', { disabled: currentPage >= totalPages }]">
+                    <button @click="changePage(currentPage + 1)" class="page-link" :disabled="currentPage >= totalPages">
+                      Next
+                    </button>
+                  </li>
+                </ul>
+              </nav>
             </div>
-
-            <!-- Empty State -->
-            <div v-if="articles.length === 0" class="text-center py-5">
-              <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
-              <h3>No articles found</h3>
-              <p class="text-muted">
-                <span v-if="searchQuery">No articles match your search criteria.</span>
-                <span v-else>No articles available at the moment.</span>
-              </p>
-            </div>
-
-            <!-- Pagination -->
-            <nav v-if="totalPages > 1" aria-label="News pagination">
-              <ul class="pagination justify-content-center">
-                <li :class="['page-item', { disabled: currentPage <= 1 }]">
-                  <button @click="changePage(currentPage - 1)" class="page-link" :disabled="currentPage <= 1">
-                    Previous
-                  </button>
-                </li>
-
-                <li v-for="page in visiblePages" :key="page" :class="['page-item', { active: page === currentPage }]">
-                  <button @click="changePage(page)" class="page-link">
-                    {{ page }}
-                  </button>
-                </li>
-
-                <li :class="['page-item', { disabled: currentPage >= totalPages }]">
-                  <button @click="changePage(currentPage + 1)" class="page-link" :disabled="currentPage >= totalPages">
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </UserLayout>
 </template>
 
 <script setup lang="ts">
@@ -129,6 +131,7 @@ import type { News } from '../types'
 import { formatDate } from '../utils'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import Breadcrumb from '../components/Breadcrumb.vue'
+import UserLayout from '@/components/layouts/UserLayout.vue'
 
 const articles = ref<News[]>([])
 const featuredArticle = ref<News | null>(null)

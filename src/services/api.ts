@@ -61,11 +61,11 @@ const clearTokens = (): void => {
 const isTokenExpiring = (): boolean => {
   const expiryTime = localStorage.getItem('token_expiry')
   if (!expiryTime) return true
-  
+
   const expiry = parseInt(expiryTime)
   const now = Date.now()
   const fiveMinutes = 5 * 60 * 1000 // 5 minutes in milliseconds
-  
+
   return (expiry - now) <= fiveMinutes
 }
 
@@ -98,7 +98,7 @@ const refreshAuthToken = async (): Promise<string | null> => {
       }
 
       const data = await response.json()
-      
+
       // Theo API documentation, token mới nằm trong authorization.token
       if (data.success && data.authorization?.token) {
         const newToken = data.authorization.token
@@ -585,7 +585,7 @@ export const authApi = {
   hasValidToken: (): boolean => {
     const token = getAuthToken()
     if (!token) return false
-    
+
     // Check if token is not expired
     return !isTokenExpiring()
   },
@@ -826,7 +826,7 @@ export const commentsApi = {
     const queryParams = new URLSearchParams()
     if (params?.page) queryParams.append('page', params.page.toString())
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString())
-    
+
     const queryString = queryParams.toString()
     return makeRequest(`/comments${queryString ? '?' + queryString : ''}`)
   },
@@ -840,7 +840,7 @@ export const commentsApi = {
     const queryParams = new URLSearchParams()
     if (params?.page) queryParams.append('page', params.page.toString())
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString())
-    
+
     const queryString = queryParams.toString()
     return makeRequest(`/comments/product/${productId}${queryString ? '?' + queryString : ''}`)
   },
@@ -850,7 +850,7 @@ export const commentsApi = {
     const queryParams = new URLSearchParams()
     if (params?.page) queryParams.append('page', params.page.toString())
     if (params?.per_page) queryParams.append('per_page', params.per_page.toString())
-    
+
     const queryString = queryParams.toString()
     return makeRequest(`/my-comments${queryString ? '?' + queryString : ''}`)
   },
@@ -938,7 +938,7 @@ export const saleCampaignsApi = {
   getActiveSaleCampaigns: (): Promise<PaginatedResponse<any>> =>
     makeRequest('/sale-campaigns?active_only=true'),
 
-  // Get featured sale campaigns (using query parameter) 
+  // Get featured sale campaigns (using query parameter)
   getFeaturedSaleCampaigns: (): Promise<PaginatedResponse<any>> =>
     makeRequest('/sale-campaigns?featured_only=true'),
 
@@ -1118,8 +1118,10 @@ export const adminDashboardApi = {
   },
 
   // Get user analytics
-  getUserAnalytics: (): Promise<ApiResponse<DashboardUsers>> =>
-    makeRequest('/dashboard/users'),
+  getUserAnalytics: (year?: number): Promise<ApiResponse<DashboardUsers>> => {
+    const params = year ? `?year=${year}` : ''
+    return makeRequest(`/dashboard/users${params}`)
+  },
 
   // Get product analytics
   getProductAnalytics: (): Promise<ApiResponse<DashboardProducts>> =>
