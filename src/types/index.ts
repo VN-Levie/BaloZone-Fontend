@@ -168,16 +168,49 @@ export interface OrderDetail {
 
 export interface Order {
   id: number
-  user_id: number
   order_number: string
-  status: string
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   total_amount: string
   shipping_fee: string
   voucher_discount: string
   final_amount: string
-  payment_method: string
+  payment_method: {
+    id: number
+    name: string
+    status: string
+    display_name: string
+  }
+  note?: string
   payment_status: 'pending' | 'paid' | 'failed'
-  shipping_address: {
+  voucher_id?: number
+  user_id: number
+  user: {
+    id: number
+    name: string
+    email: string
+    phone: string
+    status: string
+  }
+  voucher?: Voucher
+  order_details: {
+    id: number
+    product_id: number
+    quantity: number
+    price: string
+    product: {
+      id: number
+      name: string
+      image: string
+      slug: string
+      color?: string
+    }
+  }[]
+  created_at: string
+  updated_at: string
+
+  // Legacy fields for backward compatibility
+  user_id_legacy?: number
+  shipping_address?: {
     recipient_name: string | null
     recipient_phone: string | null
     address: string
@@ -185,7 +218,7 @@ export interface Order {
     district: string
     province: string
   }
-  items: {
+  items?: {
     id: number
     product_id: number
     product_name: string
@@ -199,20 +232,12 @@ export interface Order {
     note: string
     created_at: string
   }[]
-  created_at: string
-  updated_at: string
-
-  // Legacy fields for backward compatibility
   address_id?: number
   payment_method_id?: number
-  voucher_id?: number
   comment?: string
   total_price?: number
-  user?: User
   address?: Address
   payment_method_obj?: PaymentMethod
-  voucher?: Voucher
-  order_details?: OrderDetail[]
 }
 
 export interface CreateOrderRequest {

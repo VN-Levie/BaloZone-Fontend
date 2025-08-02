@@ -207,6 +207,13 @@ const router = createRouter({
       component: () => import('../views/admin/AdminBrandsTrashedView.vue'),
       meta: { requiresAuth: true }
     },
+    // Orders Admin Routes
+    {
+      path: '/admin/orders',
+      name: 'admin-orders',
+      component: () => import('../views/admin/AdminOrdersView.vue'),
+      meta: { requiresAuth: true, title: 'Quản lý đơn hàng' }
+    },
     // Sale Campaigns Admin Routes
     {
       path: '/admin/sale-campaigns',

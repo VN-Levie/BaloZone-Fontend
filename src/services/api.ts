@@ -1032,10 +1032,14 @@ export const ordersApi = {
   },
 
   // Update order status (Admin/Contributor only)
-  updateOrderStatus: (id: number, status: string): Promise<ApiResponse<Order>> =>
-    makeRequest(`/orders/${id}/status`, {
+  updateOrderStatus: (id: number, data: {
+    status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+    payment_status?: 'pending' | 'paid' | 'failed'
+    notes?: string
+  }): Promise<ApiResponse<Order>> =>
+    makeRequest(`/dashboard/orders/${id}/status`, {
       method: 'PUT',
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(data),
     }),
 }
 

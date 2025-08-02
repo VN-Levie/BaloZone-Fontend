@@ -18,10 +18,10 @@
               {{ selectedPeriod }}
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#" @click="changePeriod('Hôm nay')">Hôm nay</a></li>
-              <li><a class="dropdown-item" href="#" @click="changePeriod('7 ngày qua')">7 ngày qua</a></li>
-              <li><a class="dropdown-item" href="#" @click="changePeriod('Tháng này')">Tháng này</a></li>
-              <li><a class="dropdown-item" href="#" @click="changePeriod('Năm nay')">Năm nay</a></li>
+              <li><a class="dropdown-item" href="#" @click.prevent="changePeriod('Hôm nay')">Hôm nay</a></li>
+              <li><a class="dropdown-item" href="#" @click.prevent="changePeriod('7 ngày qua')">7 ngày qua</a></li>
+              <li><a class="dropdown-item" href="#" @click.prevent="changePeriod('Tháng này')">Tháng này</a></li>
+              <li><a class="dropdown-item" href="#" @click.prevent="changePeriod('Năm nay')">Năm nay</a></li>
             </ul>
           </div>
         </div>
@@ -104,22 +104,31 @@
             <AdminCard title="Biểu đồ doanh thu" title-icon="bi bi-graph-up">
               <template #header-actions>
                 <div class="dropdown">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                    7 ngày qua
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" :disabled="chartLoading">
+                    <i v-if="chartLoading" class="bi bi-arrow-clockwise spinner-border spinner-border-sm me-1"></i>
+                    {{ selectedChartPeriod }}
                   </button>
                   <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">7 ngày qua</a></li>
-                    <li><a class="dropdown-item" href="#">30 ngày qua</a></li>
-                    <li><a class="dropdown-item" href="#">3 tháng qua</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="changeChartPeriod('7 ngày qua')">7 ngày qua</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="changeChartPeriod('30 ngày qua')">30 ngày qua</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="changeChartPeriod('3 tháng qua')">3 tháng qua</a></li>
                   </ul>
                 </div>
               </template>
 
               <RevenueChart
-                v-if="dashboardData?.revenue_chart"
+                v-if="dashboardData?.revenue_chart && !chartLoading"
                 :data="dashboardData.revenue_chart"
                 :height="300"
               />
+              <div v-else-if="chartLoading" class="d-flex align-items-center justify-content-center" style="height: 300px;">
+                <div class="text-center">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                  </div>
+                  <p class="mt-2 mb-0 text-muted">Đang tải dữ liệu biểu đồ...</p>
+                </div>
+              </div>
               <div v-else class="d-flex align-items-center justify-content-center" style="height: 300px;">
                 <div class="text-muted text-center">
                   <i class="bi bi-graph-up fs-1 d-block text-center mb-2"></i>
@@ -159,7 +168,7 @@
                 >
                   <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
-                      <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                      <div class="bg-dark bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
                            style="width: 40px; height: 40px;">
                         <span class="fw-bold text-primary">{{ index + 1 }}</span>
                       </div>
@@ -262,6 +271,8 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const dashboardData = ref<DashboardStats | null>(null)
 const selectedPeriod = ref('Tháng này')
+const selectedChartPeriod = ref('7 ngày qua')
+const chartLoading = ref(false)
 
 // Methods
 const loadDashboardData = async () => {
@@ -291,6 +302,41 @@ const changePeriod = (period: string) => {
   selectedPeriod.value = period
   // TODO: Implement period-based data loading
   console.log('Changed period to:', period)
+}
+
+const changeChartPeriod = async (period: string) => {
+  selectedChartPeriod.value = period
+  await loadChartData(period)
+}
+
+const loadChartData = async (period: string) => {
+  try {
+    chartLoading.value = true
+
+    if (period === '3 tháng qua') {
+      // Sử dụng API revenue cho dữ liệu theo tháng
+      const response = await adminDashboardApi.getRevenueReport()
+      if (response.success && dashboardData.value) {
+        // Chuyển đổi dữ liệu từ monthly_data thành ChartDataPoint
+        const last3Months = response.data.monthly_data.slice(-3)
+        dashboardData.value.revenue_chart = last3Months.map(item => ({
+          date: item.month_name,
+          revenue: item.revenue
+        }))
+      }
+    } else {
+      // Với 7 ngày và 30 ngày, vẫn sử dụng dữ liệu từ dashboard stats
+      // (API hiện tại chỉ hỗ trợ dữ liệu 7 ngày)
+      const response = await adminDashboardApi.getDashboardStats()
+      if (response.success && dashboardData.value) {
+        dashboardData.value.revenue_chart = response.data.revenue_chart
+      }
+    }
+  } catch (err: any) {
+    console.error('Chart load error:', err)
+  } finally {
+    chartLoading.value = false
+  }
 }
 
 // Lifecycle

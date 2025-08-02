@@ -25,8 +25,8 @@ Authorization: Bearer {token}
 
 **Tham số query**:
 
-- `status` (string, optional): Lọc theo trạng thái (pending, confirmed, shipping, delivered, cancelled)
-- `payment_status` (string, optional): Lọc theo trạng thái thanh toán (pending, paid, failed, refunded)
+- `status` (string, optional): Lọc theo trạng thái (pending, processing, shipped, delivered, cancelled)
+- `payment_status` (string, optional): Lọc theo trạng thái thanh toán (pending, paid, failed)
 - `user_id` (integer, optional): Lọc theo user ID
 - `date_from` (date, optional): Lọc từ ngày (Y-m-d)
 - `date_to` (date, optional): Lọc đến ngày (Y-m-d)
@@ -38,65 +38,63 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "success": true,
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
-        "id": 1,
-        "order_code": "ORD-20250101-001",
-        "user": {
-          "id": 2,
-          "name": "Nguyễn Văn A",
-          "email": "customer@example.com",
-          "phone": "0123456789"
-        },
-        "total_amount": 2500000,
-        "discount_amount": 250000,
-        "final_amount": 2250000,
-        "status": "confirmed",
-        "payment_status": "paid",
-        "payment_method": "momo",
-        "shipping_address": {
-          "name": "Nguyễn Văn A",
-          "phone": "0123456789",
-          "address": "123 Đường ABC, Phường XYZ",
-          "ward": "Phường 1",
-          "district": "Quận 1",
-          "province": "TP. Hồ Chí Minh"
-        },
-        "items_count": 3,
-        "order_items": [
-          {
-            "id": 1,
-            "product": {
-              "id": 1,
-              "name": "Túi xách da cao cấp",
-              "image": "https://example.com/images/tui-xach-1.jpg"
-            },
-            "quantity": 1,
-            "price": 1200000,
-            "discount": 120000,
-            "total": 1080000
+  "current_page": 1,
+  "data": [
+    {
+      "id": 1,
+      "order_number": "ORD-2025-000001",
+      "status": "pending",
+      "total_amount": "10311375.00",
+      "shipping_fee": "43102.00",
+      "voucher_discount": "0.00",
+      "final_amount": "10354477.00",
+      "payment_method": {
+        "id": 5,
+        "name": "vnpay",
+        "status": "active",
+        "display_name": "VNPay"
+      },
+      "note": null,
+      "payment_status": "pending",
+      "voucher_id": null,
+      "user_id": 7,
+      "user": {
+        "id": 7,
+        "name": "Phạm Thị Dung",
+        "email": "dung.pham@gmail.com",
+        "phone": "0945678901",
+        "status": "active"
+      },
+      "voucher": null,
+      "order_details": [
+        {
+          "id": 1,
+          "product_id": 21,
+          "quantity": 3,
+          "price": "265468.00",
+          "product": {
+            "id": 21,
+            "name": "Balo Nike Sportswear natus",
+            "image": "https://placehold.co/600x400?text=products/balo-nike-sportswear-natus.jpg",
+            "slug": "balo-nike-sportswear-natus-9612",
+            "color": "Đỏ"
           }
-        ],
-        "notes": "Giao hàng trong giờ hành chính",
-        "created_at": "2025-01-01T10:00:00.000000Z",
-        "updated_at": "2025-01-01T14:00:00.000000Z"
-      }
-    ],
-    "first_page_url": "http://example.com/api/dashboard/orders?page=1",
-    "from": 1,
-    "last_page": 10,
-    "last_page_url": "http://example.com/api/dashboard/orders?page=10",
-    "next_page_url": "http://example.com/api/dashboard/orders?page=2",
-    "path": "http://example.com/api/dashboard/orders",
-    "per_page": 15,
-    "prev_page_url": null,
-    "to": 15,
-    "total": 145
-  },
-  "message": "Orders retrieved successfully"
+        }
+      ],
+      "created_at": "2025-08-02T19:37:55.000000Z",
+      "updated_at": "2025-08-02T19:39:08.000000Z"
+    }
+  ],
+  "first_page_url": "http://localhost:8000/api/dashboard/orders?page=1",
+  "from": 1,
+  "last_page": 2,
+  "last_page_url": "http://localhost:8000/api/dashboard/orders?page=2",
+  "next_page_url": "http://localhost:8000/api/dashboard/orders?page=2",
+  "path": "http://localhost:8000/api/dashboard/orders",
+  "per_page": 20,
+  "prev_page_url": null,
+  "to": 20,
+  "total": 33
 }
 ```
 
@@ -127,9 +125,8 @@ Content-Type: application/json
 
 ```json
 {
-  "status": "shipping",
+  "status": "shipped",
   "payment_status": "paid",
-  "tracking_number": "VN123456789",
   "notes": "Đơn hàng đã được giao cho đơn vị vận chuyển"
 }
 ```
@@ -212,8 +209,8 @@ Content-Type: application/json
 
 **Validation rules**:
 
-- `status` (string, required): Trạng thái đơn hàng (pending, confirmed, shipping, delivered, cancelled)
-- `payment_status` (string, optional): Trạng thái thanh toán (pending, paid, failed, refunded)
+- `status` (string, optional): Trạng thái đơn hàng (pending, processing, shipped, delivered, cancelled)
+- `payment_status` (string, optional): Trạng thái thanh toán (pending, paid, failed)
 - `tracking_number` (string, optional): Mã vận đơn
 - `notes` (string, optional): Ghi chú thêm
 
@@ -222,17 +219,17 @@ Content-Type: application/json
 ### Luồng trạng thái hợp lệ:
 
 ```
-pending → confirmed → shipping → delivered
+pending → processing → shipped → delivered
    ↓           ↓          ↓
 cancelled   cancelled  cancelled
 ```
 
 ### Trạng thái đơn hàng:
 
-- **pending**: Chờ xác nhận
-- **confirmed**: Đã xác nhận
-- **shipping**: Đang giao hàng
-- **delivered**: Đã giao hàng
+- **pending**: Chờ xử lý
+- **processing**: Đang xử lý
+- **shipped**: Đã giao hàng
+- **delivered**: Đã hoàn thành
 - **cancelled**: Đã hủy
 
 ### Trạng thái thanh toán:
@@ -240,7 +237,6 @@ cancelled   cancelled  cancelled
 - **pending**: Chờ thanh toán
 - **paid**: Đã thanh toán
 - **failed**: Thanh toán thất bại
-- **refunded**: Đã hoàn tiền
 
 ## Ví dụ sử dụng curl
 
@@ -265,14 +261,14 @@ curl -X GET "http://localhost:8000/api/dashboard/orders?search=ORD-20250101" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-### Xác nhận đơn hàng
+### Xử lý đơn hàng
 
 ```bash
 curl -X PUT http://localhost:8000/api/dashboard/orders/1/status \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "status": "confirmed",
+    "status": "processing",
     "payment_status": "paid",
     "notes": "Đơn hàng đã được xác nhận và bắt đầu chuẩn bị"
   }'
@@ -285,9 +281,8 @@ curl -X PUT http://localhost:8000/api/dashboard/orders/1/status \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "status": "shipping",
-    "tracking_number": "GHN123456789",
-    "notes": "Đơn hàng đã được giao cho GHN"
+    "status": "shipped",
+    "notes": "Đơn hàng đã được giao cho đơn vị vận chuyển"
   }'
 ```
 
@@ -335,9 +330,10 @@ curl -X GET "http://localhost:8000/api/dashboard/orders?date_from=2025-01-01&dat
 **Lưu ý**:
 
 - Tất cả các endpoint đều yêu cầu authentication + role admin hoặc contributor
-- Trạng thái đơn hàng có quy tắc chuyển đổi nghiêm ngặt
-- Không thể chuyển ngược trạng thái (ví dụ: từ delivered về shipping)
+- Trạng thái đơn hàng theo database: `pending`, `processing`, `shipped`, `delivered`, `cancelled`
+- Trạng thái thanh toán theo database: `pending`, `paid`, `failed`
+- Các trường trong validation là `optional` (không bắt buộc) để cho phép cập nhật từng phần
 - Khi hủy đơn hàng, cần cân nhắc hoàn tiền nếu đã thanh toán
-- Mã vận đơn chỉ cần thiết khi chuyển sang trạng thái shipping
-- Hệ thống tự động lưu lịch sử thay đổi trạng thái
+- Hệ thống không lưu lịch sử thay đổi trạng thái (chưa implement)
 - Có thể lọc và tìm kiếm đơn hàng theo nhiều tiêu chí
+- Response trả về trực tiếp pagination data, không có wrapper `success` và `message`

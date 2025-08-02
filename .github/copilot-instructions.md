@@ -1,6 +1,7 @@
 # Hướng dẫn cho GitHub Copilot - Dự án BaloZone Frontend
 
 Chào Copilot, bạn đang hỗ trợ phát triển frontend cho dự án BaloZone, một trang web thương mại điện tử. Vui lòng tuân thủ các hướng dẫn dưới đây để đảm bảo code được viết ra nhất quán và chính xác.
+**Test Server:** Không cần chạy `npm run dev` vì server đã chạy sẵn tại cổng 5173. Không bao giờ cần kiểm tra hoặc yêu cầu chạy lệnh này
 
 - **Chú ý quan trọng:**
   - Luôn kiểm tra tài liệu API để biết endpoint nào yêu cầu xác thực và phân quyền.
@@ -163,4 +164,4 @@ API được chia thành 3 nhóm chính:
   4.  **Sử dụng `<script setup lang="ts">`:** Viết code theo Composition API.
   5.  **Sử dụng Types:** Tận dụng các kiểu dữ liệu trong `src/types.ts`.
   6.  **Kiểm tra quyền:** Chú ý đến phân quyền khi tạo các tính năng cho trang quản trị.
-  7.  **Test Server:** Lệnh không cần chạy `npm run dev` vì sv đã chạy sẵn tại cổng 5173
+  7.  **Test Server:** Không cần chạy `npm run dev` vì server đã chạy sẵn tại cổng 5173. Không bao giờ cần kiểm tra hoặc yêu cầu chạy lệnh này
