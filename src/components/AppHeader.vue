@@ -292,6 +292,9 @@ onMounted(async () => {
   flex: 1;
   max-width: 500px;
   margin: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .search-container {
@@ -662,22 +665,23 @@ onMounted(async () => {
   width: 100%;
 }
 
-.header-search-bar .enhanced-search-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+.header-search-bar .simple-search-bar {
+  width: 100%;
 }
 
-.header-search-bar .search-input {
-  background: transparent;
-  border: none;
+.header-search-bar .input-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.header-search-bar .form-control {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #e9ecef;
   color: #333;
   font-size: 0.95rem;
 }
 
-.header-search-bar .search-input::placeholder {
+.header-search-bar .form-control::placeholder {
   color: #666;
 }
 
@@ -685,9 +689,8 @@ onMounted(async () => {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;
   color: white;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  height: auto;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -695,16 +698,19 @@ onMounted(async () => {
 }
 
 .header-search-bar .search-btn:hover {
-  transform: scale(1.05);
+  transform: scale(1.02);
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-.header-search-bar .suggestions-dropdown {
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  margin-top: 8px;
+.header-search-bar .clear-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #e9ecef;
+  color: #6c757d;
+  height: auto;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 991px) {

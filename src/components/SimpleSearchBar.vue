@@ -105,47 +105,51 @@ defineExpose({
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
+  height: 38px; /* Fixed height */
 }
 
 .input-group .form-control {
-  border-radius: 25px 0 0 25px;
-  border-right: none;
+  border-radius: 25px 0 0 25px !important;
+  border-right: none !important;
   padding: 0.5rem 1rem;
-  height: auto;
+  height: 100% !important;
   line-height: 1.5;
+  flex: 1;
 }
 
 .input-group .form-control:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-  border-right: none;
+  border-color: #0d6efd !important;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+  border-right: none !important;
 }
 
 .clear-btn {
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
+  border-radius: 0 !important;
+  border-left: none !important;
+  border-right: none !important;
   padding: 0.5rem 0.7rem;
-  background: white;
-  border-color: #ced4da;
-  color: #6c757d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: white !important;
+  border-color: #ced4da !important;
+  color: #6c757d !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
 }
 
 .clear-btn:hover {
-  background: #f8f9fa;
-  color: #495057;
+  background: #f8f9fa !important;
+  color: #495057 !important;
 }
 
 .search-btn {
-  border-radius: 0 25px 25px 0;
-  border-left: none;
+  border-radius: 0 25px 25px 0 !important;
+  border-left: none !important;
   padding: 0.5rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
 }
 
 .search-btn:disabled {
