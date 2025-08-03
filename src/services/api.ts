@@ -1245,36 +1245,3 @@ export const adminProductsApi = {
       body: JSON.stringify({ ids }),
     }),
 }
-
-// Admin News Management API
-export const adminNewsApi = {
-  // Get all news with pagination and search
-  getNews: (params?: { search?: string; page?: number; per_page?: number }): Promise<PaginatedResponse<News>> => {
-    const queryString = new URLSearchParams(params as Record<string, string>).toString();
-    return makeRequest(`/dashboard/news${queryString ? '?' + queryString : ''}`);
-  },
-
-  // Get single news by ID
-  getNewsById: (id: number): Promise<ApiResponse<News>> =>
-    makeRequest(`/dashboard/news/${id}`),
-
-  // Create news
-  createNews: (newsData: { title: string; description: string; thumbnail?: string }): Promise<ApiResponse<News>> =>
-    makeRequest('/dashboard/news', {
-      method: 'POST',
-      body: JSON.stringify(newsData),
-    }),
-
-  // Update news
-  updateNews: (id: number, newsData: Partial<{ title: string; description: string; thumbnail?: string }>): Promise<ApiResponse<News>> =>
-    makeRequest(`/dashboard/news/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(newsData),
-    }),
-
-  // Delete news
-  deleteNews: (id: number): Promise<ApiResponse<void>> =>
-    makeRequest(`/dashboard/news/${id}`, {
-      method: 'DELETE',
-    }),
-};
