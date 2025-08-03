@@ -403,7 +403,7 @@ const isActiveDropdown = (name: string) => {
 const logout = async () => {
     try {
         await authStore.logout()
-        router.push('/auth/login')
+        router.push('/login')
     } catch (error) {
         console.error('Logout failed:', error)
     }

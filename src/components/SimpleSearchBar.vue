@@ -102,12 +102,17 @@ defineExpose({
 
 .input-group {
   position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
 }
 
 .input-group .form-control {
   border-radius: 25px 0 0 25px;
   border-right: none;
   padding: 0.5rem 1rem;
+  height: auto;
+  line-height: 1.5;
 }
 
 .input-group .form-control:focus {
@@ -124,6 +129,9 @@ defineExpose({
   background: white;
   border-color: #ced4da;
   color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .clear-btn:hover {
@@ -133,12 +141,27 @@ defineExpose({
 
 .search-btn {
   border-radius: 0 25px 25px 0;
-  /* border-left: none; */
+  border-left: none;
   padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .search-btn:disabled {
   opacity: 0.6;
+}
+
+/* Icon alignment */
+.search-btn i,
+.clear-btn i {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.search-btn .spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
 }
 
 /* Mobile responsive */
