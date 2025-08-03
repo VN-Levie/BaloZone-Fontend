@@ -98,18 +98,18 @@
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button 
-                                                    type="button" 
-                                                    class="btn btn-outline-primary btn-sm" 
-                                                    @click="$router.push(`/admin/vouchers/edit/${voucher.id}`)" 
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-outline-primary btn-sm"
+                                                    @click="$router.push(`/admin/vouchers/edit/${voucher.id}`)"
                                                     title="Chỉnh sửa"
                                                 >
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
-                                                <button 
-                                                    type="button" 
-                                                    class="btn btn-outline-danger btn-sm" 
-                                                    @click="confirmDelete(voucher)" 
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-outline-danger btn-sm"
+                                                    @click="confirmDelete(voucher)"
                                                     title="Xóa"
                                                 >
                                                     <i class="bi bi-trash"></i>

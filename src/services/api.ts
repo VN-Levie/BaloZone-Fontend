@@ -1388,3 +1388,80 @@ export const adminVouchersApi = {
       method: 'DELETE',
     }),
 }
+
+// Admin Users Management API
+export const adminUsersApi = {
+  // Get all users for admin
+  getUsers: (params?: {
+    page?: number,
+    per_page?: number,
+    search?: string,
+    status?: string,
+    role?: string
+  }): Promise<ApiResponse<{
+    current_page: number
+    data: User[]
+    total: number
+    last_page: number
+    first_page_url: string
+    from: number
+    last_page_url: string
+    next_page_url: string | null
+    path: string
+    per_page: number
+    prev_page_url: string | null
+    to: number
+  }>> =>
+    makeRequest(`/dashboard/users${params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== '') acc[key] = String(value)
+        return acc
+      }, {} as Record<string, string>)
+    ).toString() : ''}`),
+
+  // Get single user for admin
+  getUserById: (id: number): Promise<ApiResponse<User>> =>
+    makeRequest(`/dashboard/users/${id}`),
+
+  // Update user
+  updateUser: (id: number, userData: {
+    name?: string
+    email?: string
+    phone?: string
+    status?: string
+  }): Promise<ApiResponse<User>> =>
+    makeRequest(`/dashboard/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    }),
+
+  // Delete user
+  deleteUser: (id: number): Promise<ApiResponse<null>> =>
+    makeRequest(`/dashboard/users/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Get user roles
+  getUserRoles: (id: number): Promise<ApiResponse<Role[]>> =>
+    makeRequest(`/dashboard/users/${id}/roles`),
+
+  // Assign role to user
+  assignRole: (userId: number, roleName: string): Promise<ApiResponse<null>> =>
+    makeRequest('/dashboard/roles/assign', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        role_name: roleName,
+      }),
+    }),
+
+  // Remove role from user
+  removeRole: (userId: number, roleName: string): Promise<ApiResponse<null>> =>
+    makeRequest('/dashboard/roles/remove', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        role_name: roleName,
+      }),
+    }),
+}

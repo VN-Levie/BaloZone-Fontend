@@ -34,16 +34,16 @@ export function useAdvancedSearch() {
   const isLoading = ref(false)
   const isLoadingSuggestions = ref(false)
   const showSuggestions = ref(false)
-  
+
   // Filters
   const filters = ref<SearchFilters>({
     sortBy: 'name',
     sortOrder: 'asc'
   })
-  
+
   const categories = ref<Category[]>([])
   const brands = ref<Brand[]>([])
-  
+
   // Pagination
   const currentPage = ref(1)
   const totalPages = ref(1)
@@ -53,9 +53,9 @@ export function useAdvancedSearch() {
   // Computed properties
   const hasResults = computed(() => searchResults.value.length > 0)
   const hasFilters = computed(() => {
-    return !!(filters.value.category || 
-             filters.value.brand || 
-             filters.value.minPrice || 
+    return !!(filters.value.category ||
+             filters.value.brand ||
+             filters.value.minPrice ||
              filters.value.maxPrice ||
              filters.value.minRating)
   })
@@ -94,19 +94,19 @@ export function useAdvancedSearch() {
   // Save search to history
   const saveToHistory = (query: string) => {
     if (!query.trim()) return
-    
+
     // Remove existing entry if exists
     const index = searchHistory.value.indexOf(query)
     if (index > -1) {
       searchHistory.value.splice(index, 1)
     }
-    
+
     // Add to beginning
     searchHistory.value.unshift(query)
-    
+
     // Keep only 10 items
     searchHistory.value = searchHistory.value.slice(0, 10)
-    
+
     // Save to localStorage
     try {
       localStorage.setItem('search_history', JSON.stringify(searchHistory.value))
@@ -117,7 +117,7 @@ export function useAdvancedSearch() {
 
   // Generate search suggestions
   const generateSuggestions = async (query: string) => {
-    if (!query.trim()) {
+    if (!query.trim() || query.length < 2) {
       suggestions.value = []
       return
     }
@@ -127,10 +127,28 @@ export function useAdvancedSearch() {
     const suggestionsList: SearchSuggestion[] = []
 
     try {
+      // Search for actual products to get real suggestions
+      const searchResponse = await productsApi.getProducts({
+        search: query,
+        per_page: 5
+      })
+
+      // Add product suggestions
+      if (searchResponse.data && Array.isArray(searchResponse.data)) {
+        searchResponse.data.slice(0, 3).forEach(product => {
+          suggestionsList.push({
+            id: `product-${product.id}`,
+            text: product.name,
+            type: 'product',
+            icon: 'bi-box'
+          })
+        })
+      }
+
       // Add matching categories
       categories.value
         .filter(cat => cat.name.toLowerCase().includes(lowercaseQuery))
-        .slice(0, 3)
+        .slice(0, 2)
         .forEach(cat => {
           suggestionsList.push({
             id: `category-${cat.id}`,
@@ -143,6 +161,34 @@ export function useAdvancedSearch() {
       // Add matching brands
       brands.value
         .filter(brand => brand.name.toLowerCase().includes(lowercaseQuery))
+        .slice(0, 2)
+        .forEach(brand => {
+          suggestionsList.push({
+            id: `brand-${brand.id}`,
+            text: brand.name,
+            type: 'brand',
+            icon: 'bi-award'
+          })
+        })
+
+      suggestions.value = suggestionsList.slice(0, 8)
+    } catch (error) {
+      console.error('Error generating suggestions:', error)
+      // Fallback to category/brand suggestions only
+      categories.value
+        .filter(cat => cat.name.toLowerCase().includes(lowercaseQuery))
+        .slice(0, 3)
+        .forEach(cat => {
+          suggestionsList.push({
+            id: `category-${cat.id}`,
+            text: cat.name,
+            type: 'category',
+            icon: 'bi-tag'
+          })
+        })
+
+      brands.value
+        .filter(brand => brand.name.toLowerCase().includes(lowercaseQuery))
         .slice(0, 3)
         .forEach(brand => {
           suggestionsList.push({
@@ -153,22 +199,7 @@ export function useAdvancedSearch() {
           })
         })
 
-      // Add search history matches
-      searchHistory.value
-        .filter(hist => hist.toLowerCase().includes(lowercaseQuery))
-        .slice(0, 5)
-        .forEach(hist => {
-          suggestionsList.push({
-            id: `history-${hist}`,
-            text: hist,
-            type: 'product',
-            icon: 'bi-clock-history'
-          })
-        })
-
-      suggestions.value = suggestionsList.slice(0, 10)
-    } catch (error) {
-      console.error('Error generating suggestions:', error)
+      suggestions.value = suggestionsList.slice(0, 6)
     } finally {
       isLoadingSuggestions.value = false
     }
@@ -195,12 +226,12 @@ export function useAdvancedSearch() {
         const categoryId = categories.value.find(c => c.slug === filters.value.category)?.id
         if (categoryId) searchParams.category_id = categoryId
       }
-      
+
       if (filters.value.brand) {
         const brandId = brands.value.find(b => b.slug === filters.value.brand)?.id
         if (brandId) searchParams.brand_id = brandId
       }
-      
+
       if (filters.value.minPrice) searchParams.min_price = filters.value.minPrice
       if (filters.value.maxPrice) searchParams.max_price = filters.value.maxPrice
       if (filters.value.sortBy) searchParams.sort_by = filters.value.sortBy
@@ -208,10 +239,11 @@ export function useAdvancedSearch() {
 
       // Use the unified products API
       const response = await productsApi.getProducts(searchParams)
-      
-      searchResults.value = response.data || []
-      totalPages.value = response.last_page || 1
-      totalItems.value = response.total || 0
+
+      // Extract pagination data correctly
+      searchResults.value = response.data.data || []
+      totalPages.value = response.data.last_page || 1
+      totalItems.value = response.data.total || 0
 
       // Save search to history
       saveToHistory(searchTerm)
@@ -222,9 +254,9 @@ export function useAdvancedSearch() {
       if (hasFilters.value) {
         Object.assign(queryParams, filters.value)
       }
-      
-      router.push({ 
-        path: '/search', 
+
+      router.push({
+        path: '/search',
         query: queryParams
       })
 
@@ -237,7 +269,7 @@ export function useAdvancedSearch() {
       showSuggestions.value = false
     }
   }
-     
+
 
   // Apply filters
   const applyFilters = (newFilters: Partial<SearchFilters>) => {
@@ -274,7 +306,7 @@ export function useAdvancedSearch() {
         categoriesApi.getCategories(),
         brandsApi.getBrands()
       ])
-      
+
       categories.value = categoriesResponse.data
       brands.value = brandsResponse.data
     } catch (error) {
@@ -286,10 +318,10 @@ export function useAdvancedSearch() {
   const initializeFromRoute = () => {
     const query = route.query.q as string
     const page = parseInt(route.query.page as string) || 1
-    
+
     if (query) {
       searchQuery.value = query
-      
+
       // Apply filters from URL
       if (route.query.category) filters.value.category = route.query.category as string
       if (route.query.brand) filters.value.brand = route.query.brand as string
@@ -298,7 +330,7 @@ export function useAdvancedSearch() {
       if (route.query.min_rating) filters.value.minRating = parseFloat(route.query.min_rating as string)
       if (route.query.sort_by) filters.value.sortBy = route.query.sort_by as any
       if (route.query.sort_order) filters.value.sortOrder = route.query.sort_order as any
-      
+
       performSearch(query, page)
     }
   }

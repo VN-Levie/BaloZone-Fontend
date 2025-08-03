@@ -233,6 +233,32 @@ const router = createRouter({
       component: () => import('../views/admin/AdminNewsFormView.vue'),
       meta: { requiresAuth: true, title: 'Chỉnh sửa tin tức' }
     },
+    // Vouchers Admin Routes
+    {
+      path: '/admin/vouchers',
+      name: 'admin-vouchers',
+      component: () => import('../views/admin/AdminVouchersView.vue'),
+      meta: { requiresAuth: true, title: 'Quản lý vouchers' }
+    },
+    {
+      path: '/admin/vouchers/create',
+      name: 'admin-vouchers-create',
+      component: () => import('../views/admin/AdminVoucherFormView.vue'),
+      meta: { requiresAuth: true, title: 'Tạo voucher mới' }
+    },
+    {
+      path: '/admin/vouchers/edit/:id',
+      name: 'admin-vouchers-edit',
+      component: () => import('../views/admin/AdminVoucherFormView.vue'),
+      meta: { requiresAuth: true, title: 'Chỉnh sửa voucher' }
+    },
+    // Users Admin Routes
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('../views/admin/AdminUsersView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý người dùng' }
+    },
     // Orders Admin Routes
     {
       path: '/admin/orders',
@@ -322,6 +348,9 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
+  } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    // Redirect to dashboard if not admin
+    next({ name: 'admin-dashboard' })
   } else {
     next()
   }

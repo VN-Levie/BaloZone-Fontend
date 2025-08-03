@@ -8,13 +8,13 @@
           <span class="brand-text">BaloZone</span>
         </router-link>
 
-        <button 
-          class="navbar-toggler" 
-          type="button" 
-          data-bs-toggle="collapse" 
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
-          aria-controls="navbarNav" 
-          aria-expanded="false" 
+          aria-controls="navbarNav"
+          aria-expanded="false"
           aria-label="Toggle navigation"
         >
           <span class="navbar-toggler-icon"></span>
@@ -22,18 +22,16 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <!-- Search bar -->
-          <!-- <div class="navbar-search mx-auto">
-            <EnhancedSearchBar
+          <div class="navbar-search mx-auto">
+            <SimpleSearchBar
               v-model="headerSearchQuery"
-              :suggestions="headerSuggestions"
-              :search-history="headerSearchHistory"
               :is-loading="isLoadingSuggestions"
-              :show-filters="false"
               placeholder="Tìm kiếm sản phẩm..."
               @search="handleHeaderSearch"
+              @clear="handleClearSearch"
               class="header-search-bar"
             />
-          </div> -->
+          </div>
 
           <!-- Right side navigation -->
           <ul class="navbar-nav ms-auto">
@@ -57,7 +55,7 @@
             <li v-if="!isLoggedIn" class="nav-item">
               <router-link to="/login" class="nav-link">Đăng nhập</router-link>
             </li>
-            
+
             <li v-else class="nav-item dropdown user-dropdown">
               <button
                 class="btn dropdown-toggle user-btn"
@@ -74,10 +72,10 @@
                     <strong>{{ user?.name || 'User' }}</strong>
                     <small class="text-muted d-block">{{ user?.email }}</small>
                     <div class="user-roles-dropdown" v-if="user?.roles && user.roles.length > 0">
-                      <RoleBadge 
-                        v-for="role in user.roles" 
-                        :key="role.id" 
-                        :role="role" 
+                      <RoleBadge
+                        v-for="role in user.roles"
+                        :key="role.id"
+                        :role="role"
                         size="small"
                       />
                     </div>
@@ -131,7 +129,7 @@
             <div class="placeholder-item"></div>
           </div>
         </div>
-        
+
         <!-- Categories list -->
         <ul v-else class="categories-list">
           <!-- Dynamic categories from API -->
@@ -143,7 +141,7 @@
               </span>
             </router-link>
           </li>
-          
+
           <!-- Static navigation items -->
           <li>
             <router-link to="/sale-campaigns" class="sale-link">
@@ -169,7 +167,7 @@ import { useToast } from '@/composables/useToast'
 import { useAdvancedSearch } from '@/composables/useAdvancedSearch'
 import { categoriesApi } from '@/services/api'
 import RoleBadge from './RoleBadge.vue'
-import EnhancedSearchBar from '@/components/EnhancedSearchBar.vue'
+import SimpleSearchBar from '@/components/SimpleSearchBar.vue'
 import type { Category } from '@/types'
 
 const router = useRouter()
@@ -185,7 +183,9 @@ const {
   suggestions: headerSuggestions,
   searchHistory: headerSearchHistory,
   isLoadingSuggestions,
-  loadSearchHistory
+  loadSearchHistory,
+  generateSuggestions,
+  loadFilterData
 } = useAdvancedSearch()
 
 const categories = ref<Category[]>([])
@@ -197,6 +197,31 @@ const handleHeaderSearch = (query: string) => {
     router.push({ name: 'search', query: { q: query.trim() } })
     headerSearchQuery.value = ''
   }
+}
+
+// Handle clear search
+const handleClearSearch = () => {
+  headerSearchQuery.value = ''
+}
+
+// Handle suggestion selection
+const handleSuggestionSelect = (suggestion: any) => {
+  switch (suggestion.type) {
+    case 'category':
+      const category = categories.value.find(c => c.name === suggestion.text)
+      if (category) {
+        router.push(`/category/${category.slug}`)
+      }
+      break
+    case 'brand':
+      router.push({ name: 'search', query: { q: suggestion.text, brand: suggestion.text } })
+      break
+    case 'product':
+    default:
+      router.push({ name: 'search', query: { q: suggestion.text } })
+      break
+  }
+  headerSearchQuery.value = ''
 }
 
 const handleLogout = async () => {
@@ -221,7 +246,7 @@ const fetchCategories = async () => {
     console.error('❌ Failed to load categories:', error)
     // Fallback to default categories if API fails
     categories.value = [
-      
+
     ] as Category[]
     console.log('⚠️ Using fallback categories')
   } finally {
@@ -232,6 +257,8 @@ const fetchCategories = async () => {
 onMounted(async () => {
   await fetchCategories()
   await loadSearchHistory()
+  // Load filter data for suggestions
+  await loadFilterData()
 })
 </script>
 
@@ -574,12 +601,12 @@ onMounted(async () => {
     margin: 1rem 0;
     max-width: none;
   }
-  
+
   .categories-list {
     flex-wrap: wrap;
     gap: 1rem;
   }
-  
+
   .loading-placeholder {
     gap: 1rem;
   }
@@ -592,38 +619,38 @@ onMounted(async () => {
     flex-wrap: nowrap;
     padding-bottom: 0.5rem;
   }
-  
+
   .categories-list a {
     white-space: nowrap;
   }
-  
+
   .brand-text {
     font-size: 1.25rem;
   }
-  
+
   .navbar-search {
     margin: 0.5rem 0;
   }
-  
+
   .search-input {
     padding: 0.5rem 2.5rem 0.5rem 0.75rem;
     font-size: 0.9rem;
   }
-  
+
   .search-btn {
     width: 35px;
     height: 35px;
   }
-  
+
   .nav-icon-link {
     width: 35px;
     height: 35px;
   }
-  
+
   .loading-placeholder {
     gap: 0.5rem;
   }
-  
+
   .placeholder-item {
     width: 60px;
   }
@@ -690,7 +717,7 @@ onMounted(async () => {
   .header-search-bar {
     max-width: 250px;
   }
-  
+
   .header-search-bar .search-input {
     font-size: 0.9rem;
   }

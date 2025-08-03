@@ -215,10 +215,15 @@
                                 <i class="bi bi-three-dots-vertical"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><router-link class="dropdown-item" to="/profile">
-                                        <i class="bi bi-person me-2"></i>Hồ sơ
-                                    </router-link></li>
                                 <li>
+                                    <router-link class="dropdown-item" to="/profile">
+                                        <i class="bi bi-person me-2"></i>Hồ sơ
+                                    </router-link>
+                                </li>
+                                <li>
+                                    <router-link class="dropdown-item" to="/">
+                                        <i class="bi bi-house me-2"></i>Home
+                                    </router-link>
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li><a class="dropdown-item text-danger" href="#" @click.prevent="logout">
@@ -233,9 +238,16 @@
                                 <i class="bi bi-person-circle fs-4"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><router-link class="dropdown-item" to="/profile">
+                                <li>
+                                    <router-link class="dropdown-item" to="/profile">
                                         <i class="bi bi-person me-2"></i>Hồ sơ
-                                    </router-link></li>
+                                    </router-link>
+                                </li>
+                                <li>
+                                    <router-link class="dropdown-item" to="/">
+                                        <i class="bi bi-home me-2"></i>Home
+                                    </router-link>
+                                </li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>

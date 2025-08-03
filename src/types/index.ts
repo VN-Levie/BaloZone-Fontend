@@ -124,6 +124,7 @@ export interface User {
   created_at: string
   updated_at: string
   roles?: Role[]
+  orders_count?: number
   // Legacy support
   role?: 'admin' | 'user'
 }

@@ -28,13 +28,13 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="code" class="form-label">Mã voucher *</label>
-                                            <input 
-                                                type="text" 
-                                                class="form-control" 
-                                                :class="{ 'is-invalid': errors.code }" 
-                                                id="code" 
-                                                v-model="form.code" 
-                                                required 
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': errors.code }"
+                                                id="code"
+                                                v-model="form.code"
+                                                required
                                                 placeholder="VD: WELCOME10"
                                                 style="text-transform: uppercase"
                                             />
@@ -49,13 +49,13 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="name" class="form-label">Tên voucher *</label>
-                                            <input 
-                                                type="text" 
-                                                class="form-control" 
-                                                :class="{ 'is-invalid': errors.name }" 
-                                                id="name" 
-                                                v-model="form.name" 
-                                                required 
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': errors.name }"
+                                                id="name"
+                                                v-model="form.name"
+                                                required
                                                 placeholder="VD: Voucher chào mừng"
                                             />
                                             <div v-if="errors.name" class="invalid-feedback">
@@ -67,12 +67,12 @@
 
                                 <div class="mb-3">
                                     <label for="description" class="form-label">Mô tả</label>
-                                    <textarea 
-                                        class="form-control" 
-                                        :class="{ 'is-invalid': errors.description }" 
-                                        id="description" 
-                                        v-model="form.description" 
-                                        rows="3" 
+                                    <textarea
+                                        class="form-control"
+                                        :class="{ 'is-invalid': errors.description }"
+                                        id="description"
+                                        v-model="form.description"
+                                        rows="3"
                                         placeholder="Mô tả chi tiết về voucher"
                                     ></textarea>
                                     <div v-if="errors.description" class="invalid-feedback">
@@ -84,11 +84,11 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="discount_type" class="form-label">Loại giảm giá *</label>
-                                            <select 
-                                                class="form-select" 
-                                                :class="{ 'is-invalid': errors.discount_type }" 
-                                                id="discount_type" 
-                                                v-model="form.discount_type" 
+                                            <select
+                                                class="form-select"
+                                                :class="{ 'is-invalid': errors.discount_type }"
+                                                id="discount_type"
+                                                v-model="form.discount_type"
                                                 required
                                             >
                                                 <option value="percentage">Phần trăm (%)</option>
@@ -106,13 +106,13 @@
                                                 <span v-if="form.discount_type === 'percentage'">(%)</span>
                                                 <span v-else>(VNĐ)</span>
                                             </label>
-                                            <input 
-                                                type="number" 
-                                                class="form-control" 
-                                                :class="{ 'is-invalid': errors.discount_value }" 
-                                                id="discount_value" 
-                                                v-model.number="form.discount_value" 
-                                                required 
+                                            <input
+                                                type="number"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': errors.discount_value }"
+                                                id="discount_value"
+                                                v-model.number="form.discount_value"
+                                                required
                                                 min="0"
                                                 :max="form.discount_type === 'percentage' ? 100 : undefined"
                                                 step="0.01"
@@ -129,12 +129,12 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="min_order_value" class="form-label">Giá trị đơn hàng tối thiểu (VNĐ)</label>
-                                            <input 
-                                                type="number" 
-                                                class="form-control" 
-                                                :class="{ 'is-invalid': errors.min_order_value }" 
-                                                id="min_order_value" 
-                                                v-model.number="form.min_order_value" 
+                                            <input
+                                                type="number"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': errors.min_order_value }"
+                                                id="min_order_value"
+                                                v-model.number="form.min_order_value"
                                                 min="0"
                                                 step="1000"
                                                 placeholder="VD: 200000"
@@ -150,12 +150,12 @@
                                     <div class="col-md-6" v-if="form.discount_type === 'percentage'">
                                         <div class="mb-3">
                                             <label for="max_discount_amount" class="form-label">Giảm tối đa (VNĐ)</label>
-                                            <input 
-                                                type="number" 
-                                                class="form-control" 
-                                                :class="{ 'is-invalid': errors.max_discount_amount }" 
-                                                id="max_discount_amount" 
-                                                v-model.number="form.max_discount_amount" 
+                                            <input
+                                                type="number"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': errors.max_discount_amount }"
+                                                id="max_discount_amount"
+                                                v-model.number="form.max_discount_amount"
                                                 min="0"
                                                 step="1000"
                                                 placeholder="VD: 100000"
@@ -174,12 +174,12 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="usage_limit" class="form-label">Giới hạn sử dụng</label>
-                                            <input 
-                                                type="number" 
-                                                class="form-control" 
-                                                :class="{ 'is-invalid': errors.usage_limit }" 
-                                                id="usage_limit" 
-                                                v-model.number="form.usage_limit" 
+                                            <input
+                                                type="number"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': errors.usage_limit }"
+                                                id="usage_limit"
+                                                v-model.number="form.usage_limit"
                                                 min="0"
                                                 placeholder="VD: 100"
                                             />
@@ -194,12 +194,12 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="start_date" class="form-label">Ngày bắt đầu *</label>
-                                            <input 
-                                                type="datetime-local" 
-                                                class="form-control" 
-                                                :class="{ 'is-invalid': errors.start_date }" 
-                                                id="start_date" 
-                                                v-model="form.start_date" 
+                                            <input
+                                                type="datetime-local"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': errors.start_date }"
+                                                id="start_date"
+                                                v-model="form.start_date"
                                                 required
                                             />
                                             <div v-if="errors.start_date" class="invalid-feedback">
@@ -210,12 +210,12 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="end_date" class="form-label">Ngày kết thúc *</label>
-                                            <input 
-                                                type="datetime-local" 
-                                                class="form-control" 
-                                                :class="{ 'is-invalid': errors.end_date }" 
-                                                id="end_date" 
-                                                v-model="form.end_date" 
+                                            <input
+                                                type="datetime-local"
+                                                class="form-control"
+                                                :class="{ 'is-invalid': errors.end_date }"
+                                                id="end_date"
+                                                v-model="form.end_date"
                                                 required
                                             />
                                             <div v-if="errors.end_date" class="invalid-feedback">
@@ -282,10 +282,10 @@
                         <div class="card-body">
                             <div class="mb-3">
                                 <div class="form-check form-switch">
-                                    <input 
-                                        class="form-check-input" 
-                                        type="checkbox" 
-                                        id="is_active" 
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="is_active"
                                         v-model="form.is_active"
                                     />
                                     <label class="form-check-label" for="is_active">
@@ -469,6 +469,7 @@ onMounted(() => {
 }
 
 input[type="number"] {
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 

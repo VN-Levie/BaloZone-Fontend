@@ -140,6 +140,30 @@
                     </div>
                   </div>
 
+                  <!-- Second Row - Additional Management -->
+                  <div class="row g-3 mt-3">
+                    <!-- Vouchers Management -->
+                    <div class="col-md-6 col-lg-3">
+                      <div class="quick-management-card voucher-card" @click="router.push('/admin/vouchers')">
+                        <div class="card-icon">
+                          <i class="bi bi-ticket-perforated-fill"></i>
+                        </div>
+                        <div class="card-content">
+                          <h6 class="card-title">Vouchers</h6>
+                          <p class="card-subtitle">{{ stats.totalVouchers }} voucher</p>
+                          <div class="card-actions">
+                            <button class="btn btn-sm btn-primary" @click.stop="router.push('/admin/vouchers')">
+                              <i class="bi bi-list me-1"></i>Danh sách
+                            </button>
+                            <button class="btn btn-sm btn-success" @click.stop="router.push('/admin/vouchers/create')">
+                              <i class="bi bi-plus-lg me-1"></i>Tạo mới
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- Category Trash Access -->
                   <div class="row g-3 mt-3">
                     <div class="col-12">
@@ -276,6 +300,7 @@ const stats = ref({
   totalProducts: 0,
   totalOrders: 0,
   totalNews: 0,
+  totalVouchers: 0,
   totalRevenue: 0,
   monthlyGrowth: 0
 })
@@ -342,6 +367,16 @@ const enhancedStats = computed(() => [
     suffix: 'VNĐ',
     description: 'Doanh thu tháng này',
     progress: 90
+  },
+  {
+    label: 'Vouchers',
+    value: stats.value.totalVouchers,
+    icon: 'bi-ticket-perforated-fill',
+    color: 'success' as const,
+    change: 5,
+    isAnimated: true,
+    description: 'Tổng số voucher đang hoạt động',
+    progress: 60
   }
 ])
 
@@ -588,6 +623,7 @@ const loadDashboardData = async () => {
       totalProducts: dashboardApiData.overview?.total_products || 0,
       totalOrders: dashboardApiData.overview?.total_orders || 0,
       totalNews: dashboardApiData.overview?.total_contacts || 0,
+      totalVouchers: 0, // TODO: Add to API when backend implements
       totalRevenue: Number(dashboardApiData.overview?.total_revenue) || 0,
       monthlyGrowth: dashboardApiData.overview?.new_users_this_month || 0
     }
@@ -677,6 +713,7 @@ const loadDashboardData = async () => {
       totalProducts: 0,
       totalOrders: 0,
       totalNews: 0,
+      totalVouchers: 0,
       totalRevenue: 0,
       monthlyGrowth: 0
     }
@@ -835,6 +872,11 @@ onMounted(() => {
 
 .quick-management-card.user-card .card-icon {
   background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.quick-management-card.voucher-card .card-icon {
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
 }
 
