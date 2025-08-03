@@ -132,18 +132,24 @@ export interface News {
   id: number
   title: string
   description: string
-  thumbnail: string
+  thumbnail?: string
   content?: string
   slug?: string
+  excerpt?: string
+  featured_image?: string
+  status?: 'draft' | 'published' | 'archived'
+  is_featured?: boolean
+  published_at?: string
+  view_count?: number
   category?: string
   author?: string
   read_time?: number
   views?: number
   tags?: string[]
-  excerpt?: string
   image_url?: string
   created_at: string
   updated_at: string
+  deleted_at?: string | null
 }
 
 export interface Voucher {
@@ -694,4 +700,17 @@ export interface AdminProductsListResponse {
     prev_page_url: string | null
     to: number
   }
+}
+
+export interface NewsForm {
+  title: string;
+  description: string;
+  thumbnail?: string;
+  slug?: string;
+  excerpt?: string;
+  content?: string;
+  featured_image?: string;
+  status?: 'draft' | 'published' | 'archived';
+  is_featured?: boolean;
+  published_at?: string;
 }

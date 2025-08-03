@@ -5,6 +5,98 @@
 > - Admin (role: admin) - toàn quyền
 > - Contributor (role: contributor) - có quyền quản lý tin tức
 
+## Danh sách tin tức (Admin)
+
+### GET /api/dashboard/news
+
+**Mô tả**: Lấy danh sách tất cả tin tức
+
+**Phương thức**: GET
+
+**URL**: `/api/dashboard/news`
+
+**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin hoặc Contributor
+
+**Headers**:
+
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Query Parameters**:
+
+| Tham số | Kiểu | Bắt buộc | Mô tả |
+|---------|------|----------|-------|
+| search | string | Không | Tìm kiếm theo tiêu đề |
+| page | integer | Không | Số trang (mặc định: 1) |
+| per_page | integer | Không | Số item mỗi trang (mặc định: 10) |
+
+**Response thành công (200)**:
+
+```json
+{
+  "current_page": 1,
+  "data": [
+    {
+      "id": 1,
+      "title": "Top 10 Balo Học Sinh Được Yêu Thích Nhất 2025",
+      "description": "Khám phá những mẫu balo học sinh hot nhất năm 2025 với thiết kế trẻ trung, chất lượng cao và giá cả phải chăng. Từ các thương hiệu nổi tiếng như Nike, Adidas đến JanSport.",
+      "thumbnail": "https://placehold.co/600x400?text=news/top-10-balo-hoc-sinh-2025.jpg",
+      "created_at": "2025-08-02T19:37:55.000000Z",
+      "updated_at": "2025-08-02T19:37:55.000000Z",
+      "deleted_at": null
+    }
+  ],
+  "first_page_url": "http://localhost:8000/api/dashboard/news?page=1",
+  "from": 1,
+  "last_page": 2,
+  "last_page_url": "http://localhost:8000/api/dashboard/news?page=2",
+  "links": [...],
+  "next_page_url": "http://localhost:8000/api/dashboard/news?page=2",
+  "path": "http://localhost:8000/api/dashboard/news",
+  "per_page": 10,
+  "prev_page_url": null,
+  "to": 10,
+  "total": 20
+}
+```
+
+## Chi tiết tin tức (Admin)
+
+### GET /api/dashboard/news/{id}
+
+**Mô tả**: Lấy thông tin chi tiết một tin tức
+
+**Phương thức**: GET
+
+**URL**: `/api/dashboard/news/{id}`
+
+**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin hoặc Contributor
+
+**Headers**:
+
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response thành công (200)**:
+
+```json
+{
+  "data": {
+    "id": 1,
+    "title": "Top 10 Balo Học Sinh Được Yêu Thích Nhất 2025",
+    "description": "Khám phá những mẫu balo học sinh hot nhất năm 2025 với thiết kế trẻ trung, chất lượng cao và giá cả phải chăng. Từ các thương hiệu nổi tiếng như Nike, Adidas đến JanSport.",
+    "thumbnail": "https://placehold.co/600x400?text=news/top-10-balo-hoc-sinh-2025.jpg",
+    "created_at": "2025-08-02T19:37:55.000000Z",
+    "updated_at": "2025-08-02T19:37:55.000000Z",
+    "deleted_at": null
+  }
+}
+```
+
 ## Tạo tin tức mới (Admin)
 
 ### POST /api/dashboard/news
@@ -28,40 +120,31 @@ Content-Type: application/json
 
 ```json
 {
-  "title": "Ra mắt bộ sưu tập túi xách mùa hè 2025",
-  "slug": "ra-mat-bo-suu-tap-tui-xach-mua-he-2025",
-  "excerpt": "Khám phá bộ sưu tập túi xách mới nhất với thiết kế hiện đại và chất liệu cao cấp",
-  "content": "<p>Chúng tôi hân hạnh giới thiệu bộ sưu tập túi xách mùa hè 2025...</p>",
-  "featured_image": "https://example.com/images/news/summer-collection-2025.jpg",
-  "meta_title": "Ra mắt bộ sưu tập túi xách mùa hè 2025 | BaloZone",
-  "meta_description": "Khám phá bộ sưu tập túi xách mới nhất với thiết kế hiện đại",
-  "status": "published",
-  "is_featured": true,
-  "published_at": "2025-01-01 09:00:00"
+  "title": "Test News Article",
+  "description": "This is a test news article description with detailed content",
+  "thumbnail": "https://example.com/news-thumbnail.jpg"
 }
 ```
+
+**Validation Rules**:
+
+| Field | Rules | Mô tả |
+|-------|-------|-------|
+| title | required, string, max:255 | Tiêu đề tin tức |
+| description | required, string | Nội dung mô tả tin tức |
+| thumbnail | nullable, string, max:255 | URL ảnh thumbnail |
 
 **Response thành công (201)**:
 
 ```json
 {
-  "success": true,
-  "message": "News created successfully",
+  "message": "Tin tức đã được tạo thành công",
   "data": {
-    "id": 1,
-    "title": "Ra mắt bộ sưu tập túi xách mùa hè 2025",
-    "slug": "ra-mat-bo-suu-tap-tui-xach-mua-he-2025",
-    "excerpt": "Khám phá bộ sưu tập túi xách mới nhất với thiết kế hiện đại và chất liệu cao cấp",
-    "content": "<p>Chúng tôi hân hạnh giới thiệu bộ sưu tập túi xách mùa hè 2025...</p>",
-    "featured_image": "https://example.com/images/news/summer-collection-2025.jpg",
-    "meta_title": "Ra mắt bộ sưu tập túi xách mùa hè 2025 | BaloZone",
-    "meta_description": "Khám phá bộ sưu tập túi xách mới nhất với thiết kế hiện đại",
-    "status": "published",
-    "is_featured": true,
-    "view_count": 0,
-    "published_at": "2025-01-01T09:00:00.000000Z",
-    "created_at": "2025-01-01T12:00:00.000000Z",
-    "updated_at": "2025-01-01T12:00:00.000000Z"
+    "title": "Test News Article",
+    "description": "This is a test news article description with detailed content",
+    "updated_at": "2025-08-03T07:07:58.000000Z",
+    "created_at": "2025-08-03T07:07:58.000000Z",
+    "id": 21
   }
 }
 ```
@@ -71,118 +154,156 @@ Content-Type: application/json
 ```json
 {
   "success": false,
-  "message": "Validation errors",
-  "errors": {
-    "title": ["The title field is required."],
-    "slug": ["The slug has already been taken."],
-    "content": ["The content field is required."],
-    "status": ["The selected status is invalid."]
+  "message": "The title field is required. (and 1 more error)",
+  "data": null,
+  "debug_info": {
+    "exception": "Illuminate\\Validation\\ValidationException",
+    "file": "/Users/fe-haiduong/BaloZone-Backend/vendor/laravel/framework/src/Illuminate/Support/helpers.php",
+    "line": 423
   }
 }
 ```
 
-**Validation rules**:
-
-- `title` (string, required, max:255): Tiêu đề tin tức
-- `slug` (string, required, max:255, unique): Đường dẫn thân thiện
-- `excerpt` (string, optional): Tóm tắt ngắn
-- `content` (text, required): Nội dung tin tức
-- `featured_image` (string, optional): Ảnh đại diện
-- `meta_title` (string, optional, max:255): Tiêu đề SEO
-- `meta_description` (string, optional, max:500): Mô tả SEO
-- `status` (string, required): Trạng thái (draft, published, archived)
-- `is_featured` (boolean, optional): Tin tức nổi bật
-- `published_at` (datetime, optional): Thời gian xuất bản
-
 ## Cập nhật tin tức (Admin)
 
-### PUT /api/dashboard/news/{news}
+### PUT /api/dashboard/news/{id}
 
 **Mô tả**: Cập nhật thông tin tin tức
 
 **Phương thức**: PUT
 
-**URL**: `/api/dashboard/news/{news}`
+**URL**: `/api/dashboard/news/{id}`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin hoặc Contributor
 
 **Headers**:
 
-```
+```bash
 Authorization: Bearer {token}
 Content-Type: application/json
 ```
-
-**Tham số URL**:
-
-- `news` (integer, required): ID tin tức
 
 **Body**:
 
 ```json
 {
-  "title": "Ra mắt bộ sưu tập túi xách mùa hè 2025 - Cập nhật",
-  "excerpt": "Khám phá bộ sưu tập túi xách mới nhất với thiết kế siêu hiện đại",
-  "status": "published",
-  "is_featured": false
+  "title": "Updated Test News Article",
+  "description": "This is an updated test news article with new content",
+  "thumbnail": "https://example.com/news-thumbnail.jpg"
 }
 ```
+
+**Validation Rules**:
+
+| Field | Rules | Mô tả |
+|-------|-------|-------|
+| title | sometimes, required, string, max:255 | Tiêu đề tin tức |
+| description | sometimes, required, string | Nội dung mô tả tin tức |
+| thumbnail | nullable, string, max:255 | URL ảnh thumbnail |
 
 **Response thành công (200)**:
 
 ```json
 {
-  "success": true,
-  "message": "News updated successfully",
+  "message": "Tin tức đã được cập nhật thành công",
   "data": {
-    "id": 1,
-    "title": "Ra mắt bộ sưu tập túi xách mùa hè 2025 - Cập nhật",
-    "slug": "ra-mat-bo-suu-tap-tui-xach-mua-he-2025",
-    "excerpt": "Khám phá bộ sưu tập túi xách mới nhất với thiết kế siêu hiện đại",
-    "content": "<p>Chúng tôi hân hạnh giới thiệu bộ sưu tập túi xách mùa hè 2025...</p>",
-    "featured_image": "https://example.com/images/news/summer-collection-2025.jpg",
-    "meta_title": "Ra mắt bộ sưu tập túi xách mùa hè 2025 | BaloZone",
-    "meta_description": "Khám phá bộ sưu tập túi xách mới nhất với thiết kế hiện đại",
-    "status": "published",
-    "is_featured": false,
-    "view_count": 150,
-    "published_at": "2025-01-01T09:00:00.000000Z",
-    "created_at": "2025-01-01T12:00:00.000000Z",
-    "updated_at": "2025-01-01T15:30:00.000000Z"
+    "id": 21,
+    "title": "Updated Test News Article",
+    "description": "This is an updated test news article with new content",
+    "thumbnail": "https://example.com/news-thumbnail.jpg",
+    "created_at": "2025-08-03T07:07:58.000000Z",
+    "updated_at": "2025-08-03T07:08:11.000000Z",
+    "deleted_at": null
   }
 }
 ```
 
 ## Xóa tin tức (Admin)
 
-### DELETE /api/dashboard/news/{news}
+### DELETE /api/dashboard/news/{id}
 
-**Mô tả**: Xóa tin tức
+**Mô tả**: Xóa tin tức (soft delete)
 
 **Phương thức**: DELETE
 
-**URL**: `/api/dashboard/news/{news}`
+**URL**: `/api/dashboard/news/{id}`
 
 **Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin hoặc Contributor
 
 **Headers**:
 
-```
+```bash
 Authorization: Bearer {token}
+Accept: application/json
 ```
-
-**Tham số URL**:
-
-- `news` (integer, required): ID tin tức
 
 **Response thành công (200)**:
 
 ```json
 {
-  "success": true,
-  "message": "News deleted successfully"
+  "message": "Tin tức đã được xóa thành công"
 }
 ```
+
+**Response lỗi (404)**:
+
+```json
+{
+  "message": "News not found"
+}
+```
+
+## Ví dụ sử dụng
+
+### 1. Lấy danh sách tin tức
+
+```bash
+curl -X GET "http://localhost:8000/api/dashboard/news?per_page=5" \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+
+### 2. Tìm kiếm tin tức
+
+```bash
+curl -X GET "http://localhost:8000/api/dashboard/news?search=balo&per_page=3" \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+
+### 3. Tạo tin tức mới
+
+```bash
+curl -X POST "http://localhost:8000/api/dashboard/news" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Test News Article",
+    "description": "This is a test news article description with detailed content"
+  }'
+```
+
+### 4. Cập nhật tin tức
+
+```bash
+curl -X PUT "http://localhost:8000/api/dashboard/news/21" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Test News Article",
+    "description": "This is an updated test news article with new content",
+    "thumbnail": "https://example.com/news-thumbnail.jpg"
+  }'
+```
+
+### 5. Xóa tin tức
+
+```bash
+curl -X DELETE "http://localhost:8000/api/dashboard/news/21" \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+
 
 **Response lỗi (404)**:
 
