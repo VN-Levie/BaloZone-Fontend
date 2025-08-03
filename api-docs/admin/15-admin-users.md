@@ -1,19 +1,16 @@
-# 15. Quản lý người dùng (Admin Users)
+# 7. Quản lý người dùng (User Management)
 
-> **Lưu ý**: Các endpoint quản lý người dùng sử dụng `/api/dashboard/users/*` nhưng chỉ dành cho Admin (role: admin).  
-> Contributor không có quyền truy cập vào các endpoint này.
+## Lấy thông tin người dùng hiện tại
 
-## Lấy danh sách người dùng (Admin)
+### GET /api/profile
 
-### GET /api/dashboard/users
-
-**Mô tả**: Lấy danh sách tất cả người dùng trong hệ thống
+**Mô tả**: Lấy thông tin chi tiết người dùng hiện tại
 
 **Phương thức**: GET
 
-**URL**: `/api/dashboard/users`
+**URL**: `/api/profile`
 
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin (admin only)
+**Phân quyền**: Yêu cầu authentication (Bearer Token)
 
 **Headers**:
 
@@ -21,84 +18,10 @@
 Authorization: Bearer {token}
 ```
 
-**Tham số query**:
-
-- `role` (string, optional): Lọc theo vai trò
-- `status` (string, optional): Lọc theo trạng thái (active, inactive, banned)
-- `search` (string, optional): Tìm kiếm theo tên hoặc email
-- `page` (integer, optional): Số trang (mặc định: 1)
-- `per_page` (integer, optional): Số người dùng mỗi trang (mặc định: 10)
-
 **Response thành công (200)**:
 
 ```json
 {
-  "success": true,
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
-        "id": 1,
-        "name": "Nguyễn Văn A",
-        "email": "user@example.com",
-        "phone": "0123456789",
-        "status": "active",
-        "email_verified_at": "2024-01-01T00:00:00.000000Z",
-        "roles": [
-          {
-            "id": 3,
-            "name": "customer",
-            "display_name": "Khách hàng"
-          }
-        ],
-        "orders_count": 5,
-        "total_spent": 6500000,
-        "created_at": "2024-01-01T00:00:00.000000Z",
-        "updated_at": "2024-01-01T00:00:00.000000Z"
-      }
-    ],
-    "first_page_url": "http://example.com/api/dashboard/users?page=1",
-    "from": 1,
-    "last_page": 15,
-    "last_page_url": "http://example.com/api/dashboard/users?page=15",
-    "next_page_url": "http://example.com/api/dashboard/users?page=2",
-    "path": "http://example.com/api/dashboard/users",
-    "per_page": 10,
-    "prev_page_url": null,
-    "to": 10,
-    "total": 145
-  },
-  "message": "Lấy danh sách người dùng thành công"
-}
-```
-
-## Lấy chi tiết người dùng (Admin)
-
-### GET /api/dashboard/users/{id}
-
-**Mô tả**: Lấy chi tiết một người dùng
-
-**Phương thức**: GET
-
-**URL**: `/api/dashboard/users/{id}`
-
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
-
-**Headers**:
-
-```
-Authorization: Bearer {token}
-```
-
-**Tham số URL**:
-
-- `id` (integer, required): ID người dùng
-
-**Response thành công (200)**:
-
-```json
-{
-  "success": true,
   "data": {
     "id": 1,
     "name": "Nguyễn Văn A",
@@ -106,49 +29,47 @@ Authorization: Bearer {token}
     "phone": "0123456789",
     "status": "active",
     "email_verified_at": "2024-01-01T00:00:00.000000Z",
-    "roles": [
-      {
-        "id": 3,
-        "name": "customer",
-        "display_name": "Khách hàng",
-        "assigned_at": "2024-01-01T00:00:00.000000Z"
-      }
-    ],
-    "addresses": [
+    "address_books": [
       {
         "id": 1,
         "name": "Địa chỉ nhà riêng",
+        "recipient_name": "Nguyễn Văn A",
+        "recipient_phone": "0123456789",
         "address": "123 Đường ABC, Phường XYZ",
         "ward": "Phường 1",
         "district": "Quận 1",
         "province": "TP. Hồ Chí Minh",
+        "postal_code": "70000",
         "is_default": true
       }
     ],
-    "order_summary": {
-      "total_orders": 5,
-      "total_spent": 6500000,
-      "average_order_value": 1300000,
-      "last_order_at": "2024-01-01T10:00:00.000000Z"
-    },
+    "orders": [
+      {
+        "id": 1,
+        "order_number": "ORD-2024-001",
+        "status": "pending",
+        "total_price": 1200000,
+        "payment_status": "pending",
+        "created_at": "2024-01-01T00:00:00.000000Z"
+      }
+    ],
     "created_at": "2024-01-01T00:00:00.000000Z",
     "updated_at": "2024-01-01T00:00:00.000000Z"
-  },
-  "message": "Lấy chi tiết người dùng thành công"
+  }
 }
 ```
 
-## Cập nhật thông tin người dùng (Admin)
+## Cập nhật thông tin người dùng
 
-### PUT /api/dashboard/users/{user}
+### PUT /api/profile
 
-**Mô tả**: Cập nhật thông tin người dùng
+**Mô tả**: Cập nhật thông tin người dùng hiện tại
 
 **Phương thức**: PUT
 
-**URL**: `/api/dashboard/users/{user}`
+**URL**: `/api/profile`
 
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
+**Phân quyền**: Yêu cầu authentication (Bearer Token)
 
 **Headers**:
 
@@ -157,18 +78,13 @@ Authorization: Bearer {token}
 Content-Type: application/json
 ```
 
-**Tham số URL**:
-
-- `user` (integer, required): ID người dùng
-
 **Body**:
 
 ```json
 {
   "name": "Nguyễn Văn A Updated",
   "email": "user-updated@example.com",
-  "phone": "0987654321",
-  "status": "inactive"
+  "phone": "0987654321"
 }
 ```
 
@@ -176,22 +92,14 @@ Content-Type: application/json
 
 ```json
 {
-  "success": true,
-  "message": "User updated successfully",
+  "message": "Profile updated successfully",
   "data": {
     "id": 1,
     "name": "Nguyễn Văn A Updated",
     "email": "user-updated@example.com",
     "phone": "0987654321",
-    "status": "inactive",
+    "status": "active",
     "email_verified_at": "2024-01-01T00:00:00.000000Z",
-    "roles": [
-      {
-        "id": 3,
-        "name": "customer",
-        "display_name": "Khách hàng"
-      }
-    ],
     "created_at": "2024-01-01T00:00:00.000000Z",
     "updated_at": "2024-01-01T12:00:00.000000Z"
   }
@@ -207,7 +115,7 @@ Content-Type: application/json
   "errors": {
     "name": ["The name field is required."],
     "email": ["The email has already been taken."],
-    "status": ["The selected status is invalid."]
+    "phone": ["The phone must not be greater than 20 characters."]
   }
 }
 ```
@@ -217,114 +125,166 @@ Content-Type: application/json
 - `name` (string, required, max:255): Tên người dùng
 - `email` (string, required, email, max:255, unique): Email người dùng
 - `phone` (string, optional, max:20): Số điện thoại
-- `status` (string, required): Trạng thái (active, inactive)
 
-## Xóa người dùng (Admin)
+## Thay đổi mật khẩu
 
-### DELETE /api/dashboard/users/{user}
+### POST /api/change-password
 
-**Mô tả**: Xóa người dùng
-
-**Phương thức**: DELETE
-
-**URL**: `/api/dashboard/users/{user}`
-
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
-
-**Headers**:
-
-```
-Authorization: Bearer {token}
-```
-
-**Tham số URL**:
-
-- `user` (integer, required): ID người dùng
-
-**Response thành công (200)**:
-
-```json
-{
-  "success": true,
-  "message": "User deleted successfully"
-}
-```
-
-**Response lỗi (400) - Không thể xóa admin**:
-
-```json
-{
-  "success": false,
-  "message": "Cannot delete admin user"
-}
-```
-
-**Response lỗi (400) - Có đơn hàng pending**:
-
-```json
-{
-  "success": false,
-  "message": "Cannot delete user with pending orders"
-}
-```
-
-## Chuyển đổi trạng thái người dùng (Admin)
-
-### POST /api/dashboard/users/{user}/toggle-status
-
-**Mô tả**: Chuyển đổi trạng thái người dùng (active ↔ inactive)
+**Mô tả**: Thay đổi mật khẩu người dùng
 
 **Phương thức**: POST
 
-**URL**: `/api/dashboard/users/{user}/toggle-status`
+**URL**: `/api/change-password`
 
-**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin
+**Phân quyền**: Yêu cầu authentication (Bearer Token)
 
 **Headers**:
 
 ```
 Authorization: Bearer {token}
+Content-Type: application/json
 ```
 
-**Tham số URL**:
+**Body**:
 
-- `user` (integer, required): ID người dùng
+```json
+{
+  "current_password": "old_password123",
+  "new_password": "new_password123",
+  "new_password_confirmation": "new_password123"
+}
+```
 
 **Response thành công (200)**:
 
 ```json
 {
-  "success": true,
-  "message": "User status updated successfully",
-  "data": {
-    "id": 1,
-    "name": "Nguyễn Văn A",
-    "email": "user@example.com",
-    "phone": "0123456789",
-    "status": "inactive",
-    "email_verified_at": "2024-01-01T00:00:00.000000Z",
-    "created_at": "2024-01-01T00:00:00.000000Z",
-    "updated_at": "2024-01-01T12:00:00.000000Z"
+  "message": "Password changed successfully"
+}
+```
+
+**Response lỗi (422)**:
+
+```json
+{
+  "success": false,
+  "message": "Validation errors",
+  "errors": {
+    "current_password": ["The current password field is required."],
+    "new_password": ["The new password must be at least 6 characters.", "The new password confirmation does not match."]
   }
 }
 ```
 
-**Response lỗi (400)**:
+**Response lỗi - Mật khẩu hiện tại sai (422)**:
 
 ```json
 {
   "success": false,
-  "message": "Cannot change admin status"
+  "message": "Mật khẩu hiện tại không đúng"
 }
 ```
 
+**Validation rules**:
+
+- `current_password` (string, required): Mật khẩu hiện tại
+- `new_password` (string, required, min:6, confirmed): Mật khẩu mới
+- `new_password_confirmation` (string, required): Xác nhận mật khẩu mới
+
+## Lấy thống kê người dùng
+
+### GET /api/user/stats
+
+**Mô tả**: Lấy thống kê của người dùng hiện tại
+
+**Phương thức**: GET
+
+**URL**: `/api/user/stats`
+
+**Phân quyền**: Yêu cầu authentication (Bearer Token)
+
+**Headers**:
+
+```
+Authorization: Bearer {token}
+```
+
+**Response thành công (200)**:
+
+```json
+{
+  "data": {
+    "total_orders": 5,
+    "pending_orders": 2,
+    "completed_orders": 3,
+    "total_spent": 6500000,
+    "total_comments": 8,
+    "addresses_count": 2,
+    "member_since": "2024-01-01"
+  }
+}
+```
+
+## Xóa tài khoản
+
+### DELETE /api/delete-account
+
+**Mô tả**: Xóa tài khoản người dùng hiện tại
+
+**Phương thức**: DELETE
+
+**URL**: `/api/delete-account`
+
+**Phân quyền**: Yêu cầu authentication (Bearer Token)
+
+**Headers**:
+
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+**Body**:
+
+```json
+{
+  "password": "user_password123"
+}
+```
+
+**Response thành công (200)**:
+
+```json
+{
+  "message": "Account deleted successfully"
+}
+```
+
+**Response lỗi (422) - Mật khẩu sai**:
+
+```json
+{
+  "success": false,
+  "message": "Mật khẩu không đúng"
+}
+```
+
+**Response lỗi (422) - Có đơn hàng pending**:
+
+```json
+{
+  "message": "Cannot delete account with pending orders"
+}
+```
+
+**Validation rules**:
+
+- `password` (string, required): Mật khẩu xác nhận
+
 **Lưu ý**:
 
-- Tất cả các endpoint đều yêu cầu authentication + role admin
-- Admin có thể xem tất cả thông tin chi tiết của người dùng
-- Có thể lọc và tìm kiếm người dùng theo nhiều tiêu chí (trong endpoint index)
-- Trạng thái chỉ có 2 giá trị: "active", "inactive" (không có "banned")
+- Tất cả các endpoint trong module này đều yêu cầu authentication
+- Không thể xóa tài khoản khi có đơn hàng đang pending
+- Profile sẽ include thông tin addresses và orders gần đây (5 đơn hàng cuối)
+- Status chỉ có 2 giá trị: "active", "inactive"
 - Không có avatar, date_of_birth, gender trong hệ thống
-- Không thể xóa hoặc thay đổi trạng thái admin user
-- Không thể xóa user có đơn hàng đang pending
-- Toggle status sẽ chuyển đổi giữa active ↔ inactive

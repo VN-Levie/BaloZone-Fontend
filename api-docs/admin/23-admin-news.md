@@ -101,7 +101,7 @@ Accept: application/json
 
 ### POST /api/dashboard/news
 
-**Mô tả**: Tạo tin tức mới
+**Mô tả**: Tạo tin tức mới với hỗ trợ upload ảnh thumbnail
 
 **Phương thức**: POST
 
@@ -111,20 +111,18 @@ Accept: application/json
 
 **Headers**:
 
-```
+```bash
 Authorization: Bearer {token}
-Content-Type: application/json
+Content-Type: multipart/form-data
 ```
 
-**Body**:
+**Body (Form Data)**:
 
-```json
-{
-  "title": "Test News Article",
-  "description": "This is a test news article description with detailed content",
-  "thumbnail": "https://example.com/news-thumbnail.jpg"
-}
-```
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| title | string | Yes | Tiêu đề tin tức (max: 255 ký tự) |
+| description | text | Yes | Nội dung mô tả tin tức |
+| thumbnail | file | No | File ảnh (jpeg,png,jpg,gif,webp, max: 2MB) |
 
 **Validation Rules**:
 
@@ -132,7 +130,7 @@ Content-Type: application/json
 |-------|-------|-------|
 | title | required, string, max:255 | Tiêu đề tin tức |
 | description | required, string | Nội dung mô tả tin tức |
-| thumbnail | nullable, string, max:255 | URL ảnh thumbnail |
+| thumbnail | nullable, image, mimes:jpeg,png,jpg,gif,webp, max:2048 | File ảnh thumbnail |
 
 **Response thành công (201)**:
 
@@ -140,11 +138,12 @@ Content-Type: application/json
 {
   "message": "Tin tức đã được tạo thành công",
   "data": {
-    "title": "Test News Article",
-    "description": "This is a test news article description with detailed content",
-    "updated_at": "2025-08-03T07:07:58.000000Z",
-    "created_at": "2025-08-03T07:07:58.000000Z",
-    "id": 21
+    "title": "Test News with Image Upload",
+    "description": "This is a test news with image upload feature",
+    "thumbnail": "/storage/news/thumbnails/1754208173_test.png",
+    "updated_at": "2025-08-03T08:02:53.000000Z",
+    "created_at": "2025-08-03T08:02:53.000000Z",
+    "id": 22
   }
 }
 ```
@@ -168,7 +167,7 @@ Content-Type: application/json
 
 ### PUT /api/dashboard/news/{id}
 
-**Mô tả**: Cập nhật thông tin tin tức
+**Mô tả**: Cập nhật thông tin tin tức (JSON format - không upload file)
 
 **Phương thức**: PUT
 
@@ -188,10 +187,34 @@ Content-Type: application/json
 ```json
 {
   "title": "Updated Test News Article",
-  "description": "This is an updated test news article with new content",
-  "thumbnail": "https://example.com/news-thumbnail.jpg"
+  "description": "This is an updated test news article with new content"
 }
 ```
+
+### POST /api/dashboard/news/{id}/update
+
+**Mô tả**: Cập nhật tin tức với hỗ trợ upload ảnh mới
+
+**Phương thức**: POST
+
+**URL**: `/api/dashboard/news/{id}/update`
+
+**Phân quyền**: Yêu cầu authentication (Bearer Token) + Role Admin hoặc Contributor
+
+**Headers**:
+
+```bash
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+```
+
+**Body (Form Data)**:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| title | string | No | Tiêu đề tin tức (max: 255 ký tự) |
+| description | text | No | Nội dung mô tả tin tức |
+| thumbnail | file | No | File ảnh mới (jpeg,png,jpg,gif,webp, max: 2MB) |
 
 **Validation Rules**:
 
@@ -199,7 +222,7 @@ Content-Type: application/json
 |-------|-------|-------|
 | title | sometimes, required, string, max:255 | Tiêu đề tin tức |
 | description | sometimes, required, string | Nội dung mô tả tin tức |
-| thumbnail | nullable, string, max:255 | URL ảnh thumbnail |
+| thumbnail | nullable, image, mimes:jpeg,png,jpg,gif,webp, max:2048 | File ảnh thumbnail mới |
 
 **Response thành công (200)**:
 
@@ -207,12 +230,12 @@ Content-Type: application/json
 {
   "message": "Tin tức đã được cập nhật thành công",
   "data": {
-    "id": 21,
-    "title": "Updated Test News Article",
-    "description": "This is an updated test news article with new content",
-    "thumbnail": "https://example.com/news-thumbnail.jpg",
-    "created_at": "2025-08-03T07:07:58.000000Z",
-    "updated_at": "2025-08-03T07:08:11.000000Z",
+    "id": 22,
+    "title": "Updated News with New Image",
+    "description": "Updated description with new thumbnail",
+    "thumbnail": "/storage/news/thumbnails/1754208285_test2.png",
+    "created_at": "2025-08-03T08:02:53.000000Z",
+    "updated_at": "2025-08-03T08:04:45.000000Z",
     "deleted_at": null
   }
 }
@@ -271,32 +294,48 @@ curl -X GET "http://localhost:8000/api/dashboard/news?search=balo&per_page=3" \
   -H "Accept: application/json"
 ```
 
-### 3. Tạo tin tức mới
+### 3. Tạo tin tức mới với upload ảnh
 
 ```bash
 curl -X POST "http://localhost:8000/api/dashboard/news" \
   -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Test News Article",
-    "description": "This is a test news article description with detailed content"
-  }'
+  -F "title=Test News with Image Upload" \
+  -F "description=This is a test news with image upload feature" \
+  -F "thumbnail=@/path/to/image.png"
 ```
 
-### 4. Cập nhật tin tức
+### 4. Tạo tin tức chỉ với text
+
+```bash
+curl -X POST "http://localhost:8000/api/dashboard/news" \
+  -H "Authorization: Bearer {token}" \
+  -F "title=Text Only News" \
+  -F "description=This news has no thumbnail image"
+```
+
+### 5. Cập nhật tin tức (JSON - không upload file)
 
 ```bash
 curl -X PUT "http://localhost:8000/api/dashboard/news/21" \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "Updated Test News Article",
-    "description": "This is an updated test news article with new content",
-    "thumbnail": "https://example.com/news-thumbnail.jpg"
+    "title": "Updated News Title",
+    "description": "Updated news description"
   }'
 ```
 
-### 5. Xóa tin tức
+### 6. Cập nhật tin tức với ảnh mới
+
+```bash
+curl -X POST "http://localhost:8000/api/dashboard/news/21/update" \
+  -H "Authorization: Bearer {token}" \
+  -F "title=Updated News with New Image" \
+  -F "description=Updated description with new thumbnail" \
+  -F "thumbnail=@/path/to/new_image.png"
+```
+
+### 7. Xóa tin tức
 
 ```bash
 curl -X DELETE "http://localhost:8000/api/dashboard/news/21" \
@@ -304,62 +343,17 @@ curl -X DELETE "http://localhost:8000/api/dashboard/news/21" \
   -H "Accept: application/json"
 ```
 
+## Lưu ý quan trọng
+
+- **File Upload**: Sử dụng Content-Type: multipart/form-data
+- **File Types**: Chỉ chấp nhận jpeg, png, jpg, gif, webp
+- **File Size**: Tối đa 2MB
+- **Auto Cleanup**: File cũ sẽ tự động bị xóa khi update hoặc delete
+- **Storage Path**: Files được lưu trong `/storage/news/thumbnails/`
+- **URL Format**: Thumbnail trả về dạng `/storage/news/thumbnails/filename.ext`
+- **Update Methods**:
+  - PUT: JSON format, không upload file
+  - POST {id}/update: Form data, có thể upload file mới
+
 
 **Response lỗi (404)**:
-
-```json
-{
-  "success": false,
-  "message": "News not found"
-}
-```
-
-## Ví dụ sử dụng curl
-
-### Tạo tin tức mới
-
-```bash
-curl -X POST http://localhost:8000/api/dashboard/news \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Xu hướng túi xách 2025",
-    "slug": "xu-huong-tui-xach-2025",
-    "excerpt": "Cập nhật những xu hướng túi xách hot nhất năm 2025",
-    "content": "<p>Năm 2025 đánh dấu sự trở lại của phong cách minimalist...</p>",
-    "featured_image": "https://example.com/images/trend-2025.jpg",
-    "status": "published",
-    "is_featured": true,
-    "published_at": "2025-01-15 08:00:00"
-  }'
-```
-
-### Cập nhật tin tức
-
-```bash
-curl -X PUT http://localhost:8000/api/dashboard/news/1 \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Xu hướng túi xách 2025 - Phiên bản cập nhật",
-    "status": "published",
-    "is_featured": false
-  }'
-```
-
-### Xóa tin tức
-
-```bash
-curl -X DELETE http://localhost:8000/api/dashboard/news/1 \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
-**Lưu ý**:
-
-- Tất cả các endpoint đều yêu cầu authentication + role admin hoặc contributor
-- Slug phải unique trong hệ thống
-- Status có 3 giá trị: `draft`, `published`, `archived`
-- Chỉ tin tức có status `published` mới hiển thị trên website
-- `is_featured = true` để hiển thị tin tức ở vị trí nổi bật
-- `view_count` được tự động tăng khi user xem tin tức
-- `published_at` quyết định thời gian xuất bản tin tức

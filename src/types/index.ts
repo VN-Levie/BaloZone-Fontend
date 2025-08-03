@@ -139,6 +139,7 @@ export interface News {
   featured_image?: string
   status?: 'draft' | 'published' | 'archived'
   is_featured?: boolean
+  is_published?: boolean
   published_at?: string
   view_count?: number
   category?: string

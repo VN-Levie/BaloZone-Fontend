@@ -214,6 +214,25 @@ const router = createRouter({
       component: () => import('../views/admin/AdminContactsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
+    // News Admin Routes
+    {
+      path: '/admin/news',
+      name: 'admin-news',
+      component: () => import('../views/admin/AdminNewsView.vue'),
+      meta: { requiresAuth: true, title: 'Quản lý tin tức' }
+    },
+    {
+      path: '/admin/news/create',
+      name: 'admin-news-create',
+      component: () => import('../views/admin/AdminNewsFormView.vue'),
+      meta: { requiresAuth: true, title: 'Tạo tin tức mới' }
+    },
+    {
+      path: '/admin/news/edit/:id',
+      name: 'admin-news-edit',
+      component: () => import('../views/admin/AdminNewsFormView.vue'),
+      meta: { requiresAuth: true, title: 'Chỉnh sửa tin tức' }
+    },
     // Orders Admin Routes
     {
       path: '/admin/orders',

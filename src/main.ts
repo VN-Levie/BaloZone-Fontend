@@ -3,7 +3,9 @@ import './assets/admin-enhanced.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { BButton, BModal, BCard, BRow, BCol, BForm, BFormInput, BFormGroup, BFormTextarea, BFormInvalidFeedback, BFormText, BPagination } from 'bootstrap-vue-next'
 
+import 'bootstrap-vue-next/dist/bootstrap-vue-next.css'
 import App from './App.vue'
 import router from './router'
 import { useAuthStore } from './stores/auth'
@@ -18,7 +20,6 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-
 // Initialize authentication after Pinia is set up
 const authStore = useAuthStore()
 authStore.initializeAuth()

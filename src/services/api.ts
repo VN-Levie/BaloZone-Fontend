@@ -1245,3 +1245,146 @@ export const adminProductsApi = {
       body: JSON.stringify({ ids }),
     }),
 }
+
+// Admin News Management API
+export const adminNewsApi = {
+  // Get all news for admin
+  getNews: (params?: {
+    search?: string
+    page?: number
+    per_page?: number
+  }): Promise<PaginatedResponse<News>> => {
+    const queryParams = new URLSearchParams()
+    if (params?.search) queryParams.append('search', params.search)
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.per_page) queryParams.append('per_page', params.per_page.toString())
+
+    const queryString = queryParams.toString()
+    return makeRequest(`/dashboard/news${queryString ? '?' + queryString : ''}`)
+  },
+
+  // Get single news for admin
+  getNewsById: (id: number): Promise<ApiResponse<News>> =>
+    makeRequest(`/dashboard/news/${id}`),
+
+  // Create new news with file upload support
+  createNews: (newsData: {
+    title: string
+    description: string
+    thumbnail?: File
+    content?: string
+    is_published?: boolean
+  }): Promise<ApiResponse<News>> => {
+    const formData = new FormData()
+    formData.append('title', newsData.title)
+    formData.append('description', newsData.description)
+    if (newsData.content) formData.append('content', newsData.content)
+    if (newsData.is_published !== undefined) formData.append('is_published', newsData.is_published.toString())
+    if (newsData.thumbnail) formData.append('thumbnail', newsData.thumbnail)
+
+    return makeRequest('/dashboard/news', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Don't set Content-Type for FormData, let browser set it with boundary
+      },
+    })
+  },
+
+  // Update news with JSON (no file upload)
+  updateNews: (id: number, newsData: {
+    title?: string
+    description?: string
+    content?: string
+    is_published?: boolean
+  }): Promise<ApiResponse<News>> =>
+    makeRequest(`/dashboard/news/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(newsData),
+    }),
+
+  // Update news with file upload support
+  updateNewsWithFile: (id: number, newsData: {
+    title?: string
+    description?: string
+    content?: string
+    is_published?: boolean
+    thumbnail?: File
+  }): Promise<ApiResponse<News>> => {
+    const formData = new FormData()
+    if (newsData.title) formData.append('title', newsData.title)
+    if (newsData.description) formData.append('description', newsData.description)
+    if (newsData.content) formData.append('content', newsData.content)
+    if (newsData.is_published !== undefined) formData.append('is_published', newsData.is_published.toString())
+    if (newsData.thumbnail) formData.append('thumbnail', newsData.thumbnail)
+
+    return makeRequest(`/dashboard/news/${id}/update`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Don't set Content-Type for FormData, let browser set it with boundary
+      },
+    })
+  },
+
+  // Delete news
+  deleteNews: (id: number): Promise<ApiResponse<null>> =>
+    makeRequest(`/dashboard/news/${id}`, {
+      method: 'DELETE',
+    }),
+}
+
+// Admin Vouchers Management API
+export const adminVouchersApi = {
+  // Get all vouchers for admin
+  getVouchers: (): Promise<ApiResponse<Voucher[]>> =>
+    makeRequest('/dashboard/vouchers'),
+
+  // Get single voucher for admin
+  getVoucherById: (id: number): Promise<ApiResponse<Voucher>> =>
+    makeRequest(`/dashboard/vouchers/${id}`),
+
+  // Create new voucher
+  createVoucher: (voucherData: {
+    code: string
+    name: string
+    description?: string
+    discount_type: 'percentage' | 'fixed'
+    discount_value: number
+    min_order_value?: number
+    max_discount_amount?: number
+    usage_limit?: number
+    start_date: string
+    end_date: string
+    is_active?: boolean
+  }): Promise<ApiResponse<Voucher>> =>
+    makeRequest('/dashboard/vouchers', {
+      method: 'POST',
+      body: JSON.stringify(voucherData),
+    }),
+
+  // Update voucher
+  updateVoucher: (id: number, voucherData: {
+    code?: string
+    name?: string
+    description?: string
+    discount_type?: 'percentage' | 'fixed'
+    discount_value?: number
+    min_order_value?: number
+    max_discount_amount?: number
+    usage_limit?: number
+    start_date?: string
+    end_date?: string
+    is_active?: boolean
+  }): Promise<ApiResponse<Voucher>> =>
+    makeRequest(`/dashboard/vouchers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(voucherData),
+    }),
+
+  // Delete voucher
+  deleteVoucher: (id: number): Promise<ApiResponse<null>> =>
+    makeRequest(`/dashboard/vouchers/${id}`, {
+      method: 'DELETE',
+    }),
+}
