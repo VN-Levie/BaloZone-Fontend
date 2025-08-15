@@ -27,12 +27,12 @@ export const getImageUrl = (imagePath?: string): string => {
   if (imagePath.startsWith('http')) {
     return imagePath
   }
-  //nếu không bắt dầu9 bằng storage hoặc /storage thì thêm vào
+
   if (imagePath.startsWith('storage/') || imagePath.startsWith('/storage/')) {
     return `http://localhost:8000/${imagePath}`
   }
   // Assume it's a relative path from the API server
-  return `http://localhost:8000/${imagePath}`
+  return `http://localhost:8000/storage/${imagePath}`
 }
 
 export const calculateDiscount = (originalPrice: number, currentPrice: number): number => {
