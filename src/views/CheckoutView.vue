@@ -346,13 +346,13 @@
       </div>
 
       <!-- Add Address Modal -->
-      <AddressFormModal 
-        v-if="showAddAddressModal" 
-        :isEdit="false" 
+      <AddressFormModal
+        v-if="showAddAddressModal"
+        :isEdit="false"
         :submitting="isAddingAddress"
         :backendError="addressFormError"
-        @submit="handleAddressAdded" 
-        @cancel="showAddAddressModal = false" 
+        @submit="handleAddressAdded"
+        @cancel="showAddAddressModal = false"
       />
     </div>
   </UserLayout>
