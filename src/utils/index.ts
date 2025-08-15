@@ -28,8 +28,11 @@ export const getImageUrl = (imagePath?: string): string => {
     return imagePath
   }
 
-  if (imagePath.startsWith('storage/') || imagePath.startsWith('/storage/')) {
+  if (imagePath.startsWith('storage/')) {
     return `http://localhost:8000/${imagePath}`
+  }
+  if (imagePath.startsWith('/storage/')) {
+    return `http://localhost:8000${imagePath}`
   }
   // Assume it's a relative path from the API server
   return `http://localhost:8000/storage/${imagePath}`
