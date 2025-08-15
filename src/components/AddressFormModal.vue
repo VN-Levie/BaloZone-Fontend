@@ -5,19 +5,19 @@
       <h4 class="mb-3">{{ isEdit ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới' }}</h4>
       <form @submit.prevent="onSubmit">
         <div class="mb-2">
-          <label class="form-label">Họ và tên *</label>
+          <label class="form-label">Tên người nhận *</label>
           <input v-model="form.recipient_name" class="form-control" :class="{'is-invalid': errors.recipient_name || backendErrors.recipient_name}" required />
           <div v-if="errors.recipient_name" class="invalid-feedback">{{ errors.recipient_name }}</div>
           <div v-else-if="backendErrors.recipient_name" class="invalid-feedback">{{ backendErrors.recipient_name }}</div>
         </div>
         <div class="mb-2">
-          <label class="form-label">Số điện thoại *</label>
+          <label class="form-label">Số điện thoại người nhận *</label>
           <input v-model="form.recipient_phone" class="form-control" :class="{'is-invalid': errors.recipient_phone || backendErrors.recipient_phone}" required />
           <div v-if="errors.recipient_phone" class="invalid-feedback">{{ errors.recipient_phone }}</div>
           <div v-else-if="backendErrors.recipient_phone" class="invalid-feedback">{{ backendErrors.recipient_phone }}</div>
         </div>
         <div class="mb-2">
-          <label class="form-label">Địa chỉ *</label>
+          <label class="form-label">Địa chỉ chi tiết *</label>
           <input v-model="form.address" class="form-control" :class="{'is-invalid': errors.address || backendErrors.address}" required />
           <div v-if="errors.address" class="invalid-feedback">{{ errors.address }}</div>
           <div v-else-if="backendErrors.address" class="invalid-feedback">{{ backendErrors.address }}</div>
@@ -49,13 +49,22 @@
           <div v-if="errors.ward" class="invalid-feedback">{{ errors.ward }}</div>
           <div v-else-if="backendErrors.ward" class="invalid-feedback">{{ backendErrors.ward }}</div>
         </div>
+        <div class="mb-2">
+          <label class="form-label">Mã bưu điện</label>
+          <input v-model="form.postal_code" class="form-control" :class="{'is-invalid': errors.postal_code || backendErrors.postal_code}" placeholder="Nhập mã bưu điện (tùy chọn)" />
+          <div v-if="errors.postal_code" class="invalid-feedback">{{ errors.postal_code }}</div>
+          <div v-else-if="backendErrors.postal_code" class="invalid-feedback">{{ backendErrors.postal_code }}</div>
+        </div>
         <div class="form-check mb-3">
           <input class="form-check-input" type="checkbox" v-model="form.is_default" id="isDefault" />
           <label class="form-check-label" for="isDefault">Đặt làm mặc định</label>
         </div>
         <div class="d-flex justify-content-end gap-2">
           <button type="button" class="btn btn-secondary" @click="onCancel">Hủy</button>
-          <button type="submit" class="btn btn-primary">{{ isEdit ? 'Cập nhật' : 'Thêm mới' }}</button>
+          <button type="submit" class="btn btn-primary" :disabled="submitting">
+            <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
+            {{ submitting ? 'Đang xử lý...' : (isEdit ? 'Cập nhật' : 'Thêm mới') }}
+          </button>
         </div>
       </form>
     </div>
@@ -63,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, ref, onMounted } from 'vue'
+import { reactive, watch, ref, onMounted, computed } from 'vue'
 import { defineProps, defineEmits } from 'vue'
 import { useVietnamAddress } from '@/composables/useVietnamAddress'
 
@@ -71,10 +80,13 @@ import { useVietnamAddress } from '@/composables/useVietnamAddress'
 const props = defineProps({
   modelValue: Object,
   isEdit: Boolean,
-  backendError: Object
+  backendError: Object,
+  submitting: Boolean
 })
 
 const emit = defineEmits(['update:modelValue', 'submit', 'cancel'])
+
+const submitting = computed(() => props.submitting || false)
 
 const form = reactive({
   recipient_name: '',
@@ -83,6 +95,7 @@ const form = reactive({
   ward: '',
   district: '',
   province: '',
+  postal_code: '',
   is_default: false
 })
 
@@ -92,17 +105,19 @@ const errors = reactive({
   address: '',
   ward: '',
   district: '',
-  province: ''
+  province: '',
+  postal_code: ''
 })
 
-type AddressField = 'recipient_name' | 'recipient_phone' | 'address' | 'ward' | 'district' | 'province'
+type AddressField = 'recipient_name' | 'recipient_phone' | 'address' | 'ward' | 'district' | 'province' | 'postal_code'
 const backendErrors: Record<AddressField, string> = reactive({
   recipient_name: '',
   recipient_phone: '',
   address: '',
   ward: '',
   district: '',
-  province: ''
+  province: '',
+  postal_code: ''
 })
 
 const {
@@ -182,20 +197,21 @@ function validate() {
   errors.province = ''
   errors.district = ''
   errors.ward = ''
+  errors.postal_code = ''
 
   if (!form.recipient_name) {
-    errors.recipient_name = 'Họ và tên không được để trống'
+    errors.recipient_name = 'Tên người nhận không được để trống'
     valid = false
   } else if (form.recipient_name.length < 2) {
-    errors.recipient_name = 'Họ và tên phải có ít nhất 2 ký tự'
+    errors.recipient_name = 'Tên người nhận phải có ít nhất 2 ký tự'
     valid = false
   } else if (form.recipient_name.length > 100) {
-    errors.recipient_name = 'Họ và tên không được vượt quá 100 ký tự'
+    errors.recipient_name = 'Tên người nhận không được vượt quá 100 ký tự'
     valid = false
   }
 
   if (!form.recipient_phone) {
-    errors.recipient_phone = 'Số điện thoại không được để trống'
+    errors.recipient_phone = 'Số điện thoại người nhận không được để trống'
     valid = false
   } else if (!/^[0-9+\-\s()]+$/.test(form.recipient_phone)) {
     errors.recipient_phone = 'Số điện thoại không đúng định dạng'
@@ -206,7 +222,7 @@ function validate() {
   }
 
   if (!form.address) {
-    errors.address = 'Địa chỉ không được để trống'
+    errors.address = 'Địa chỉ chi tiết không được để trống'
     valid = false
   } else if (form.address.length < 10) {
     errors.address = 'Địa chỉ phải có ít nhất 10 ký tự'
@@ -237,6 +253,12 @@ function validate() {
     valid = false
   } else if (form.ward.length > 100) {
     errors.ward = 'Phường/Xã không được vượt quá 100 ký tự'
+    valid = false
+  }
+
+  // postal_code is optional, only validate if provided
+  if (form.postal_code && form.postal_code.length > 20) {
+    errors.postal_code = 'Mã bưu điện không được vượt quá 20 ký tự'
     valid = false
   }
 

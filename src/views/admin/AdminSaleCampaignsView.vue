@@ -306,7 +306,7 @@ const {
   pagination,
   isLoading,
   error,
-  fetchSaleCampaigns,
+  fetchAdminSaleCampaigns,
   deleteSaleCampaign
 } = useSaleCampaigns()
 
@@ -333,7 +333,7 @@ const fetchCampaigns = async () => {
   if (statusFilter.value) filters.status = statusFilter.value
   if (sortBy.value) filters.sort_by = sortBy.value
 
-  await fetchSaleCampaigns(filters)
+  await fetchAdminSaleCampaigns(filters)
 }
 
 const debouncedSearch = debounce(() => {

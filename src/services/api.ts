@@ -930,7 +930,7 @@ export const contactApi = {
 
 // Sale Campaigns API
 export const saleCampaignsApi = {
-  // Get all sale campaigns
+  // Get all sale campaigns (public)
   getSaleCampaigns: (params?: any): Promise<PaginatedResponse<any>> => {
     const queryString = params ? '?' + new URLSearchParams(
       Object.entries(params).reduce((acc, [key, value]) => {
@@ -943,10 +943,10 @@ export const saleCampaignsApi = {
     return makeRequest(`/sale-campaigns${queryString}`)
   },
 
-  // Get single sale campaign by ID
+  // Get single sale campaign by ID (public)
   getSaleCampaign: (id: number | string): Promise<ApiResponse<any>> => makeRequest(`/sale-campaigns/${id}`),
 
-  // Get single sale campaign by slug
+  // Get single sale campaign by slug (public)
   getSaleCampaignBySlug: (slug: string): Promise<ApiResponse<any>> => makeRequest(`/sale-campaigns/slug/${slug}`),
 
   // Get active sale campaigns (using query parameter)
@@ -957,7 +957,7 @@ export const saleCampaignsApi = {
   getFeaturedSaleCampaigns: (): Promise<PaginatedResponse<any>> =>
     makeRequest('/sale-campaigns?featured_only=true'),
 
-  // Get products in a sale campaign
+  // Get products in a sale campaign (public)
   getSaleCampaignProducts: (id: number | string, params?: any): Promise<PaginatedResponse<Product>> => {
     const queryString = params ? '?' + new URLSearchParams(
       Object.entries(params).reduce((acc, [key, value]) => {
@@ -969,35 +969,76 @@ export const saleCampaignsApi = {
     ).toString() : ''
     return makeRequest(`/sale-campaigns/${id}/products${queryString}`)
   },
+}
 
-  // Admin/Contributor only methods
-  createSaleCampaign: (campaignData: any): Promise<ApiResponse<any>> =>
-    makeRequest('/sale-campaigns', {
+// Admin Sale Campaigns API
+export const adminSaleCampaignsApi = {
+  // Get all sale campaigns for admin
+  getSaleCampaigns: (params?: any): Promise<PaginatedResponse<any>> => {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value)
+        }
+        return acc
+      }, {} as Record<string, string>)
+    ).toString() : ''
+    return makeRequest(`/dashboard/sale-campaigns${queryString}`)
+  },
+
+  // Get single sale campaign for admin
+  getSaleCampaign: (id: number | string): Promise<ApiResponse<any>> =>
+    makeRequest(`/dashboard/sale-campaigns/${id}`),
+
+  // Create new sale campaign - only supports FormData (for image upload)
+  createSaleCampaign: (campaignData: FormData): Promise<ApiResponse<any>> => {
+    return makeRequest('/dashboard/sale-campaigns', {
       method: 'POST',
-      body: JSON.stringify(campaignData),
-    }),
+      body: campaignData,
+      headers: {
+        'Accept': 'application/json',
+        // Don't set Content-Type for FormData, let browser set it with boundary
+      },
+    })
+  },
 
-  updateSaleCampaign: (id: number, campaignData: any): Promise<ApiResponse<any>> =>
-    makeRequest(`/sale-campaigns/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(campaignData),
-    }),
+  // Update sale campaign - only supports FormData (for image upload)
+  updateSaleCampaign: (id: number, campaignData: FormData): Promise<ApiResponse<any>> => {
+    // Add method spoofing for Laravel
+    campaignData.append('_method', 'PUT')
+    return makeRequest(`/dashboard/sale-campaigns/${id}`, {
+      method: 'POST', // Use POST with _method=PUT for multipart
+      body: campaignData,
+      headers: {
+        'Accept': 'application/json',
+        // Don't set Content-Type for FormData, let browser set it with boundary
+      },
+    })
+  },
 
+  // Delete sale campaign
   deleteSaleCampaign: (id: number): Promise<ApiResponse<void>> =>
-    makeRequest(`/sale-campaigns/${id}`, {
+    makeRequest(`/dashboard/sale-campaigns/${id}`, {
       method: 'DELETE',
     }),
 
   // Add products to sale campaign
-  addProductsToSaleCampaign: (id: number, productIds: number[]): Promise<ApiResponse<any>> =>
-    makeRequest(`/sale-campaigns/${id}/products`, {
+  addProductsToSaleCampaign: (id: number, productsData: {
+    products: Array<{
+      product_id: number
+      sale_price: number
+      discount_type: 'percentage' | 'fixed'
+      max_quantity?: number
+    }>
+  }): Promise<ApiResponse<any>> =>
+    makeRequest(`/dashboard/sale-campaigns/${id}/products`, {
       method: 'POST',
-      body: JSON.stringify({ product_ids: productIds }),
+      body: JSON.stringify(productsData),
     }),
 
   // Remove product from sale campaign
   removeProductFromSaleCampaign: (campaignId: number, productId: number): Promise<ApiResponse<void>> =>
-    makeRequest(`/sale-campaigns/${campaignId}/products/${productId}`, {
+    makeRequest(`/dashboard/sale-campaigns/${campaignId}/products/${productId}`, {
       method: 'DELETE',
     }),
 }

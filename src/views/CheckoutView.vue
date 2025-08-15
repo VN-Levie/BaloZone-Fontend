@@ -67,7 +67,7 @@
                     </div>
                     <h5 class="empty-title">Chưa có địa chỉ giao hàng</h5>
                     <p class="empty-subtitle">Vui lòng thêm địa chỉ để tiếp tục đặt hàng</p>
-                    <button class="btn btn-primary btn-add-address" @click="showAddAddressModal = true">
+                    <button class="btn btn-primary btn-add-address" @click="openAddAddressModal">
                       <i class="bi bi-plus-circle me-2"></i>
                       Thêm địa chỉ mới
                     </button>
@@ -106,9 +106,9 @@
                       </div>
                     </div>
 
-                    <button class="btn btn-outline-primary btn-add-more" @click="showAddAddressModal = true">
-                      <i class="bi bi-plus-circle me-2"></i>
-                      Thêm địa chỉ mới
+                                        <button class="btn btn-outline-primary btn-add-more" @click="openAddAddressModal">
+                      <i class="bi bi-plus-lg me-2"></i>
+                      Thêm địa chỉ khác
                     </button>
                   </div>
                 </div>
@@ -346,7 +346,14 @@
       </div>
 
       <!-- Add Address Modal -->
-      <AddressFormModal v-if="showAddAddressModal" :isEdit="false" @submit="handleAddressAdded" @cancel="showAddAddressModal = false" />
+      <AddressFormModal 
+        v-if="showAddAddressModal" 
+        :isEdit="false" 
+        :submitting="isAddingAddress"
+        :backendError="addressFormError"
+        @submit="handleAddressAdded" 
+        @cancel="showAddAddressModal = false" 
+      />
     </div>
   </UserLayout>
 </template>
@@ -390,9 +397,16 @@ const {
 
 // Local state
 const showAddAddressModal = ref(false)
+const isAddingAddress = ref(false)
+const addressFormError = ref<any>(null)
 const voucherCode = ref('')
 
 // Methods
+const openAddAddressModal = () => {
+  addressFormError.value = null
+  showAddAddressModal.value = true
+}
+
 const applyVoucher = async () => {
   if (!voucherCode.value.trim()) return
 
@@ -448,10 +462,15 @@ const calculateProductTotal = (price: string | number | undefined, quantity: num
 
 const handleAddressAdded = async (addressData: any) => {
   try {
+    isAddingAddress.value = true
+    addressFormError.value = null
     const newAddress = await createAddress(addressData)
     showAddAddressModal.value = false
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to add address:', error)
+    addressFormError.value = error
+  } finally {
+    isAddingAddress.value = false
   }
 }
 

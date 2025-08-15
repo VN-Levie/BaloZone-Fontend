@@ -157,9 +157,10 @@
                   <div class="mb-3">
                     <label for="status" class="form-label">Trạng thái</label>
                     <select id="status" v-model="form.status" class="form-select" :class="{ 'is-invalid': errors.status }">
+                      <option value="draft">Nháp</option>
                       <option value="active">Hoạt động</option>
-                      <option value="inactive">Tạm dừng</option>
-                      <option value="scheduled">Lên lịch</option>
+                      <option value="expired">Hết hạn</option>
+                      <option value="cancelled">Đã hủy</option>
                     </select>
                     <div v-if="errors.status" class="invalid-feedback">
                       {{ errors.status }}
@@ -297,7 +298,7 @@ import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { currentCampaign, isLoading, error, fetchSaleCampaign, updateSaleCampaign } = useSaleCampaigns()
+const { currentCampaign, isLoading, error, fetchAdminSaleCampaign, updateSaleCampaign, createCampaignFormData } = useSaleCampaigns()
 const { showToast } = useToast()
 
 const campaignId = computed(() => route.params.id as string)
@@ -308,7 +309,7 @@ const form = reactive({
   name: '',
   slug: '',
   description: '',
-  banner_image: null as File | null,
+  banner_image: null as File | string | null,
   start_date: '',
   end_date: '',
   status: 'active',
@@ -331,7 +332,7 @@ const tagsInput = ref('')
 // Load campaign data
 const loadCampaign = async () => {
   try {
-    await fetchSaleCampaign(campaignId.value)
+    await fetchAdminSaleCampaign(campaignId.value)
     if (currentCampaign.value) {
       populateForm()
     }
@@ -470,7 +471,7 @@ const getTotalSold = () => {
 const getMaxDiscount = () => {
   if (!currentCampaign.value?.sale_products) return 0
   const discounts = currentCampaign.value.sale_products.map(sp =>
-    parseFloat(sp.discount_percentage || '0')
+    parseFloat(String(sp.discount_percentage || '0'))
   )
   return Math.max(...discounts, 0)
 }
@@ -516,27 +517,21 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
-    const formData = new FormData()
+    // Always use FormData since backend only supports multipart
+    const dataToSend = createCampaignFormData({
+      name: form.name,
+      slug: form.slug || '',
+      description: form.description,
+      banner_image: form.banner_image || undefined, // Can be File, string, or undefined
+      start_date: form.start_date,
+      end_date: form.end_date,
+      status: form.status as 'draft' | 'active' | 'expired' | 'cancelled',
+      is_featured: form.is_featured,
+      priority: form.priority,
+      metadata: form.metadata
+    })
 
-    // Basic fields
-    formData.append('name', form.name)
-    formData.append('slug', form.slug || '')
-    formData.append('description', form.description)
-    formData.append('start_date', form.start_date)
-    formData.append('end_date', form.end_date)
-    formData.append('status', form.status)
-    formData.append('is_featured', form.is_featured ? '1' : '0')
-    formData.append('priority', form.priority.toString())
-
-    // Metadata
-    formData.append('metadata', JSON.stringify(form.metadata))
-
-    // Banner image (only if new file selected)
-    if (form.banner_image) {
-      formData.append('banner_image', form.banner_image)
-    }
-
-    await updateSaleCampaign(campaignId.value, formData)
+    await updateSaleCampaign(parseInt(campaignId.value), dataToSend)
 
     showToast('Cập nhật chiến dịch khuyến mãi thành công!', 'success')
 

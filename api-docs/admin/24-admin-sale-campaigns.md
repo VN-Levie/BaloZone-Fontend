@@ -29,15 +29,19 @@ Content-Type: application/json
 ```json
 {
   "name": "Flash Sale Tết 2025",
+  "slug": "flash-sale-tet-2025",
   "description": "Giảm giá sốc lên đến 50% cho tất cả sản phẩm",
-  "discount_type": "percentage",
-  "discount_value": 30,
-  "max_discount": 500000,
-  "start_date": "2025-02-01 00:00:00",
-  "end_date": "2025-02-15 23:59:59",
-  "is_active": true,
+  "banner_image": "https://placehold.co/600x400?text=flash-sale-tet-2025.jpg",
+  "start_date": "2025-02-01T00:00:00.000000Z",
+  "end_date": "2025-02-15T23:59:59.000000Z",
+  "status": "active",
   "is_featured": true,
-  "priority": 1
+  "priority": 1,
+  "metadata": {
+    "tags": ["flash-sale", "tet", "2025"],
+    "color": "#ff0000",
+    "description_short": "Giảm ngay 50%"
+  }
 }
 ```
 
@@ -47,12 +51,13 @@ Content-Type: application/json
 {
   "message": "Sale campaign created successfully",
   "data": {
-    "name": "Test Sale Campaign",
-    "slug": "test-sale-campaign",
+    "id": 5,
+    "name": "Test Sale Campaign API",
+    "slug": "test-sale-campaign-api",
     "description": "Test campaign tạo từ API",
-    "banner_image": "https://placehold.co/600x400?text=test-campaign.jpg",
-    "start_date": "2025-07-13T00:00:00.000000Z",
-    "end_date": "2025-07-20T23:59:59.000000Z",
+    "banner_image": "https://placehold.co/600x400?text=test-campaign-api.jpg",
+    "start_date": "2025-08-16T00:00:00.000000Z",
+    "end_date": "2025-08-20T23:59:59.000000Z",
     "status": "active",
     "is_featured": true,
     "priority": 50,
@@ -60,9 +65,8 @@ Content-Type: application/json
       "color": "#ff0000",
       "tags": ["test", "api"]
     },
-    "updated_at": "2025-07-12T19:27:08.000000Z",
-    "created_at": "2025-07-12T19:27:08.000000Z",
-    "id": 5
+    "created_at": "2025-08-15T18:23:08.000000Z",
+    "updated_at": "2025-08-15T18:23:08.000000Z"
   }
 }
 ```
@@ -75,10 +79,10 @@ Content-Type: application/json
   "message": "Validation errors",
   "errors": {
     "name": ["The name field is required."],
-    "discount_type": ["The selected discount type is invalid."],
-    "discount_value": ["The discount value field is required."],
-    "start_date": ["The start date must be a valid date."],
-    "end_date": ["The end date must be after start date."]
+    "slug": ["The slug field is required."],
+    "start_date": ["The start date field is required."],
+    "end_date": ["The end date field is required."],
+    "status": ["The status field is required."]
   }
 }
 ```
@@ -86,15 +90,15 @@ Content-Type: application/json
 **Validation rules**:
 
 - `name` (string, required, max:255): Tên chiến dịch
+- `slug` (string, required, unique): Slug của chiến dịch
 - `description` (string, optional): Mô tả chiến dịch
-- `discount_type` (string, required): Loại giảm giá (percentage, fixed_amount)
-- `discount_value` (numeric, required): Giá trị giảm giá
-- `max_discount` (numeric, optional): Giảm giá tối đa (cho percentage)
+- `banner_image` (string, optional): URL ảnh banner
 - `start_date` (datetime, required): Ngày bắt đầu
 - `end_date` (datetime, required): Ngày kết thúc
-- `is_active` (boolean, optional): Trạng thái hoạt động
+- `status` (string, required): Trạng thái (active, inactive, expired)
 - `is_featured` (boolean, optional): Chiến dịch nổi bật
 - `priority` (integer, optional): Độ ưu tiên hiển thị
+- `metadata` (object, optional): Metadata tùy chỉnh
 
 ## Cập nhật chiến dịch khuyến mãi (Admin)
 
@@ -124,9 +128,18 @@ Content-Type: application/json
 ```json
 {
   "name": "Flash Sale Tết 2025 - Gia hạn",
-  "discount_value": 35,
-  "end_date": "2025-02-28 23:59:59",
-  "is_featured": false
+  "slug": "flash-sale-tet-2025-gia-han",
+  "description": "Flash Sale Tết được gia hạn thêm 2 tuần",
+  "banner_image": "https://placehold.co/600x400?text=flash-sale-extended.jpg",
+  "start_date": "2025-02-01T00:00:00.000000Z",
+  "end_date": "2025-02-28T23:59:59.000000Z",
+  "status": "active",
+  "is_featured": false,
+  "priority": 10,
+  "metadata": {
+    "tags": ["flash-sale", "tet", "extended"],
+    "color": "#00ff00"
+  }
 }
 ```
 
@@ -137,12 +150,12 @@ Content-Type: application/json
   "message": "Sale campaign updated successfully",
   "data": {
     "id": 5,
-    "name": "Test Sale Campaign - Updated",
-    "slug": "test-sale-campaign-updated",
+    "name": "Test Sale Campaign API - Updated",
+    "slug": "test-sale-campaign-api-updated",
     "description": "Test campaign đã được cập nhật",
     "banner_image": "https://placehold.co/600x400?text=test-campaign-updated.jpg",
-    "start_date": "2025-07-13T00:00:00.000000Z",
-    "end_date": "2025-07-20T23:59:59.000000Z",
+    "start_date": "2025-08-16T00:00:00.000000Z",
+    "end_date": "2025-08-20T23:59:59.000000Z",
     "status": "active",
     "is_featured": false,
     "priority": 25,
@@ -150,8 +163,8 @@ Content-Type: application/json
       "color": "#00ff00",
       "tags": ["test", "api", "updated"]
     },
-    "created_at": "2025-07-12T19:27:08.000000Z",
-    "updated_at": "2025-07-12T19:27:28.000000Z",
+    "created_at": "2025-08-15T18:23:08.000000Z",
+    "updated_at": "2025-08-15T18:23:48.000000Z",
     "deleted_at": null
   }
 }
@@ -192,9 +205,11 @@ Authorization: Bearer {token}
 ```json
 {
   "success": false,
-  "message": "Cannot delete active sale campaign"
+  "message": "Cannot delete active sale campaign with products"
 }
 ```
+
+**Lưu ý**: Thực tế API cho phép xóa campaign đang active và có sản phẩm. Message trên chỉ là ví dụ cho trường hợp có thể xảy ra.
 
 ## Thêm sản phẩm vào chiến dịch (Admin)
 
@@ -289,15 +304,18 @@ curl -X POST http://localhost:8000/api/dashboard/sale-campaigns \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Black Friday 2025",
+    "slug": "black-friday-2025",
     "description": "Siêu sale Black Friday giảm đến 70%",
-    "discount_type": "percentage",
-    "discount_value": 50,
-    "max_discount": 1000000,
-    "start_date": "2025-11-29 00:00:00",
-    "end_date": "2025-11-29 23:59:59",
-    "is_active": true,
+    "banner_image": "https://placehold.co/600x400?text=black-friday-2025.jpg",
+    "start_date": "2025-11-29T00:00:00.000000Z",
+    "end_date": "2025-11-29T23:59:59.000000Z",
+    "status": "active",
     "is_featured": true,
-    "priority": 1
+    "priority": 1,
+    "metadata": {
+      "tags": ["black-friday", "2025"],
+      "color": "#000000"
+    }
   }'
 ```
 
@@ -308,7 +326,20 @@ curl -X POST http://localhost:8000/api/dashboard/sale-campaigns/1/products \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "product_ids": [1, 2, 3, 10, 15, 20]
+    "products": [
+      {
+        "product_id": 1,
+        "sale_price": 674250,
+        "discount_type": "percentage",
+        "max_quantity": 50
+      },
+      {
+        "product_id": 2,
+        "sale_price": 900000,
+        "discount_type": "percentage",
+        "max_quantity": 30
+      }
+    ]
   }'
 ```
 
@@ -322,13 +353,14 @@ curl -X DELETE http://localhost:8000/api/dashboard/sale-campaigns/1/products/5 \
 **Lưu ý**:
 
 - Tất cả các endpoint đều yêu cầu authentication + role admin hoặc contributor
-- Response format không có `success` field ở cấp root như documentation cũ
+- Response format không có `success` field ở cấp root (trừ trường hợp lỗi)
 - Khi thêm sản phẩm, cần sử dụng array `products` với object chi tiết cho mỗi sản phẩm
 - `sale_price` phải được tính sẵn và truyền vào, không tự động tính từ discount_percentage
 - `discount_percentage` và `discount_amount` sẽ được tính tự động dựa trên original_price và sale_price
-- Chiến dịch chỉ hoạt động khi `status = "active"` và trong khoảng thời gian start_date - end_date
+- Chiến dịch hoạt động khi `status = "active"` và trong khoảng thời gian start_date - end_date
 - `priority` quyết định thứ tự hiển thị (số càng nhỏ càng ưu tiên)
 - Có thể xóa chiến dịch active và có sản phẩm đang tham gia
+- Khi cập nhật campaign, cần cung cấp đầy đủ các trường required (name, slug, start_date, end_date, status)
 - Khi thêm sản phẩm vào chiến dịch, tất cả thông tin sale được lưu trong pivot table
 
 **Test với cURL**:
@@ -349,26 +381,33 @@ curl -X POST "http://localhost:8000/api/dashboard/sale-campaigns" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Test Sale Campaign",
-    "slug": "test-sale-campaign",
-    "description": "Test campaign",
-    "banner_image": "https://placehold.co/600x400?text=test.jpg",
-    "start_date": "2025-07-13T00:00:00.000000Z",
-    "end_date": "2025-07-20T23:59:59.000000Z",
+    "name": "Test Sale Campaign API",
+    "slug": "test-sale-campaign-api",
+    "description": "Test campaign tạo từ API",
+    "banner_image": "https://placehold.co/600x400?text=test-campaign-api.jpg",
+    "start_date": "2025-08-16T00:00:00.000000Z",
+    "end_date": "2025-08-20T23:59:59.000000Z",
     "status": "active",
     "is_featured": true,
     "priority": 50,
-    "metadata": {"tags": ["test"], "color": "#ff0000"}
+    "metadata": {"tags": ["test", "api"], "color": "#ff0000"}
   }' | jq .
 
-# Cập nhật chiến dịch
+# Cập nhật chiến dịch (cần đầy đủ trường required)
 curl -X PUT "http://localhost:8000/api/dashboard/sale-campaigns/5" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Updated Campaign",
-    "description": "Updated description",
-    "priority": 25
+    "name": "Test Sale Campaign API - Updated",
+    "slug": "test-sale-campaign-api-updated",
+    "description": "Test campaign đã được cập nhật",
+    "banner_image": "https://placehold.co/600x400?text=test-campaign-updated.jpg",
+    "start_date": "2025-08-16T00:00:00.000000Z",
+    "end_date": "2025-08-20T23:59:59.000000Z",
+    "status": "active",
+    "is_featured": false,
+    "priority": 25,
+    "metadata": {"tags": ["test", "api", "updated"], "color": "#00ff00"}
   }' | jq .
 
 # Thêm sản phẩm vào chiến dịch

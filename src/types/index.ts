@@ -323,16 +323,23 @@ export interface SaleCampaign {
   name: string
   slug: string
   description: string
-  discount_percentage: number
+  banner_image?: string
   start_date: string
   end_date: string
-  banner_image?: string
-  status: 'active' | 'inactive' | 'scheduled'
+  status: 'draft' | 'active' | 'expired' | 'cancelled'
   is_featured: boolean
   priority: number
-  products_count?: number
+  metadata: {
+    tags?: string[]
+    color?: string
+    description_short?: string
+    [key: string]: any
+  } | null
   created_at: string
   updated_at: string
+  deleted_at?: string | null
+  // Product count for admin list view
+  products_count?: number
   sale_products?: SaleProduct[]
 }
 
@@ -343,7 +350,10 @@ export interface SaleProduct {
   original_price: number
   sale_price: number
   discount_percentage: number
+  discount_amount: number
+  discount_type: 'percentage' | 'fixed'
   max_quantity?: number
+  sold_quantity?: number
   created_at: string
   updated_at: string
   product?: Product

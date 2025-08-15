@@ -9,7 +9,7 @@
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
-    
+
     <form @submit.prevent="onSubmit" class="address-form-content">
       <div class="row g-3">
         <div class="col-md-6">
@@ -17,58 +17,58 @@
             <i class="bi bi-person me-1"></i>
             Tên người nhận *
           </label>
-          <input 
-            v-model="form.recipient_name" 
-            class="form-control custom-input" 
-            :class="{'is-invalid': errors.recipient_name || backendErrors.recipient_name}" 
+          <input
+            v-model="form.recipient_name"
+            class="form-control custom-input"
+            :class="{'is-invalid': errors.recipient_name || backendErrors.recipient_name}"
             placeholder="Nhập tên người nhận"
-            required 
+            required
           />
           <div v-if="errors.recipient_name" class="invalid-feedback">{{ errors.recipient_name }}</div>
           <div v-else-if="backendErrors.recipient_name" class="invalid-feedback">{{ backendErrors.recipient_name }}</div>
         </div>
-        
+
         <div class="col-md-6">
           <label class="form-label">
             <i class="bi bi-telephone me-1"></i>
             Số điện thoại người nhận *
           </label>
-          <input 
-            v-model="form.recipient_phone" 
-            class="form-control custom-input" 
-            :class="{'is-invalid': errors.recipient_phone || backendErrors.recipient_phone}" 
+          <input
+            v-model="form.recipient_phone"
+            class="form-control custom-input"
+            :class="{'is-invalid': errors.recipient_phone || backendErrors.recipient_phone}"
             placeholder="Nhập số điện thoại người nhận"
-            required 
+            required
           />
           <div v-if="errors.recipient_phone" class="invalid-feedback">{{ errors.recipient_phone }}</div>
           <div v-else-if="backendErrors.recipient_phone" class="invalid-feedback">{{ backendErrors.recipient_phone }}</div>
         </div>
-        
+
         <div class="col-12">
           <label class="form-label">
             <i class="bi bi-house me-1"></i>
             Địa chỉ chi tiết *
           </label>
-          <input 
-            v-model="form.address" 
-            class="form-control custom-input" 
-            :class="{'is-invalid': errors.address || backendErrors.address}" 
+          <input
+            v-model="form.address"
+            class="form-control custom-input"
+            :class="{'is-invalid': errors.address || backendErrors.address}"
             placeholder="Số nhà, tên đường..."
-            required 
+            required
           />
           <div v-if="errors.address" class="invalid-feedback">{{ errors.address }}</div>
           <div v-else-if="backendErrors.address" class="invalid-feedback">{{ backendErrors.address }}</div>
         </div>
-        
+
         <div class="col-md-4">
           <label class="form-label">
             <i class="bi bi-geo me-1"></i>
             Tỉnh/Thành phố *
           </label>
-          <select 
-            v-model="form.province" 
-            class="form-select custom-select" 
-            :class="{'is-invalid': errors.province || backendErrors.province}" 
+          <select
+            v-model="form.province"
+            class="form-select custom-select"
+            :class="{'is-invalid': errors.province || backendErrors.province}"
             required
           >
             <option value="" disabled>Chọn tỉnh/thành phố</option>
@@ -77,17 +77,17 @@
           <div v-if="errors.province" class="invalid-feedback">{{ errors.province }}</div>
           <div v-else-if="backendErrors.province" class="invalid-feedback">{{ backendErrors.province }}</div>
         </div>
-        
+
         <div class="col-md-4">
           <label class="form-label">
             <i class="bi bi-geo me-1"></i>
             Quận/Huyện *
           </label>
-          <select 
-            v-model="form.district" 
-            class="form-select custom-select" 
-            :class="{'is-invalid': errors.district || backendErrors.district}" 
-            required 
+          <select
+            v-model="form.district"
+            class="form-select custom-select"
+            :class="{'is-invalid': errors.district || backendErrors.district}"
+            required
             :disabled="!form.province"
           >
             <option value="" disabled>Chọn quận/huyện</option>
@@ -96,17 +96,17 @@
           <div v-if="errors.district" class="invalid-feedback">{{ errors.district }}</div>
           <div v-else-if="backendErrors.district" class="invalid-feedback">{{ backendErrors.district }}</div>
         </div>
-        
+
         <div class="col-md-4">
           <label class="form-label">
             <i class="bi bi-geo me-1"></i>
             Phường/Xã *
           </label>
-          <select 
-            v-model="form.ward" 
-            class="form-select custom-select" 
-            :class="{'is-invalid': errors.ward || backendErrors.ward}" 
-            required 
+          <select
+            v-model="form.ward"
+            class="form-select custom-select"
+            :class="{'is-invalid': errors.ward || backendErrors.ward}"
+            required
             :disabled="!form.district"
           >
             <option value="" disabled>Chọn phường/xã</option>
@@ -115,29 +115,29 @@
           <div v-if="errors.ward" class="invalid-feedback">{{ errors.ward }}</div>
           <div v-else-if="backendErrors.ward" class="invalid-feedback">{{ backendErrors.ward }}</div>
         </div>
-        
+
         <div class="col-md-6">
           <label class="form-label">
             <i class="bi bi-mailbox me-1"></i>
             Mã bưu điện
           </label>
-          <input 
-            v-model="form.postal_code" 
-            class="form-control custom-input" 
-            :class="{'is-invalid': errors.postal_code || backendErrors.postal_code}" 
+          <input
+            v-model="form.postal_code"
+            class="form-control custom-input"
+            :class="{'is-invalid': errors.postal_code || backendErrors.postal_code}"
             placeholder="Nhập mã bưu điện (tùy chọn)"
           />
           <div v-if="errors.postal_code" class="invalid-feedback">{{ errors.postal_code }}</div>
           <div v-else-if="backendErrors.postal_code" class="invalid-feedback">{{ backendErrors.postal_code }}</div>
         </div>
-        
+
         <div class="col-12">
           <div class="form-check custom-checkbox">
-            <input 
-              class="form-check-input" 
-              type="checkbox" 
-              v-model="form.is_default" 
-              id="isDefault" 
+            <input
+              class="form-check-input"
+              type="checkbox"
+              v-model="form.is_default"
+              id="isDefault"
             />
             <label class="form-check-label" for="isDefault">
               <i class="bi bi-star me-1"></i>
@@ -146,7 +146,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="form-actions">
         <button type="button" class="btn btn-outline-secondary" @click="onCancel">
           <i class="bi bi-x-circle me-2"></i>
@@ -367,7 +367,7 @@ function onCancel() {
 .address-form {
   background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 24px;
-  box-shadow: 
+  box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.15),
     0 8px 30px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -504,7 +504,7 @@ function onCancel() {
 .custom-input:focus,
 .custom-select:focus {
   border-color: #ff6b35;
-  box-shadow: 
+  box-shadow:
     0 0 0 0.3rem rgba(255, 107, 53, 0.25),
     inset 0 2px 4px rgba(0, 0, 0, 0.06);
   background: white;
@@ -602,7 +602,7 @@ function onCancel() {
   background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
   border: none;
   color: white;
-  box-shadow: 
+  box-shadow:
     0 6px 20px rgba(255, 107, 53, 0.3),
     0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 16px;
@@ -632,7 +632,7 @@ function onCancel() {
 .btn-primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #e55a2b 0%, #d6841a 100%);
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 
+  box-shadow:
     0 12px 30px rgba(255, 107, 53, 0.4),
     0 4px 15px rgba(0, 0, 0, 0.15);
   color: white;
@@ -688,19 +688,19 @@ function onCancel() {
   .form-header {
     padding: 1rem 1.5rem;
   }
-  
+
   .address-form-content {
     padding: 1.5rem;
   }
-  
+
   .form-title {
     font-size: 1.1rem;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
+
   .btn {
     width: 100%;
     justify-content: center;
@@ -711,11 +711,11 @@ function onCancel() {
   .form-header {
     padding: 1rem;
   }
-  
+
   .address-form-content {
     padding: 1rem;
   }
-  
+
   .form-title {
     font-size: 1rem;
   }

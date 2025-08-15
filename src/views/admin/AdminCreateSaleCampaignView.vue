@@ -125,9 +125,10 @@
                   <div class="mb-3">
                     <label for="status" class="form-label">Trạng thái</label>
                     <select id="status" v-model="form.status" class="form-select" :class="{ 'is-invalid': errors.status }">
+                      <option value="draft">Nháp</option>
                       <option value="active">Hoạt động</option>
-                      <option value="inactive">Tạm dừng</option>
-                      <option value="scheduled">Lên lịch</option>
+                      <option value="expired">Hết hạn</option>
+                      <option value="cancelled">Đã hủy</option>
                     </select>
                     <div v-if="errors.status" class="invalid-feedback">
                       {{ errors.status }}
@@ -231,7 +232,7 @@ import { useToast } from '@/composables/useToast'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 const router = useRouter()
-const { createSaleCampaign } = useSaleCampaigns()
+const { createSaleCampaign, createCampaignFormData } = useSaleCampaigns()
 const { showToast } = useToast()
 
 // Form state
@@ -239,10 +240,10 @@ const form = reactive({
   name: '',
   slug: '',
   description: '',
-  banner_image: null as File | null,
+  banner_image: null as File | string | null,
   start_date: '',
   end_date: '',
-  status: 'active',
+  status: 'draft',
   is_featured: false,
   priority: 0,
   metadata: {
@@ -376,27 +377,21 @@ const handleSubmit = async (type: 'draft' | 'publish' = 'publish') => {
   isSubmitting.value = true
 
   try {
-    const formData = new FormData()
+    // Always use FormData since backend only supports multipart
+    const dataToSend = createCampaignFormData({
+      name: form.name,
+      slug: form.slug || '',
+      description: form.description,
+      banner_image: form.banner_image || undefined, // Can be File or undefined
+      start_date: form.start_date,
+      end_date: form.end_date,
+      status: (type === 'draft' ? 'draft' : form.status) as 'draft' | 'active' | 'expired' | 'cancelled',
+      is_featured: form.is_featured,
+      priority: form.priority,
+      metadata: form.metadata
+    })
 
-    // Basic fields
-    formData.append('name', form.name)
-    formData.append('slug', form.slug || '')
-    formData.append('description', form.description)
-    formData.append('start_date', form.start_date)
-    formData.append('end_date', form.end_date)
-    formData.append('status', type === 'draft' ? 'inactive' : form.status)
-    formData.append('is_featured', form.is_featured ? '1' : '0')
-    formData.append('priority', form.priority.toString())
-
-    // Metadata
-    formData.append('metadata', JSON.stringify(form.metadata))
-
-    // Banner image
-    if (form.banner_image) {
-      formData.append('banner_image', form.banner_image)
-    }
-
-    await createSaleCampaign(formData)
+    await createSaleCampaign(dataToSend)
 
     showToast(
       type === 'draft'

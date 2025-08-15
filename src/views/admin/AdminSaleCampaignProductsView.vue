@@ -292,7 +292,7 @@ const {
   campaignProducts,
   isLoading,
   error,
-  fetchSaleCampaign,
+  fetchAdminSaleCampaign,
   fetchCampaignProducts
 } = useSaleCampaigns()
 const { showToast } = useToast()
@@ -320,7 +320,7 @@ const isUpdating = ref(false)
 const loadData = async () => {
   try {
     await Promise.all([
-      fetchSaleCampaign(campaignId.value),
+      fetchAdminSaleCampaign(campaignId.value),
       fetchCampaignProducts(campaignId.value),
       loadCategories()
     ])
