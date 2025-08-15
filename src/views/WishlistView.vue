@@ -45,6 +45,7 @@
 <script setup lang="ts">
 import ProductCard from '@/components/ProductCard.vue'
 import UserLayout from '@/components/layouts/UserLayout.vue'
+import { useWishlist } from '@/composables/useWishlist'
 
 const {
   wishlistItems,
