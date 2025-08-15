@@ -936,22 +936,22 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .product-image {
     width: 100%;
     height: 200px;
     margin-bottom: 1rem;
   }
-  
+
   .product-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .product-actions {
     width: 100%;
     justify-content: stretch;
   }
-  
+
   .btn-action {
     flex: 1;
     justify-content: center;

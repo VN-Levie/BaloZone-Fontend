@@ -29,7 +29,7 @@ export const getImageUrl = (imagePath?: string): string => {
   }
 
   // Assume it's a relative path from the API server
-  return `http://127.0.0.1:8000/${imagePath}`
+  return `http://localhost:8000/${imagePath}`
 }
 
 export const calculateDiscount = (originalPrice: number, currentPrice: number): number => {
