@@ -48,7 +48,7 @@
                 <div v-for="article in articles" :key="article.id" class="col-lg-4 col-md-6 mb-4">
                   <div class="card h-100">
                     <div class="position-relative">
-                      <img :src="article.thumbnail || article.image_url || '/placeholder-news.jpg'" :alt="article.title" class="card-img-top">
+                      <img :src="getImageUrl(article.thumbnail) || getImageUrl(article.image_url) || '/placeholder-news.jpg'" :alt="article.title" class="card-img-top">
                       <span v-if="article.category" class="badge bg-secondary position-absolute top-0 start-0 m-2">
                         {{ article.category }}
                       </span>
@@ -132,7 +132,7 @@ import { formatDate } from '../utils'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import Breadcrumb from '../components/Breadcrumb.vue'
 import UserLayout from '@/components/layouts/UserLayout.vue'
-
+import { getImageUrl, formatPrice as formatCurrency } from '@/utils'
 const articles = ref<News[]>([])
 const featuredArticle = ref<News | null>(null)
 const loading = ref(false)

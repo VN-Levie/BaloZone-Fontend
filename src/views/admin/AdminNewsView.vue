@@ -69,7 +69,7 @@
                                     <tr v-for="item in news" :key="item.id">
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img v-if="item.thumbnail" :src="item.thumbnail" alt="Thumbnail" class="me-3" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
+                                                <img v-if="item.thumbnail" :src="getImageUrl(item.thumbnail)" alt="Thumbnail" class="me-3" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
                                                 <div class="placeholder-thumbnail me-3" v-else>
                                                     <i class="bi bi-image"></i>
                                                 </div>
@@ -161,7 +161,7 @@ import { useAdminNews } from '@/composables/useAdminNews'
 import type { News } from '@/types'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
-
+import { getImageUrl, formatPrice as formatCurrency } from '@/utils'
 // Composable
 const {
     news,
