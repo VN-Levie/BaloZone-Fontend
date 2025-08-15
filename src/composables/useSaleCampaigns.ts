@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
-import { saleCampaignsApi, adminSaleCampaignsApi } from '@/services/api'
-import type { SaleCampaign, ProductWithSale, PaginatedResponse } from '@/types'
+import { saleCampaignsApi, adminSaleCampaignsApi, adminProductsApi } from '@/services/api'
+import type { SaleCampaign, ProductWithSale, PaginatedResponse, Product } from '@/types'
 
 export function useSaleCampaigns() {
   const saleCampaigns = ref<SaleCampaign[]>([])
@@ -8,8 +8,11 @@ export function useSaleCampaigns() {
   const featuredCampaigns = ref<SaleCampaign[]>([])
   const currentCampaign = ref<SaleCampaign | null>(null)
   const campaignProducts = ref<any[]>([])
+  const availableProducts = ref<Product[]>([])
   const pagination = ref<any>(null)
+  const availableProductsPagination = ref<any>(null)
   const isLoading = ref(false)
+  const isSearchingProducts = ref(false)
   const error = ref<string | null>(null)
 
   // Getters
@@ -101,8 +104,9 @@ export function useSaleCampaigns() {
     isLoading.value = true
     error.value = null
     try {
-      const response = await saleCampaignsApi.getSaleCampaignProducts(campaignId, filters)
-      campaignProducts.value = response.data
+      const response = await adminSaleCampaignsApi.getCampaignProducts(campaignId, filters)
+      // Campaign products endpoint returns data directly (not wrapped in pagination structure)
+      campaignProducts.value = response.data || []
       return response
     } catch (err) {
       error.value = 'Failed to fetch campaign products'
@@ -110,6 +114,46 @@ export function useSaleCampaigns() {
       throw err
     } finally {
       isLoading.value = false
+    }
+  }
+
+  const searchAvailableProducts = async (params?: {
+    search?: string
+    category_id?: number
+    page?: number
+    per_page?: number
+    exclude_campaign_id?: number
+  }) => {
+    isSearchingProducts.value = true
+    error.value = null
+    try {
+      const response = await adminSaleCampaignsApi.searchAvailableProducts(params)
+      // Handle nested data structure: response.data contains pagination info, response.data.data contains the actual products array
+      const paginationData = response.data
+      let products = paginationData?.data || []
+
+      // Frontend filtering: exclude products that are already in the current campaign
+      // This prevents users from adding duplicate products to the campaign
+      if (campaignProducts.value.length > 0) {
+        const campaignProductIds = campaignProducts.value.map(p => p.id)
+        products = products.filter(product => !campaignProductIds.includes(product.id))
+        console.log(`Filtered out ${paginationData?.data?.length - products.length} products already in campaign`)
+      }
+
+      availableProducts.value = products
+      availableProductsPagination.value = {
+        current_page: paginationData?.current_page || 1,
+        last_page: paginationData?.last_page || 1,
+        total: paginationData?.total || 0,
+        per_page: paginationData?.per_page || 20
+      }
+      return response
+    } catch (err) {
+      error.value = 'Failed to search available products'
+      console.error('Error searching available products:', err)
+      throw err
+    } finally {
+      isSearchingProducts.value = false
     }
   }
 
@@ -324,8 +368,11 @@ export function useSaleCampaigns() {
     featuredCampaigns: computed(() => featuredCampaigns.value),
     currentCampaign: computed(() => currentCampaign.value),
     campaignProducts: computed(() => campaignProducts.value),
+    availableProducts: computed(() => availableProducts.value),
     pagination: computed(() => pagination.value),
+    availableProductsPagination: computed(() => availableProductsPagination.value),
     isLoading: computed(() => isLoading.value),
+    isSearchingProducts: computed(() => isSearchingProducts.value),
     error: computed(() => error.value),
 
     // Getters
@@ -339,6 +386,7 @@ export function useSaleCampaigns() {
     fetchSaleCampaign,
     fetchSaleCampaignBySlug,
     fetchCampaignProducts,
+    searchAvailableProducts,
 
     // Admin Actions - Admin endpoints
     fetchAdminSaleCampaigns,

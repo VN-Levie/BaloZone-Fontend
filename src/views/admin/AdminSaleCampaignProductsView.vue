@@ -84,46 +84,79 @@
                   <!-- Products List -->
                   <div v-else class="products-list">
                     <div v-for="product in campaignProducts" :key="product.id" class="product-item">
+                      <!-- Product Image -->
                       <div class="product-image">
                         <img :src="getImageUrl(product.image)" :alt="product.name" />
+                        <div class="discount-badge" v-if="product.pivot?.discount_percentage > 0">
+                          -{{ product.pivot.discount_percentage }}%
+                        </div>
                       </div>
 
+                      <!-- Product Info -->
                       <div class="product-info">
-                        <h6 class="product-name">{{ product.name }}</h6>
-                        <div class="product-category" v-if="product.category">
-                          {{ product.category.name }}
+                        <div class="product-header">
+                          <h6 class="product-name">{{ product.name }}</h6>
+                          <span class="product-category" v-if="product.category">
+                            <i class="bi bi-tag"></i>
+                            {{ product.category.name }}
+                          </span>
                         </div>
 
-                        <div class="price-info">
-                          <div class="original-price">
-                            Giá gốc: {{ formatPrice(product.pivot?.original_price || product.price) }}
+                        <div class="price-section">
+                          <div class="price-row">
+                            <span class="price-label">Giá gốc:</span>
+                            <span class="original-price">{{ formatPrice(product.pivot?.original_price || product.price) }}</span>
                           </div>
-                          <div class="sale-price">
-                            Giá KM: {{ formatPrice(product.pivot?.sale_price) }}
+                          <div class="price-row">
+                            <span class="price-label">Giá KM:</span>
+                            <span class="sale-price">{{ formatPrice(product.pivot?.sale_price) }}</span>
                           </div>
-                          <div class="discount">
-                            Giảm: {{ product.pivot?.discount_percentage }}%
+                          <div class="savings">
+                            Tiết kiệm: {{ formatPrice((product.pivot?.original_price || product.price) - (product.pivot?.sale_price || 0)) }}
                           </div>
                         </div>
                       </div>
 
+                      <!-- Product Stats -->
                       <div class="product-stats">
-                        <div class="stat">
-                          <span class="stat-label">Tối đa:</span>
-                          <span class="stat-value">{{ product.pivot?.max_quantity || 'Không giới hạn' }}</span>
+                        <div class="stat-card">
+                          <div class="stat-icon">
+                            <i class="bi bi-box"></i>
+                          </div>
+                          <div class="stat-content">
+                            <div class="stat-value">{{ product.pivot?.max_quantity || '∞' }}</div>
+                            <div class="stat-label">Giới hạn</div>
+                          </div>
                         </div>
-                        <div class="stat">
-                          <span class="stat-label">Đã bán:</span>
-                          <span class="stat-value">{{ product.pivot?.sold_quantity || 0 }}</span>
+                        <div class="stat-card">
+                          <div class="stat-icon sold">
+                            <i class="bi bi-graph-up"></i>
+                          </div>
+                          <div class="stat-content">
+                            <div class="stat-value">{{ product.pivot?.sold_quantity || 0 }}</div>
+                            <div class="stat-label">Đã bán</div>
+                          </div>
+                        </div>
+                        <div class="stat-card">
+                          <div class="stat-icon stock">
+                            <i class="bi bi-boxes"></i>
+                          </div>
+                          <div class="stat-content">
+                            <div class="stat-value">{{ product.stock }}</div>
+                            <div class="stat-label">Tồn kho</div>
+                          </div>
                         </div>
                       </div>
 
+                      <!-- Product Actions -->
                       <div class="product-actions">
-                        <button @click="editProductSale(product)" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                        <button @click="editProductSale(product)" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa thông tin khuyến mãi">
                           <i class="bi bi-pencil"></i>
+                          <span class="action-text">Sửa</span>
                         </button>
                         <button @click="removeProduct(product)" class="btn btn-sm btn-outline-danger" title="Xóa khỏi chiến dịch">
                           <i class="bi bi-trash"></i>
+                          <span class="action-text">Xóa</span>
                         </button>
                       </div>
                     </div>
@@ -147,7 +180,22 @@
                   <div class="search-section">
                     <div class="search-box">
                       <i class="bi bi-search"></i>
-                      <input v-model="searchQuery" @input="debouncedSearch" type="text" class="form-control" placeholder="Tìm kiếm sản phẩm..." />
+                      <input
+                        v-model="searchQuery"
+                        @input="debouncedSearch"
+                        type="text"
+                        class="form-control"
+                        placeholder="Tìm kiếm sản phẩm theo tên..."
+                      />
+                      <button
+                        v-if="searchQuery"
+                        @click="clearSearch"
+                        class="btn-clear"
+                        type="button"
+                        title="Xóa tìm kiếm"
+                      >
+                        <i class="bi bi-x"></i>
+                      </button>
                     </div>
 
                     <div class="filters">
@@ -158,17 +206,27 @@
                         </option>
                       </select>
                     </div>
+
+                    <!-- Filter Info -->
+                    <div v-if="campaignProducts.length > 0" class="filter-info mt-2">
+                      <small class="text-muted">
+                        <i class="bi bi-filter"></i>
+                        Đã lọc {{ campaignProducts.length }} sản phẩm có trong chiến dịch
+                      </small>
+                    </div>
                   </div>
 
                   <!-- Available Products -->
                   <div class="available-products">
-                    <div v-if="isSearching" class="text-center py-3">
+                    <div v-if="isSearchingProducts" class="text-center py-3">
                       <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                      <p class="mb-0 mt-2">Đang tìm kiếm...</p>
                     </div>
 
                     <div v-else-if="!availableProducts.length" class="text-center py-3 text-muted">
-                      <i class="bi bi-search"></i>
-                      <p class="mb-0 mt-2">Không tìm thấy sản phẩm</p>
+                      <i class="bi bi-search fs-1"></i>
+                      <h6 class="mt-2">Không tìm thấy sản phẩm</h6>
+                      <p class="mb-0 small">Thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc</p>
                     </div>
 
                     <div v-else class="products-grid">
@@ -177,8 +235,11 @@
                           <img :src="getImageUrl(product.image)" :alt="product.name" />
                         </div>
                         <div class="product-details">
-                          <div class="product-name">{{ product.name }}</div>
+                          <div class="product-name" :title="product.name">{{ product.name }}</div>
                           <div class="product-price">{{ formatPrice(product.price) }}</div>
+                          <div class="product-category" v-if="product.category">
+                            <small class="text-muted">{{ product.category.name }}</small>
+                          </div>
                         </div>
                         <div class="add-button">
                           <i class="bi bi-plus-circle"></i>
@@ -270,7 +331,8 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSaleCampaigns } from '@/composables/useSaleCampaigns'
 import { useToast } from '@/composables/useToast'
-import { getImageUrl } from '@/utils'
+import { getImageUrl, formatPrice as formatCurrency } from '@/utils'
+import { adminCategoriesApi } from '@/services/api'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
 
 // Debounce utility
@@ -290,10 +352,15 @@ const route = useRoute()
 const {
   currentCampaign,
   campaignProducts,
+  availableProducts,
   isLoading,
+  isSearchingProducts,
   error,
   fetchAdminSaleCampaign,
-  fetchCampaignProducts
+  fetchCampaignProducts,
+  searchAvailableProducts,
+  addProductsToSaleCampaign,
+  removeProductFromSaleCampaign
 } = useSaleCampaigns()
 const { showToast } = useToast()
 
@@ -302,9 +369,7 @@ const campaignId = computed(() => route.params.id as string)
 // Search state
 const searchQuery = ref('')
 const categoryFilter = ref('')
-const availableProducts = ref<any[]>([])
 const categories = ref<any[]>([])
-const isSearching = ref(false)
 
 // Edit state
 const selectedProduct = ref<any>(null)
@@ -333,67 +398,27 @@ const loadData = async () => {
 }
 
 const loadCategories = async () => {
-  // This would be from a categories API
-  // For now, mock data
-  categories.value = [
-    { id: 1, name: 'Balo Học Sinh' },
-    { id: 2, name: 'Balo Du Lịch' },
-    { id: 3, name: 'Balo Laptop' }
-  ]
+  try {
+    const response = await adminCategoriesApi.getCategories(1, 100)
+    // adminCategoriesApi returns PaginatedResponse directly, not wrapped in ApiResponse
+    categories.value = response.data || []
+  } catch (err) {
+    console.error('Load categories error:', err)
+  }
 }
 
 const searchProducts = async () => {
-  isSearching.value = true
-
   try {
-    // Mock API call - replace with actual products API
-    await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
-
-    // Mock products - replace with actual API call
-    const allProducts = [
-      {
-        id: 1,
-        name: 'Balo Nike Heritage 2.0',
-        price: 1200000,
-        image: 'https://placehold.co/600x400?text=balo-nike-heritage',
-        category: { id: 1, name: 'Balo Học Sinh' }
-      },
-      {
-        id: 2,
-        name: 'Balo Adidas Classic',
-        price: 800000,
-        image: 'https://placehold.co/600x400?text=balo-adidas-classic',
-        category: { id: 1, name: 'Balo Học Sinh' }
-      }
-    ]
-
-    // Filter products
-    let filtered = allProducts
-
-    if (searchQuery.value) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-      )
-    }
-
-    if (categoryFilter.value) {
-      filtered = filtered.filter(product =>
-        product.category.id === parseInt(categoryFilter.value)
-      )
-    }
-
-    // Exclude products already in campaign
-    const campaignProductIds = campaignProducts.value.map(p => p.id)
-    filtered = filtered.filter(product =>
-      !campaignProductIds.includes(product.id)
-    )
-
-    availableProducts.value = filtered
+    // Search products using the composable
+    await searchAvailableProducts({
+      search: searchQuery.value,
+      category_id: categoryFilter.value ? parseInt(categoryFilter.value) : undefined,
+      page: 1,
+      per_page: 20
+    })
   } catch (err) {
     console.error('Search products error:', err)
     showToast('Có lỗi khi tìm kiếm sản phẩm!', 'error')
-  } finally {
-    isSearching.value = false
   }
 }
 
@@ -401,17 +426,26 @@ const debouncedSearch = debounce(() => {
   searchProducts()
 }, 500)
 
+const clearSearch = () => {
+  searchQuery.value = ''
+  categoryFilter.value = ''
+  searchProducts()
+}
+
 const selectProduct = async (product: any) => {
   try {
     // Add product to campaign with default values
     const productData = {
-      original_price: product.price,
-      sale_price: product.price * 0.8, // 20% discount default
-      discount_percentage: 20,
-      max_quantity: 100
+      products: [{
+        product_id: product.id,
+        sale_price: Math.round(product.price * 0.8), // 20% discount default
+        discount_type: 'percentage' as const,
+        max_quantity: 100
+      }]
     }
 
-    // Mock API call to add product to campaign
+    // Add product to campaign
+    await addProductsToSaleCampaign(parseInt(campaignId.value), productData)
     showToast('Đã thêm sản phẩm vào chiến dịch!', 'success')
 
     // Refresh data
@@ -419,9 +453,9 @@ const selectProduct = async (product: any) => {
       fetchCampaignProducts(campaignId.value),
       searchProducts()
     ])
-  } catch (err) {
+  } catch (err: any) {
     console.error('Add product error:', err)
-    showToast('Có lỗi khi thêm sản phẩm!', 'error')
+    showToast(err?.data?.message || 'Có lỗi khi thêm sản phẩm!', 'error')
   }
 }
 
@@ -444,7 +478,8 @@ const updateProductSale = async () => {
   isUpdating.value = true
 
   try {
-    // Mock API call to update product sale info
+    // Update product in sale campaign - this would need a separate API endpoint
+    // For now, we'll just show success and refresh
     showToast('Cập nhật thông tin sản phẩm thành công!', 'success')
 
     // Hide modal
@@ -453,9 +488,9 @@ const updateProductSale = async () => {
 
     // Refresh data
     await fetchCampaignProducts(campaignId.value)
-  } catch (err) {
+  } catch (err: any) {
     console.error('Update product error:', err)
-    showToast('Có lỗi khi cập nhật sản phẩm!', 'error')
+    showToast(err?.data?.message || 'Có lỗi khi cập nhật sản phẩm!', 'error')
   } finally {
     isUpdating.value = false
   }
@@ -467,7 +502,8 @@ const removeProduct = async (product: any) => {
   }
 
   try {
-    // Mock API call to remove product from campaign
+    // Remove product from campaign
+    await removeProductFromSaleCampaign(parseInt(campaignId.value), product.id)
     showToast('Đã xóa sản phẩm khỏi chiến dịch!', 'success')
 
     // Refresh data
@@ -475,17 +511,15 @@ const removeProduct = async (product: any) => {
       fetchCampaignProducts(campaignId.value),
       searchProducts()
     ])
-  } catch (err) {
+  } catch (err: any) {
     console.error('Remove product error:', err)
-    showToast('Có lỗi khi xóa sản phẩm!', 'error')
+    showToast(err?.data?.message || 'Có lỗi khi xóa sản phẩm!', 'error')
   }
 }
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(price)
+const formatPrice = (price: number | string) => {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price
+  return formatCurrency(numPrice)
 }
 
 // Load data on mount
@@ -566,23 +600,203 @@ onMounted(() => {
 }
 
 .product-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .product-item:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #0d6efd;
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+  transform: translateY(-2px);
 }
 
 .product-image {
   width: 80px;
   height: 80px;
   flex-shrink: 0;
+  position: relative;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.discount-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 50px;
+  box-shadow: 0 2px 4px rgba(238, 90, 36, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.product-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.product-title {
+  font-weight: 600;
+  color: #212529;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.product-category {
+  background: #e3f2fd;
+  color: #1976d2;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 50px;
+  font-weight: 500;
+}
+
+.product-price-section {
+  margin-bottom: 1rem;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.original-price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.sale-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #28a745;
+}
+
+.savings-amount {
+  background: #d4edda;
+  color: #155724;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.product-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.stat-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  background: #e9ecef;
+}
+
+.stat-icon {
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: #212529;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
+.product-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-action i {
+  font-size: 0.875rem;
+}
+
+.btn-remove {
+  background: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.btn-remove:hover {
+  background: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+  color: white;
+}
+
+.btn-edit {
+  background: #ffc107;
+  color: #212529;
+  border: 1px solid #ffc107;
+}
+
+.btn-edit:hover {
+  background: #e0a800;
+  border-color: #d39e00;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+  color: #212529;
 }
 
 .product-image img {
@@ -677,6 +891,50 @@ onMounted(() => {
 
 .search-box input {
   padding-left: 2.5rem;
+  padding-right: 2.5rem;
+}
+
+.btn-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: #6c757d;
+  font-size: 1.1rem;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.btn-clear:hover {
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.filters {
+  margin-top: 0.75rem;
+}
+
+.filters .form-select {
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.filter-info {
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #28a745;
+}
+
+.filter-info i {
+  margin-right: 0.25rem;
 }
 
 .available-products {

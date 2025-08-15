@@ -1041,6 +1041,37 @@ export const adminSaleCampaignsApi = {
     makeRequest(`/dashboard/sale-campaigns/${campaignId}/products/${productId}`, {
       method: 'DELETE',
     }),
+
+  // Get products in a sale campaign (admin view)
+  getCampaignProducts: (campaignId: number | string, params?: any): Promise<ApiResponse<Product[]>> => {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value)
+        }
+        return acc
+      }, {} as Record<string, string>)
+    ).toString() : ''
+    return makeRequest(`/dashboard/sale-campaigns/${campaignId}/products${queryString}`)
+  },
+
+  // Search available products for adding to campaign
+  searchAvailableProducts: (params?: {
+    search?: string
+    category_id?: number
+    page?: number
+    per_page?: number
+  }): Promise<ApiResponse<PaginatedResponse<Product>>> => {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value)
+        }
+        return acc
+      }, {} as Record<string, string>)
+    ).toString() : ''
+    return makeRequest(`/dashboard/products${queryString}`)
+  },
 }
 
 // Orders API
