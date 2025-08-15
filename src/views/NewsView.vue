@@ -20,7 +20,7 @@
                 <div class="card">
                   <div class="row g-0">
                     <div class="col-md-6">
-                      <img :src="featuredArticle.thumbnail || featuredArticle.image_url || '/placeholder-news.jpg'" :alt="featuredArticle.title" class="img-fluid h-100 object-cover">
+                      <img :src="getImageUrl(featuredArticle.thumbnail) || getImageUrl(featuredArticle.image_url) || '/placeholder-news.jpg'" :alt="featuredArticle.title" class="img-fluid h-100 object-cover">
                     </div>
                     <div class="col-md-6">
                       <div class="card-body h-100 d-flex flex-column">
