@@ -58,7 +58,7 @@
 
             <!-- Featured Image -->
             <div v-if="article.thumbnail" class="featured-image mb-4 rounded-3 overflow-hidden">
-              <img :src="article.thumbnail" :alt="article.title" class="img-fluid">
+              <img :src="getImageUrl(article.thumbnail)" :alt="article.title" class="img-fluid">
             </div>
 
             <!-- Article Content -->
@@ -108,7 +108,7 @@
                 </div>
                 <div class="card-body">
                   <div v-for="recent in recentArticles" :key="recent.id" class="d-flex mb-3">
-                    <img :src="recent.thumbnail || recent.image_url || '/placeholder-news.jpg'" :alt="recent.title" class="recent-thumb me-3">
+                    <img :src="getImageUrl(recent.thumbnail) || getImageUrl(recent.image_url) || '/placeholder-news.jpg'" :alt="recent.title" class="recent-thumb me-3">
                     <div>
                       <h6 class="mb-1">
                         <router-link :to="`/news/${recent.id}`" class="text-decoration-none text-dark">
@@ -153,7 +153,7 @@ import { formatDate } from '../utils'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import Breadcrumb from '../components/Breadcrumb.vue'
 import UserLayout from '@/components/layouts/UserLayout.vue'
-
+import { getImageUrl, formatPrice as formatCurrency } from '@/utils'
 const route = useRoute()
 
 const article = ref<News | null>(null)
